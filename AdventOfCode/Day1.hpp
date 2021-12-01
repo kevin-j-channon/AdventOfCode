@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ranges>
+#include <numeric>
 
 namespace aoc
 {
@@ -11,20 +11,13 @@ namespace aoc
 		template<typename Iter_T>
 		uint32_t GetDepthScore(Iter_T begin, Iter_T end)
 		{
-			auto score = uint32_t{0};
-			auto val = *begin;
-			
-			std::advance(begin, 1);
+			auto prev = *begin++;
 
-			for (; begin != end; std::advance(begin, 1)) {
-				if (*begin > val) {
-					++score;
-				}
-
-				val = *begin;
-			}
-
-			return score;
+			return std::accumulate(begin, end, 0, [&prev](auto curr, auto next) {
+				auto out = next > prev ? ++curr : curr;
+				prev = next;
+				return out;
+				});
 		}
 	};
 }

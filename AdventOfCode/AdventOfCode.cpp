@@ -40,6 +40,15 @@ namespace AdventOfCode
 			Assert::AreEqual(uint32_t{ 6 }, depth_score);
 		}
 
+		TEST_METHOD(ExampleValues)
+		{
+			auto measurements = std::vector<uint32_t>{ 199, 200, 208, 210, 200, 207, 240, 269, 260, 263 };
+
+			auto depth_score = aoc::DepthAssessor().GetDepthScore(measurements.begin(), measurements.end());
+
+			Assert::AreEqual(uint32_t{ 7 }, depth_score);
+		}
+
 		TEST_METHOD(CountNetIncreaseFromFile)
 		{
 			std::ifstream data_file(DATA_DIR / "Day1_input.txt");
@@ -47,7 +56,7 @@ namespace AdventOfCode
 
 			auto depth_score = aoc::DepthAssessor().GetDepthScore(std::istream_iterator<uint32_t>(data_file), std::istream_iterator<uint32_t>());
 
-			Assert::AreEqual(uint32_t{ 1466 }, depth_score);
+			Assert::AreEqual(uint32_t{ 1502 }, depth_score);
 		}
 	};
 }

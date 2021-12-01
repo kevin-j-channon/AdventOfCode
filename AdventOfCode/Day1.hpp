@@ -8,15 +8,23 @@ namespace aoc
 	{
 	public:
 
-		template<typename Range_T>
-		uint32_t GetDepthChange(const Range_T& data)
+		template<typename Iter_T>
+		uint32_t GetDepthScore(Iter_T begin, Iter_T end)
 		{
-			auto out = uint32_t{0};
-			for (auto v1 = data.begin(), v2 = std::next(data.begin()); v2 != data.end(); ++v1, ++v2) {
-				out += *v2 - *v1;
+			auto score = uint32_t{0};
+			auto val = *begin;
+			
+			std::advance(begin, 1);
+
+			for (; begin != end; std::advance(begin, 1)) {
+				if (*begin > val) {
+					++score;
+				}
+
+				val = *begin;
 			}
 
-			return out;
+			return score;
 		}
 	};
 }

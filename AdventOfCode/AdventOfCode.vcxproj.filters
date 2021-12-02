@@ -26,6 +26,12 @@
     <ClInclude Include="Day1.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ziperator.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WindowView.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Data\Day1_input.txt">

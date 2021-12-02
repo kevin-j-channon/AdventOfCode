@@ -164,6 +164,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Day1.hpp" />
+    <ClInclude Include="WindowView.hpp" />
+    <ClInclude Include="ziperator.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Data\Day1_input.txt" />

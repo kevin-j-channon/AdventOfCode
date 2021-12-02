@@ -1,4 +1,5 @@
 #include "Day1.hpp"
+#include "WindowView.hpp"
 
 #include "CppUnitTest.h"
 
@@ -57,6 +58,19 @@ namespace AdventOfCode
 			auto depth_score = aoc::DepthAssessor().GetDepthScore(std::istream_iterator<uint32_t>(data_file), std::istream_iterator<uint32_t>());
 
 			Assert::AreEqual(uint32_t{ 1502 }, depth_score);
+		}
+	};
+
+	TEST_CLASS(TestWindowView)
+	{
+	public:
+		TEST_METHOD(ViewTrioOfElements)
+		{
+			auto data = std::vector<uint64_t>{ 1, 22, 3, 200, 1000, 2, 3, 4, 100 };
+			for (auto& x : data | aoc::view::window())
+			{
+				Logger::WriteMessage(std::format("{}, {}, {}", x.get<0>(), x.get<1>(), x.get<2>()).c_str());
+			}
 		}
 	};
 }

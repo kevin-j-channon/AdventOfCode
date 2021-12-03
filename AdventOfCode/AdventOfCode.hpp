@@ -71,38 +71,33 @@ namespace std
 	istream& operator>>(istream& is, aoc::Direction& direction)
 	{
 		auto cmd = std::string{};
-		auto magnitude = std::string{};
+
+		direction = aoc::Direction{};
 
 		is >> cmd;
-		is >> magnitude;
 
 		if (cmd.empty())
 			return is;
 
-		cout << "direction string: " << cmd << ", " <<  magnitude << endl;
+		if (cmd == "forward")
+		{
+			is >> direction.x;
+		}
+		else if (cmd == "up")
+		{
+			is >> direction.y;
+			direction.y *= -1;
+		}
+		else if (cmd == "down")
+		{
+			is >> direction.y;
+		}
+		else {
+			throw aoc::Exception(std::format("Invalid direction string"));
+		}
 
-		try
-		{
-			if (cmd == "forward")
-			{
-				direction = { std::stoi(magnitude), 0 };
-			}
-			else if (cmd == "up")
-			{
-				direction = {0, -std::stoi(magnitude)};
-			}
-			else if (cmd == "down")
-			{
-				direction = { 0, std::stoi(magnitude) };
-			}
-			else {
-				throw aoc::Exception(std::format("Invalid direction string: {} {}", cmd, magnitude));
-			}
-		}
-		catch (const std::invalid_argument&)
-		{
-			throw aoc::Exception(std::format("Invalid direction string: {} {}", cmd, magnitude));
-		}
+		if (is.fail())
+			throw aoc::Exception(std::format("Invalid direction string"));
 
 		return is;
 	}

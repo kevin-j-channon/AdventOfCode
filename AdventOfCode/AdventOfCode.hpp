@@ -1,8 +1,13 @@
 #pragma once
 
+#include "StringOperations.hpp"
+
 #include <numeric>
 #include <array>
 #include <algorithm>
+#include <string>
+#include <stdexcept>
+#include <format>
 
 namespace aoc
 {
@@ -51,7 +56,30 @@ namespace aoc
 		return Vec2d<Value_T>{ v1.x + v2.x, v1.y + v2.y };
 	}
 
-	using Direction = Vec2d<int32_t>;
+	template<typename Value_T>
+	struct Direction : public Vec2d<Value_T>
+	{
+		struct Exception : public std::runtime_error
+		{
+			Exception(const std::string& msg) : std::runtime_error{ msg } {}
+		};
+
+		static Direction FromText(const std::string& txt)
+		{
+			const auto parts = split(strip(txt), ' ');
+			if (parts.size() != 2)
+			{
+				throw Exception(std::format("Invalid direction string: {}", txt));
+			}
+
+			if (parts[0] == "forward")
+			{
+				return Direction{ std::stoi(parts[1]), 0 };
+			}
+
+			throw Exception(std::format("Invalid direction string: {} {}", parts[0], parts[1]));
+		}
+	};
 
 
 }

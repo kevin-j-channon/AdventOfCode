@@ -26,6 +26,9 @@
     <ClInclude Include="AdventOfCode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StringOperations.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Data\Day1_input.txt">

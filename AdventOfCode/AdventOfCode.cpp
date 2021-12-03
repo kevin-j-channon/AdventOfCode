@@ -92,5 +92,18 @@ namespace AdventOfCode
 			Assert::AreEqual(4, v3.x);
 			Assert::AreEqual(6, v3.y);
 		}
+
+		TEST_METHOD(InvalidInputDirectionThrows)
+		{
+			Assert::ExpectException<aoc::Direction<int>::Exception>([]() {aoc::Direction<int>::FromText("wibble 5"s); });
+		}
+
+		TEST_METHOD(CreateDirectionFromInputRow_forward)
+		{
+			const auto direction = aoc::Direction<int>::FromText("forward 9"s);
+
+			Assert::AreEqual(9, direction.x);
+			Assert::AreEqual(0, direction.y);
+		}
 	};
 }

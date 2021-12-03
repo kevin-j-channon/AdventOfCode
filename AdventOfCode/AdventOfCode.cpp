@@ -10,6 +10,7 @@
 #include <format>
 #include <string>
 #include <filesystem>
+#include <algorithm>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace std::string_literals;
@@ -95,17 +96,27 @@ namespace AdventOfCode
 
 		TEST_METHOD(InvalidInputDirectionThrows)
 		{
-			Assert::ExpectException<aoc::Direction::Exception>([]() {aoc::DirectionFromText("wibble 5"s); });
+			Assert::ExpectException<aoc::Exception>([]() {
+				std::stringstream ss("wibble 5"s);
+				auto d = aoc::Direction{};
+				ss >> d;
+				});
 		}
 
 		TEST_METHOD(InvalidInputNumberThrows)
 		{
-			Assert::ExpectException<aoc::Direction::Exception>([]() {aoc::DirectionFromText("forward xx"s); });
+			Assert::ExpectException<aoc::Exception>([]() {
+				std::stringstream ss("forward xx"s);
+				auto d = aoc::Direction{};
+				ss >> d; });
 		}
 
 		TEST_METHOD(CreateDirectionFromInputRow_forward)
 		{
-			const auto direction = aoc::DirectionFromText("forward 9"s);
+			std::stringstream ss("forward 9");
+			auto direction = aoc::Direction{};
+
+			ss >> direction;
 
 			Assert::AreEqual(9, direction.x);
 			Assert::AreEqual(0, direction.y);
@@ -113,7 +124,10 @@ namespace AdventOfCode
 
 		TEST_METHOD(CreateDirectionFromInputRow_up)
 		{
-			const auto direction = aoc::DirectionFromText("up 5"s);
+			std::stringstream ss("up 5"s);
+			auto direction = aoc::Direction{};
+
+			ss >> direction;
 
 			Assert::AreEqual(0, direction.x);
 			Assert::AreEqual(-5, direction.y);
@@ -121,10 +135,24 @@ namespace AdventOfCode
 
 		TEST_METHOD(CreateDirectionFromInputRow_down)
 		{
-			const auto direction = aoc::DirectionFromText("down 30"s);
+			std::stringstream ss("down 30"s);
+			auto direction = aoc::Direction{};
+
+			ss >> direction;
 
 			Assert::AreEqual(0, direction.x);
 			Assert::AreEqual(30, direction.y);
+		}
+
+		TEST_METHOD(ParseDirectionsFromStream)
+		{
+			std::stringstream ss("forward 3\ndown 3\nforward 12\ndown 5\nup 2");
+
+			using StreamIter_t = std::istream_iterator<aoc::Direction>;
+			const auto net_direction = std::accumulate(StreamIter_t(ss), StreamIter_t(), aoc::Direction{});
+
+			Assert::AreEqual(15, net_direction.x);
+			Assert::AreEqual( 6, net_direction.y);
 		}
 
 		TEST_METHOD(ParseDirectionsFromFile)
@@ -132,10 +160,11 @@ namespace AdventOfCode
 			std::ifstream data_file(DATA_DIR / "Day2_input.txt");
 			Assert::IsTrue(data_file.is_open());
 
-			const auto directions = std::ranges::subrange(std::istream_iterator<std::string>(data_file), std::istream_iterator<std::string>()) | std::ranges::views::transform(aoc::DirectionFromText);
-			const auto final_direction = std::accumulate(directions.begin(), directions.end(), aoc::Direction{0, 0});
+			using StreamIter_t = std::istream_iterator<aoc::Direction>;
+			const auto final_direction = std::accumulate(StreamIter_t(data_file), StreamIter_t(), aoc::Direction{});
 
 			Logger::WriteMessage(std::format("Final direction: {}, {}", final_direction.x, final_direction.y).c_str());
+			Logger::WriteMessage(std::format("Output: {}", final_direction.x * final_direction.y).c_str());
 		}
 	};
 }

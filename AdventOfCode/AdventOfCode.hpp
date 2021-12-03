@@ -48,17 +48,6 @@ namespace aoc
 	{
 		Value_T x{};
 		Value_T y{};
-
-		Vec2d(Value_T x, Value_T y)
-			: x{x}
-			, y{y}
-		{}
-
-		Vec2d(const Vec2d&) = default;
-		Vec2d& operator=(const Vec2d&) = default;
-
-		Vec2d(Vec2d&&) = default;
-		Vec2d& operator=(Vec2d&&) = default;
 	};
 
 	template<typename Value_T>
@@ -67,48 +56,54 @@ namespace aoc
 		return Vec2d<Value_T>{ v1.x + v2.x, v1.y + v2.y };
 	}
 
-	class Direction : public Vec2d<int>
+	struct Exception : public std::runtime_error
 	{
-	public:
-		struct Exception : public std::runtime_error
-		{
-			Exception(const std::string& msg) : std::runtime_error{ msg } {}
-		};
-
-		Direction(int x, int y)
-			: Vec2d<int>{ x, y }
-		{}
-
+		Exception(const std::string& msg) : std::runtime_error{ msg } {}
 	};
 
+	using Direction = Vec2d<int>;
+}
 
-	static Direction DirectionFromText(const std::string& txt)
+#include <iostream>
+
+namespace std
+{
+	istream& operator>>(istream& is, aoc::Direction& direction)
 	{
-		const auto parts = split(strip(txt), ' ');
-		if (parts.size() != 2)
-		{
-			throw Direction::Exception(std::format("Invalid direction string: {}", txt));
-		}
+		auto cmd = std::string{};
+		auto magnitude = std::string{};
+
+		is >> cmd;
+		is >> magnitude;
+
+		if (cmd.empty())
+			return is;
+
+		cout << "direction string: " << cmd << ", " <<  magnitude << endl;
 
 		try
 		{
-			if (parts[0] == "forward")
+			if (cmd == "forward")
 			{
-				return Direction{ std::stoi(parts[1]), 0 };
+				direction = { std::stoi(magnitude), 0 };
 			}
-			else if (parts[0] == "up")
+			else if (cmd == "up")
 			{
-				return Direction{ 0, -std::stoi(parts[1]) };
+				direction = {0, -std::stoi(magnitude)};
 			}
-			else if (parts[0] == "down")
+			else if (cmd == "down")
 			{
-				return Direction{ 0, std::stoi(parts[1]) };
+				direction = { 0, std::stoi(magnitude) };
 			}
-		} catch (const std::invalid_argument&)
+			else {
+				throw aoc::Exception(std::format("Invalid direction string: {} {}", cmd, magnitude));
+			}
+		}
+		catch (const std::invalid_argument&)
 		{
-			throw Direction::Exception(std::format("Invalid direction string: {} {}", parts[0], parts[1]));
+			throw aoc::Exception(std::format("Invalid direction string: {} {}", cmd, magnitude));
 		}
 
-		throw Direction::Exception(std::format("Invalid direction string: {} {}", parts[0], parts[1]));
+		return is;
 	}
 }

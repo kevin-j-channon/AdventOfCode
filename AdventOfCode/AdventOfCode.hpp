@@ -77,6 +77,11 @@ namespace aoc
 				return Direction{ std::stoi(parts[1]), 0 };
 			}
 
+			if (parts[0] == "up")
+			{
+				return Direction{ 0, -std::stoi(parts[1]) };
+			}
+
 			throw Exception(std::format("Invalid direction string: {} {}", parts[0], parts[1]));
 		}
 	};

@@ -105,5 +105,13 @@ namespace AdventOfCode
 			Assert::AreEqual(9, direction.x);
 			Assert::AreEqual(0, direction.y);
 		}
+
+		TEST_METHOD(CreateDirectionFromInputRow_up)
+		{
+			const auto direction = aoc::Direction<int>::FromText("up 5"s);
+
+			Assert::AreEqual(0, direction.x);
+			Assert::AreEqual(-5, direction.y);
+		}
 	};
 }

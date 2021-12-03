@@ -11,12 +11,11 @@
 
 namespace aoc
 {
-	template<size_t WINDOW_SIZE>
-	class DepthAssessor
+	class Submarine
 	{
 	public:
 
-		template<typename Iter_T>
+		template<size_t WINDOW_SIZE, typename Iter_T>
 		uint32_t GetDepthScore(Iter_T begin, Iter_T end)
 		{
 			auto current_idx = size_t{ 0 };

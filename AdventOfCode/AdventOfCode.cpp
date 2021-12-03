@@ -27,7 +27,7 @@ namespace AdventOfCode
 		{
 			auto measurements = std::vector<uint32_t>{ 1, 2, 3, 2, 1, 2, 3 };
 
-			auto depth_score = aoc::DepthAssessor<1>().GetDepthScore(measurements.begin(), measurements.end());
+			auto depth_score = aoc::Submarine().GetDepthScore<1>(measurements.begin(), measurements.end());
 
 			Assert::AreEqual(uint32_t{ 4 }, depth_score);
 		}
@@ -36,7 +36,7 @@ namespace AdventOfCode
 		{
 			auto measurements = std::vector<uint32_t>{ 1, 22, 3, 200, 1000, 2, 3, 4, 100 };
 
-			auto depth_score = aoc::DepthAssessor<1>().GetDepthScore(measurements.begin(), measurements.end());
+			auto depth_score = aoc::Submarine().GetDepthScore<1>(measurements.begin(), measurements.end());
 
 			Assert::AreEqual(uint32_t{ 6 }, depth_score);
 		}
@@ -45,7 +45,7 @@ namespace AdventOfCode
 		{
 			auto measurements = std::vector<uint32_t>{ 199, 200, 208, 210, 200, 207, 240, 269, 260, 263 };
 
-			auto depth_score = aoc::DepthAssessor<1>().GetDepthScore(measurements.begin(), measurements.end());
+			auto depth_score = aoc::Submarine().GetDepthScore<1>(measurements.begin(), measurements.end());
 
 			Assert::AreEqual(uint32_t{ 7 }, depth_score);
 		}
@@ -55,7 +55,7 @@ namespace AdventOfCode
 			std::ifstream data_file(DATA_DIR / "Day1_input.txt");
 			Assert::IsTrue(data_file.is_open());
 
-			auto depth_score = aoc::DepthAssessor<1>().GetDepthScore(std::istream_iterator<uint32_t>(data_file), std::istream_iterator<uint32_t>());
+			auto depth_score = aoc::Submarine().GetDepthScore<1>(std::istream_iterator<uint32_t>(data_file), std::istream_iterator<uint32_t>());
 
 			Assert::AreEqual(uint32_t{ 1502 }, depth_score);
 		}
@@ -63,7 +63,7 @@ namespace AdventOfCode
 		{
 			auto measurements = std::vector<uint32_t>{ 199, 200, 208, 210, 200, 207, 240, 269, 260, 263 };
 
-			auto depth_score = aoc::DepthAssessor<3>().GetDepthScore(measurements.begin(), measurements.end());
+			auto depth_score = aoc::Submarine().GetDepthScore<3>(measurements.begin(), measurements.end());
 
 			Assert::AreEqual(uint32_t{ 5 }, depth_score);
 		}
@@ -73,7 +73,7 @@ namespace AdventOfCode
 			std::ifstream data_file(DATA_DIR / "Day1_input.txt");
 			Assert::IsTrue(data_file.is_open());
 
-			auto depth_score = aoc::DepthAssessor<3>().GetDepthScore(std::istream_iterator<uint32_t>(data_file), std::istream_iterator<uint32_t>());
+			auto depth_score = aoc::Submarine().GetDepthScore<3>(std::istream_iterator<uint32_t>(data_file), std::istream_iterator<uint32_t>());
 
 			Assert::AreEqual(uint32_t{ 1538 }, depth_score);
 		}

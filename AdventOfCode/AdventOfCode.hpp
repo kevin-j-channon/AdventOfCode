@@ -26,14 +26,14 @@ namespace aoc
 				*it = *begin++;
 			}
 
-			auto prev_score = std::accumulate(window.begin(), window.end(), uint32_t{0});
+			auto prev_score = std::accumulate(window.begin(), window.end(), uint32_t{ 0 });
 
 			return std::accumulate(begin, end, 0, [&window, &prev_score, &current_idx](auto curr, auto next) {
 
 				auto new_score = uint32_t{ prev_score - window[current_idx % window.size()] + next };
 
 				auto out = new_score > prev_score ? ++curr : curr;
-				
+
 				prev_score = new_score;
 				window[current_idx % window.size()] = next;
 				++current_idx;
@@ -48,6 +48,17 @@ namespace aoc
 	{
 		Value_T x{};
 		Value_T y{};
+
+		Vec2d(Value_T x, Value_T y)
+			: x{x}
+			, y{y}
+		{}
+
+		Vec2d(const Vec2d&) = default;
+		Vec2d& operator=(const Vec2d&) = default;
+
+		Vec2d(Vec2d&&) = default;
+		Vec2d& operator=(Vec2d&&) = default;
 	};
 
 	template<typename Value_T>
@@ -56,45 +67,48 @@ namespace aoc
 		return Vec2d<Value_T>{ v1.x + v2.x, v1.y + v2.y };
 	}
 
-	template<typename Value_T>
-	struct Direction : public Vec2d<Value_T>
+	class Direction : public Vec2d<int>
 	{
+	public:
 		struct Exception : public std::runtime_error
 		{
 			Exception(const std::string& msg) : std::runtime_error{ msg } {}
 		};
 
-		static Direction FromText(const std::string& txt)
-		{
-			const auto parts = split(strip(txt), ' ');
-			if (parts.size() != 2)
-			{
-				throw Exception(std::format("Invalid direction string: {}", txt));
-			}
+		Direction(int x, int y)
+			: Vec2d<int>{ x, y }
+		{}
 
-			try
-			{
-				if (parts[0] == "forward")
-				{
-					return Direction{ std::stoi(parts[1]), 0 };
-				}
-				else if (parts[0] == "up")
-				{
-					return Direction{ 0, -std::stoi(parts[1]) };
-				}
-				else if (parts[0] == "down")
-				{
-					return Direction{ 0, std::stoi(parts[1]) };
-				}
-			}
-			catch (const std::invalid_argument&)
-			{
-				throw Exception(std::format("Invalid direction string: {} {}", parts[0], parts[1]));
-			}
-
-			throw Exception(std::format("Invalid direction string: {} {}", parts[0], parts[1]));
-		}
 	};
 
 
+	static Direction DirectionFromText(const std::string& txt)
+	{
+		const auto parts = split(strip(txt), ' ');
+		if (parts.size() != 2)
+		{
+			throw Direction::Exception(std::format("Invalid direction string: {}", txt));
+		}
+
+		try
+		{
+			if (parts[0] == "forward")
+			{
+				return Direction{ std::stoi(parts[1]), 0 };
+			}
+			else if (parts[0] == "up")
+			{
+				return Direction{ 0, -std::stoi(parts[1]) };
+			}
+			else if (parts[0] == "down")
+			{
+				return Direction{ 0, std::stoi(parts[1]) };
+			}
+		} catch (const std::invalid_argument&)
+		{
+			throw Direction::Exception(std::format("Invalid direction string: {} {}", parts[0], parts[1]));
+		}
+
+		throw Direction::Exception(std::format("Invalid direction string: {} {}", parts[0], parts[1]));
+	}
 }

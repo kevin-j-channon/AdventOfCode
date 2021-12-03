@@ -95,17 +95,17 @@ namespace AdventOfCode
 
 		TEST_METHOD(InvalidInputDirectionThrows)
 		{
-			Assert::ExpectException<aoc::Direction<int>::Exception>([]() {aoc::Direction<int>::FromText("wibble 5"s); });
+			Assert::ExpectException<aoc::Direction::Exception>([]() {aoc::DirectionFromText("wibble 5"s); });
 		}
 
 		TEST_METHOD(InvalidInputNumberThrows)
 		{
-			Assert::ExpectException<aoc::Direction<int>::Exception>([]() {aoc::Direction<int>::FromText("forward xx"s); });
+			Assert::ExpectException<aoc::Direction::Exception>([]() {aoc::DirectionFromText("forward xx"s); });
 		}
 
 		TEST_METHOD(CreateDirectionFromInputRow_forward)
 		{
-			const auto direction = aoc::Direction<int>::FromText("forward 9"s);
+			const auto direction = aoc::DirectionFromText("forward 9"s);
 
 			Assert::AreEqual(9, direction.x);
 			Assert::AreEqual(0, direction.y);
@@ -113,7 +113,7 @@ namespace AdventOfCode
 
 		TEST_METHOD(CreateDirectionFromInputRow_up)
 		{
-			const auto direction = aoc::Direction<int>::FromText("up 5"s);
+			const auto direction = aoc::DirectionFromText("up 5"s);
 
 			Assert::AreEqual(0, direction.x);
 			Assert::AreEqual(-5, direction.y);
@@ -121,10 +121,21 @@ namespace AdventOfCode
 
 		TEST_METHOD(CreateDirectionFromInputRow_down)
 		{
-			const auto direction = aoc::Direction<int>::FromText("down 30"s);
+			const auto direction = aoc::DirectionFromText("down 30"s);
 
 			Assert::AreEqual(0, direction.x);
 			Assert::AreEqual(30, direction.y);
+		}
+
+		TEST_METHOD(ParseDirectionsFromFile)
+		{
+			std::ifstream data_file(DATA_DIR / "Day2_input.txt");
+			Assert::IsTrue(data_file.is_open());
+
+			const auto directions = std::ranges::subrange(std::istream_iterator<std::string>(data_file), std::istream_iterator<std::string>()) | std::ranges::views::transform(aoc::DirectionFromText);
+			const auto final_direction = std::accumulate(directions.begin(), directions.end(), aoc::Direction{0, 0});
+
+			Logger::WriteMessage(std::format("Final direction: {}, {}", final_direction.x, final_direction.y).c_str());
 		}
 	};
 }

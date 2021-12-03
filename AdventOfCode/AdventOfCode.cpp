@@ -98,6 +98,11 @@ namespace AdventOfCode
 			Assert::ExpectException<aoc::Direction<int>::Exception>([]() {aoc::Direction<int>::FromText("wibble 5"s); });
 		}
 
+		TEST_METHOD(InvalidInputNumberThrows)
+		{
+			Assert::ExpectException<aoc::Direction<int>::Exception>([]() {aoc::Direction<int>::FromText("forward xx"s); });
+		}
+
 		TEST_METHOD(CreateDirectionFromInputRow_forward)
 		{
 			const auto direction = aoc::Direction<int>::FromText("forward 9"s);

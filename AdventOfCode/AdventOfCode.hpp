@@ -72,17 +72,24 @@ namespace aoc
 				throw Exception(std::format("Invalid direction string: {}", txt));
 			}
 
-			if (parts[0] == "forward")
+			try
 			{
-				return Direction{ std::stoi(parts[1]), 0 };
+				if (parts[0] == "forward")
+				{
+					return Direction{ std::stoi(parts[1]), 0 };
+				}
+				else if (parts[0] == "up")
+				{
+					return Direction{ 0, -std::stoi(parts[1]) };
+				}
+				else if (parts[0] == "down")
+				{
+					return Direction{ 0, std::stoi(parts[1]) };
+				}
 			}
-			else if (parts[0] == "up")
+			catch (const std::invalid_argument&)
 			{
-				return Direction{ 0, -std::stoi(parts[1]) };
-			}
-			else if (parts[0] == "down")
-			{
-				return Direction{ 0, std::stoi(parts[1]) };
+				throw Exception(std::format("Invalid direction string: {} {}", parts[0], parts[1]));
 			}
 
 			throw Exception(std::format("Invalid direction string: {} {}", parts[0], parts[1]));

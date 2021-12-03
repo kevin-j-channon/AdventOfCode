@@ -23,12 +23,15 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Day1.hpp">
+    <ClInclude Include="AdventOfCode.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Data\Day1_input.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="Day2_input.txt">
       <Filter>Data</Filter>
     </Text>
   </ItemGroup>

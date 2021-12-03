@@ -1,4 +1,4 @@
-#include "Day1.hpp"
+#include "AdventOfCode.hpp"
 
 #include "CppUnitTest.h"
 
@@ -75,6 +75,22 @@ namespace AdventOfCode
 			auto depth_score = aoc::DepthAssessor<3>().GetDepthScore(std::istream_iterator<uint32_t>(data_file), std::istream_iterator<uint32_t>());
 
 			Assert::AreEqual(uint32_t{ 1538 }, depth_score);
+		}
+	};
+
+	TEST_CLASS(TestDay2)
+	{
+	public:
+
+		TEST_METHOD(VectorsCanBeAdded)
+		{
+			const auto v1 = aoc::Vec2d<int>{ 1, 2 };
+			const auto v2 = aoc::Vec2d<int>{ 3, 4 };
+
+			const auto v3 = v1 + v2;
+
+			Assert::AreEqual(4, v3.x);
+			Assert::AreEqual(6, v3.y);
 		}
 	};
 }

@@ -37,4 +37,21 @@ namespace aoc
 				});
 		}
 	};
+
+	template<typename Value_T>
+	struct Vec2d
+	{
+		Value_T x{};
+		Value_T y{};
+	};
+
+	template<typename Value_T>
+	Vec2d<Value_T> operator+(const Vec2d<Value_T>& v1, const Vec2d<Value_T>& v2)
+	{
+		return Vec2d<Value_T>{ v1.x + v2.x, v1.y + v2.y };
+	}
+
+	using Direction = Vec2d<int32_t>;
+
+
 }

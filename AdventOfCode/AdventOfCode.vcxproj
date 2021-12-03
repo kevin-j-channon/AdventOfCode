@@ -163,10 +163,11 @@
     <ClCompile Include="AdventOfCode.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Day1.hpp" />
+    <ClInclude Include="AdventOfCode.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Data\Day1_input.txt" />
+    <Text Include="Day2_input.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

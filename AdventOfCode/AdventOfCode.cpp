@@ -161,10 +161,10 @@ namespace AdventOfCode
 			Assert::IsTrue(data_file.is_open());
 
 			using StreamIter_t = std::istream_iterator<aoc::Direction>;
-			const auto final_direction = std::accumulate(StreamIter_t(data_file), StreamIter_t(), aoc::Direction{});
+			const auto net_direction = std::accumulate(StreamIter_t(data_file), StreamIter_t(), aoc::Direction{});
 
-			Logger::WriteMessage(std::format("Final direction: {}, {}", final_direction.x, final_direction.y).c_str());
-			Logger::WriteMessage(std::format("Output: {}", final_direction.x * final_direction.y).c_str());
+			Assert::AreEqual(1895, net_direction.x);
+			Assert::AreEqual(894, net_direction.y);
 		}
 	};
 }

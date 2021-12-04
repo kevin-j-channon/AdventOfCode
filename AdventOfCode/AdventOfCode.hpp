@@ -92,7 +92,7 @@ namespace aoc
 	public:
 
 		template<size_t WINDOW_SIZE, typename Iter_T>
-		uint32_t GetDepthScore(Iter_T begin, Iter_T end)
+		uint32_t depth_score(Iter_T begin, Iter_T end)
 		{
 			auto current_idx = size_t{ 0 };
 
@@ -118,20 +118,19 @@ namespace aoc
 		}
 
 		template<typename Iter_T>
-		Direction GetNetDirection(Iter_T begin, Iter_T end)
+		Direction net_direction(Iter_T begin, Iter_T end)
 		{
 			return std::accumulate(begin, end, Direction{});
 		}
 		
 		template<typename Iter_T>
-		Direction GetNetAiming(Iter_T begin, Iter_T end)
+		Direction net_aiming(Iter_T begin, Iter_T end)
 		{
 			return std::accumulate<>(begin, end, Aiming{}).to_direction();
 		}
 
-
 		template<typename Iter_T>
-		PowerParams get_power_params(Iter_T begin, Iter_T end)
+		PowerParams evaluate_power_params(Iter_T begin, Iter_T end)
 		{
 			auto bit_counts = std::accumulate(begin, end, std::array<int, aoc::PowerParams::bit_count>{},
 				[](auto&& curr, auto&& pp) {

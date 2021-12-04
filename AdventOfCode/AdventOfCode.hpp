@@ -130,7 +130,26 @@ namespace aoc
 		}
 
 
-		
+		template<typename Iter_T>
+		PowerParams get_power_params(Iter_T begin, Iter_T end)
+		{
+			auto bit_counts = std::accumulate(begin, end, std::array<int, aoc::PowerParams::bit_count>{},
+				[](auto&& curr, auto&& pp) {
+					std::transform(curr.begin(), curr.end(), pp.bits.begin(), curr.begin(),
+						[](auto count, auto bit) {
+							return count + (bit ? 1 : -1);
+						});
+
+					return curr;
+				});
+
+			auto out = PowerParams{};
+			std::transform(bit_counts.begin(), bit_counts.end(), out.bits.begin(), [](auto count) {
+				return count >= 0 ? true : false;
+				});
+
+			return out;
+		}
 	};
 }
 

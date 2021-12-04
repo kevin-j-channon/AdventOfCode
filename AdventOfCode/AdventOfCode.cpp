@@ -274,23 +274,13 @@ namespace AdventOfCode
 			std::stringstream ss("111011110101\n011000111010\n100000010010");
 
 			using Iter_t = std::istream_iterator<aoc::PowerParams>;
-			auto bit_counts = std::accumulate(Iter_t(ss), Iter_t(), std::array<int, aoc::PowerParams::bit_count>{},
-				[](auto&& curr, auto&& pp) {
-					std::transform(curr.begin(), curr.end(), pp.bits.begin(), curr.begin(),
-						[](auto count, auto bit) {
-							return count + (bit ? 1 : -1);
-						});
-
-					return curr;
-				});
-
-			auto final_bits = aoc::PowerParams::Bits_t{};
-			std::transform(bit_counts.begin(), bit_counts.end(), final_bits.begin(), [](auto count) { return count >= 0 ? true : false;  });
+			
+			const auto power_params = aoc::Submarine().get_power_params(Iter_t(ss), Iter_t());
 
 			auto expected = aoc::PowerParams::Bits_t{ true, true, true, false, false, false, true, true, false, false, true, false };
 			for (auto i = 0; i < aoc::PowerParams::bit_count; ++i)
 			{
-				Assert::AreEqual(expected[i], final_bits[i]);
+				Assert::AreEqual(expected[i], power_params.bits[i]);
 			}
 		}
 

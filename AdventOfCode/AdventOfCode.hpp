@@ -59,8 +59,20 @@ namespace aoc
 
 	struct PowerParameters
 	{
-		int gamma_rate{};
-		int epsilon_rate{0b111111111111};
+		static constexpr uint32_t bit_count = 12;
+		std::array<bool, bit_count> bits;
+	};
+
+	class PowerParameterTracker
+	{
+	public:
+		PowerParameterTracker()
+		{
+			std::fill(counts.begin(), counts.end(), 0);
+		}
+
+	private:
+		std::array<int, PowerParameters::bit_count> counts;
 	};
 
 	class Submarine
@@ -151,12 +163,12 @@ namespace std
 		auto param_str = std::string{};
 		is >> param_str;
 
-		if (param_str.empty())
+		if (param_str.length() != aoc::PowerParameters::bit_count) {
+			is.setstate(std::ios::failbit);
 			return is;
+		}
 
-		auto bits = std::bitset<12>(param_str);
-		pp.gamma_rate = bits.to_ulong();
-		pp.epsilon_rate = bits.flip().to_ulong();
+		std::transform(param_str.begin(), param_str.end(), pp.bits.begin(), [](auto c) { return c == '1' ? true : false; });
 
 		return is;
 	}

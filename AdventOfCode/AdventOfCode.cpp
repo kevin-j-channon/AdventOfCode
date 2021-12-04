@@ -234,12 +234,12 @@ namespace AdventOfCode
 		TEST_METHOD(ReadPowerParamsFromStream)
 		{
 			std::stringstream ss("111011110101");
-			auto pp = aoc::PowerParameters{};
+			auto pp = aoc::PowerParams{};
 
 			ss >> pp;
 
-			auto a1 = std::array<bool, aoc::PowerParameters::bit_count>{ true, true, true, false, true, true, true, true, false, true, false, true  };
-			for (auto i = 0; i < aoc::PowerParameters::bit_count; ++i)
+			auto a1 = std::array<bool, aoc::PowerParams::bit_count>{ true, true, true, false, true, true, true, true, false, true, false, true  };
+			for (auto i = 0; i < aoc::PowerParams::bit_count; ++i)
 			{
 				Assert::AreEqual(a1[i], pp.bits[i]);
 			}
@@ -248,22 +248,22 @@ namespace AdventOfCode
 		TEST_METHOD(ReadMultiplePowerParamsFromStream)
 		{
 			std::stringstream ss("111011110101\n011000111010");
-			auto v = std::vector<aoc::PowerParameters>{};
+			auto v = std::vector<aoc::PowerParams>{};
 
-			using Iter_t = std::istream_iterator<aoc::PowerParameters>;
+			using Iter_t = std::istream_iterator<aoc::PowerParams>;
 
 			std::copy(Iter_t(ss), Iter_t(), std::back_inserter(v));
 
 			Assert::AreEqual(size_t{ 2 }, v.size());
 
-			auto a1 = std::array<bool, aoc::PowerParameters::bit_count>{ true, true, true, false, true, true, true, true, false, true, false, true  };
-			for (auto i = 0; i < aoc::PowerParameters::bit_count; ++i)
+			auto a1 = aoc::PowerParams::Bits_t{ true, true, true, false, true, true, true, true, false, true, false, true  };
+			for (auto i = 0; i < aoc::PowerParams::bit_count; ++i)
 			{
 				Assert::AreEqual(a1[i], v[0].bits[i]);
 			}
 
-			auto a2 = std::array<bool, aoc::PowerParameters::bit_count>{ false, true, true, false, false, false, true, true, true, false, true, false };
-			for (auto i = 0; i < aoc::PowerParameters::bit_count; ++i)
+			auto a2 = aoc::PowerParams::Bits_t{ false, true, true, false, false, false, true, true, true, false, true, false };
+			for (auto i = 0; i < aoc::PowerParams::bit_count; ++i)
 			{
 				Assert::AreEqual(a2[i], v[1].bits[i]);
 			}
@@ -271,7 +271,43 @@ namespace AdventOfCode
 
 		TEST_METHOD(AccumulatePowerParamsWorks)
 		{
+			std::stringstream ss("111011110101\n011000111010\n100000010010");
 
+			using Iter_t = std::istream_iterator<aoc::PowerParams>;
+			auto bit_counts = std::accumulate(Iter_t(ss), Iter_t(), std::array<int, aoc::PowerParams::bit_count>{},
+				[](auto&& curr, auto&& pp) {
+					std::transform(curr.begin(), curr.end(), pp.bits.begin(), curr.begin(),
+						[](auto count, auto bit) {
+							return count + (bit ? 1 : -1);
+						});
+
+					return curr;
+				});
+
+			auto final_bits = aoc::PowerParams::Bits_t{};
+			std::transform(bit_counts.begin(), bit_counts.end(), final_bits.begin(), [](auto count) { return count >= 0 ? true : false;  });
+
+			auto expected = aoc::PowerParams::Bits_t{ true, true, true, false, false, false, true, true, false, false, true, false };
+			for (auto i = 0; i < aoc::PowerParams::bit_count; ++i)
+			{
+				Assert::AreEqual(expected[i], final_bits[i]);
+			}
+		}
+
+		TEST_METHOD(GammaRateIsCorrectlyCalculated)
+		{
+			auto pp = aoc::PowerParams{};
+			pp.bits = { true, true, true, false, false, false, true, true, false, false, true, false };
+
+			Assert::AreEqual(uint32_t{ 0b111000110010 }, pp.gamma_rate());
+		}
+
+		TEST_METHOD(EpsilonRateIsCorrectlyCalculated)
+		{
+			auto pp = aoc::PowerParams{};
+			pp.bits = { true, true, true, false, false, false, true, true, false, false, true, false };
+
+			Assert::AreEqual(uint32_t{ 0b000111001101 }, pp.epsilon_rate());
 		}
 	};
 }

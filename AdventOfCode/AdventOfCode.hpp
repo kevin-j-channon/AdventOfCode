@@ -57,22 +57,34 @@ namespace aoc
 		}
 	};
 
-	struct PowerParameters
+	struct PowerParams
 	{
 		static constexpr uint32_t bit_count = 12;
-		std::array<bool, bit_count> bits;
-	};
 
-	class PowerParameterTracker
-	{
-	public:
-		PowerParameterTracker()
+		using Bits_t = std::array<bool, bit_count>;
+		Bits_t bits;
+
+		uint32_t gamma_rate() const
 		{
-			std::fill(counts.begin(), counts.end(), 0);
+			return std::accumulate(bits.begin(), bits.end(), uint32_t{ 0 }, [](auto curr, auto next) {
+				curr <<= 1;
+				if (next)
+					curr |= 1;
+
+				return curr;
+				});
 		}
 
-	private:
-		std::array<int, PowerParameters::bit_count> counts;
+		uint32_t epsilon_rate() const
+		{
+			return std::accumulate(bits.begin(), bits.end(), uint32_t{ 0 }, [](auto curr, auto next) {
+				curr <<= 1;
+				if (!next)
+					curr |= 1;
+
+				return curr;
+				});
+		}
 	};
 
 	class Submarine
@@ -116,6 +128,8 @@ namespace aoc
 		{
 			return std::accumulate<>(begin, end, Aiming{}).to_direction();
 		}
+
+
 		
 	};
 }
@@ -156,14 +170,14 @@ namespace std
 		return is;
 	}
 
-	istream& operator>>(istream& is, aoc::PowerParameters& pp)
+	istream& operator>>(istream& is, aoc::PowerParams& pp)
 	{
-		pp = aoc::PowerParameters{};
+		pp = aoc::PowerParams{};
 
 		auto param_str = std::string{};
 		is >> param_str;
 
-		if (param_str.length() != aoc::PowerParameters::bit_count) {
+		if (param_str.length() != aoc::PowerParams::bit_count) {
 			is.setstate(std::ios::failbit);
 			return is;
 		}

@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <format>
 #include <istream>
+#include <bitset>
 
 namespace aoc
 {
@@ -56,6 +57,12 @@ namespace aoc
 		}
 	};
 
+	struct PowerParameters
+	{
+		int gamma_rate{};
+		int epsilon_rate{0b111111111111};
+	};
+
 	class Submarine
 	{
 	public:
@@ -97,6 +104,7 @@ namespace aoc
 		{
 			return std::accumulate<>(begin, end, Aiming{}).to_direction();
 		}
+		
 	};
 }
 
@@ -132,6 +140,23 @@ namespace std
 
 		if (is.fail())
 			throw aoc::Exception(std::format("Invalid direction string"));
+
+		return is;
+	}
+
+	istream& operator>>(istream& is, aoc::PowerParameters& pp)
+	{
+		pp = aoc::PowerParameters{};
+
+		auto param_str = std::string{};
+		is >> param_str;
+
+		if (param_str.empty())
+			return is;
+
+		auto bits = std::bitset<12>(param_str);
+		pp.gamma_rate = bits.to_ulong();
+		pp.epsilon_rate = bits.flip().to_ulong();
 
 		return is;
 	}

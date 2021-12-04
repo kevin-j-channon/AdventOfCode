@@ -227,4 +227,42 @@ namespace AdventOfCode
 			Assert::AreEqual(60, net_aim.y);
 		}
 	};
+
+	TEST_CLASS(TestDay3)
+	{
+	public:
+		TEST_METHOD(ReadPowerParamsFromStream)
+		{
+			std::stringstream ss("111011110101");
+			auto pp = aoc::PowerParameters{};
+
+			ss >> pp;
+
+			Assert::AreEqual(0b111011110101, pp.gamma_rate);
+			Assert::AreEqual(0b000100001010, pp.epsilon_rate);
+		}
+
+		TEST_METHOD(ReadMultiplePowerParamsFromStream)
+		{
+			std::stringstream ss("111011110101\n011000111010");
+			auto v = std::vector<aoc::PowerParameters>{};
+
+			using Iter_t = std::istream_iterator<aoc::PowerParameters>;
+
+			std::copy(Iter_t(ss), Iter_t(), std::back_inserter(v));
+
+			Assert::AreEqual(size_t{ 2 }, v.size());
+
+			Assert::AreEqual(0b111011110101, v[0].gamma_rate);
+			Assert::AreEqual(0b000100001010, v[0].epsilon_rate);
+
+			Assert::AreEqual(0b011000111010, v[1].gamma_rate);
+			Assert::AreEqual(0b100111000101, v[1].epsilon_rate);
+		}
+
+		TEST_METHOD(AccumulatePowerParamsWorks)
+		{
+
+		}
+	};
 }

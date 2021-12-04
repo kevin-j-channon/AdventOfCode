@@ -149,7 +149,7 @@ namespace AdventOfCode
 			std::stringstream ss("forward 3\ndown 3\nforward 12\ndown 5\nup 2");
 
 			using StreamIter_t = std::istream_iterator<aoc::Direction>;
-			const auto net_direction = std::accumulate(StreamIter_t(ss), StreamIter_t(), aoc::Direction{});
+			const auto net_direction = aoc::Submarine().GetNetDirection(StreamIter_t(ss), StreamIter_t());
 
 			Assert::AreEqual(15, net_direction.x);
 			Assert::AreEqual( 6, net_direction.y);
@@ -161,10 +161,70 @@ namespace AdventOfCode
 			Assert::IsTrue(data_file.is_open());
 
 			using StreamIter_t = std::istream_iterator<aoc::Direction>;
-			const auto net_direction = std::accumulate(StreamIter_t(data_file), StreamIter_t(), aoc::Direction{});
+			const auto net_direction = aoc::Submarine().GetNetDirection(StreamIter_t(data_file), StreamIter_t());
 
 			Assert::AreEqual(1895, net_direction.x);
 			Assert::AreEqual(894, net_direction.y);
+		}
+
+		TEST_METHOD(DirectionsCanBeAddedAimings)
+		{
+			auto aiming = aoc::Aiming{};
+			
+			aiming = aiming + aoc::Direction{ 5, 0 };
+
+			Assert::AreEqual(5, aiming.x);
+			Assert::AreEqual(0, aiming.aim);
+			Assert::AreEqual(0, aiming.depth);
+
+			aiming = aiming + aoc::Direction{ 0, 5 };
+
+			Assert::AreEqual(5, aiming.x);
+			Assert::AreEqual(5, aiming.aim);
+			Assert::AreEqual(0, aiming.depth);
+
+			aiming = aiming + aoc::Direction{ 8, 0 };
+
+			Assert::AreEqual(13, aiming.x);
+			Assert::AreEqual(5, aiming.aim);
+			Assert::AreEqual(40, aiming.depth);
+
+			aiming = aiming + aoc::Direction{ 0, -3 };
+
+			Assert::AreEqual(13, aiming.x);
+			Assert::AreEqual(2, aiming.aim);
+			Assert::AreEqual(40, aiming.depth);
+
+			aiming = aiming + aoc::Direction{ 0, 8 };
+
+			Assert::AreEqual(13, aiming.x);
+			Assert::AreEqual(10, aiming.aim);
+			Assert::AreEqual(40, aiming.depth);
+
+			aiming = aiming + aoc::Direction{ 2, 0 };
+
+			Assert::AreEqual(15, aiming.x);
+			Assert::AreEqual(10, aiming.aim);
+			Assert::AreEqual(60, aiming.depth);
+		}
+
+		TEST_METHOD(ConvertingAimingToDirectionWorks)
+		{
+			const auto d = aoc::Aiming{ 1, 2, 3 }.to_direction();
+
+			Assert::AreEqual(1, d.x);
+			Assert::AreEqual(3, d.y);
+		}
+
+		TEST_METHOD(AimingFromStreamWorks)
+		{
+			std::stringstream ss("forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2");
+
+			using StreamIter_t = std::istream_iterator<aoc::Direction>;
+			const auto net_aim = aoc::Submarine().GetNetAiming(StreamIter_t(ss), StreamIter_t());
+
+			Assert::AreEqual(15, net_aim.x);
+			Assert::AreEqual(60, net_aim.y);
 		}
 	};
 }

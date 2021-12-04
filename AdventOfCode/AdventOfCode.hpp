@@ -8,9 +8,54 @@
 #include <string>
 #include <stdexcept>
 #include <format>
+#include <istream>
 
 namespace aoc
 {
+
+	template<typename Value_T>
+	struct Vec2d
+	{
+		Value_T x{};
+		Value_T y{};
+	};
+
+	struct Exception : public std::runtime_error
+	{
+		Exception(const std::string& msg) : std::runtime_error{ msg } {}
+	};
+
+	using Direction = Vec2d<int>;
+
+	template<typename Value_T>
+	Vec2d<Value_T> operator+(const Vec2d<Value_T>& v1, const Vec2d<Value_T>& v2)
+	{
+		return { v1.x + v2.x, v1.y + v2.y };
+	}
+
+
+	struct Aiming
+	{
+		int x{};
+		int aim{};
+		int depth{};
+
+		Direction to_direction() const
+		{
+			return { x, depth };
+		}
+
+		Aiming operator+(const Direction& d) const
+		{
+			const auto new_aim = this->aim + d.y;
+			return {
+				this->x + d.x,
+				new_aim,
+				this->depth + d.x * new_aim
+			};
+		}
+	};
+
 	class Submarine
 	{
 	public:
@@ -40,30 +85,22 @@ namespace aoc
 				return out;
 				});
 		}
+
+		template<typename Iter_T>
+		Direction GetNetDirection(Iter_T begin, Iter_T end)
+		{
+			return std::accumulate(begin, end, Direction{});
+		}
+		
+		template<typename Iter_T>
+		Direction GetNetAiming(Iter_T begin, Iter_T end)
+		{
+			return std::accumulate<>(begin, end, Aiming{}, 
+				[](auto&& curr_aiming, auto&& d) -> Aiming { return curr_aiming + d; }
+			).to_direction();
+		}
 	};
-
-	template<typename Value_T>
-	struct Vec2d
-	{
-		Value_T x{};
-		Value_T y{};
-	};
-
-	template<typename Value_T>
-	Vec2d<Value_T> operator+(const Vec2d<Value_T>& v1, const Vec2d<Value_T>& v2)
-	{
-		return Vec2d<Value_T>{ v1.x + v2.x, v1.y + v2.y };
-	}
-
-	struct Exception : public std::runtime_error
-	{
-		Exception(const std::string& msg) : std::runtime_error{ msg } {}
-	};
-
-	using Direction = Vec2d<int>;
 }
-
-#include <iostream>
 
 namespace std
 {
@@ -71,7 +108,7 @@ namespace std
 	{
 		auto cmd = std::string{};
 
-		direction = aoc::Direction{};
+		direction = aoc::Direction{ 0, 0 };
 
 		is >> cmd;
 

@@ -95,9 +95,7 @@ namespace aoc
 		template<typename Iter_T>
 		Direction GetNetAiming(Iter_T begin, Iter_T end)
 		{
-			return std::accumulate<>(begin, end, Aiming{}, 
-				[](auto&& curr_aiming, auto&& d) -> Aiming { return curr_aiming + d; }
-			).to_direction();
+			return std::accumulate<>(begin, end, Aiming{}).to_direction();
 		}
 	};
 }

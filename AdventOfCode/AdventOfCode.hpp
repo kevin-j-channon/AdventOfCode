@@ -84,6 +84,14 @@ public:
 	using Iterator_t = decltype(entries.begin());
 	using ConstIterator_t = decltype(entries.cbegin());
 
+	DiagnosticLog(std::istream& is)
+	{
+		load(is);
+	}
+
+	DiagnosticLog() {}
+
+
 	void load(std::istream& is) try
 	{
 		entries.clear();
@@ -239,6 +247,12 @@ public:
 	uint32_t power_consumption(LogLineIter_T begin, LogLineIter_T end)
 	{
 		return PowerParams::power_consumption(begin, end);
+	}
+
+	template<typename LogLineIter_T>
+	uint32_t life_support_rating(LogLineIter_T begin, LogLineIter_T end)
+	{
+		return 0;
 	}
 };
 

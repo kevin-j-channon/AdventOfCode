@@ -290,8 +290,7 @@ namespace AdventOfCode
 			std::ifstream data_file(DATA_DIR / "Day3_input.txt");
 			Assert::IsTrue(data_file.is_open());
 
-			auto log = aoc::DiagnosticLog{};
-			log.load(data_file);
+			auto log = aoc::DiagnosticLog{data_file};
 
 			const auto power_consumption = aoc::Submarine().power_consumption(log.begin(), log.end());
 
@@ -323,9 +322,7 @@ namespace AdventOfCode
 		TEST_METHOD(DiagnosticLogBeginAndEndAreCorrect)
 		{
 			std::stringstream ss("111011110101\n011000111010\n100000010010");
-			auto log = aoc::DiagnosticLog{};
-
-			log.load(ss);
+			auto log = aoc::DiagnosticLog{ss};
 
 			Assert::AreEqual(ptrdiff_t{ 3 }, std::distance(log.begin(), log.end()));
 		}
@@ -337,6 +334,29 @@ namespace AdventOfCode
 			auto log = aoc::DiagnosticLog{};
 
 			Assert::ExpectException<aoc::Exception>([&](){ log.load(ss); });
+		}
+
+		TEST_METHOD(LifeSupportRatingIsCalculatedFromLogEntries)
+		{
+			constexpr auto log_lines =
+				"111011110101\n"
+				"011000111010\n"
+				"100000010010\n"
+				"000111100110\n"
+				"110011111011\n"
+				"001100010111\n"
+				"011000100100\n"
+				"110011111010\n"
+				"101011010111\n"
+				"010001001011";
+
+			std::stringstream ss(log_lines);
+
+			const auto log = aoc::DiagnosticLog{ss};
+
+			const auto lsr = aoc::Submarine().life_support_rating(log.begin(), log.end());
+
+			Logger::WriteMessage(std::format("Life support rating: {}", lsr).c_str());
 		}
 	};
 }

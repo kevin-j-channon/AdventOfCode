@@ -234,14 +234,14 @@ namespace AdventOfCode
 		TEST_METHOD(ReadLogEntriedFromStream)
 		{
 			std::stringstream ss("111011110101");
-			auto pp = aoc::DiagnosticLog::Entry_t{};
+			auto log_entry = aoc::DiagnosticLog::Entry_t{};
 
-			ss >> pp;
+			ss >> log_entry;
 
-			auto a1 = aoc::PowerParams::Bits_t{ true, true, true, false, true, true, true, true, false, true, false, true  };
+			auto a1 = aoc::DiagnosticLog::Entry_t{ true, true, true, false, true, true, true, true, false, true, false, true  };
 			for (auto i = 0; i < a1.size(); ++i)
 			{
-				Assert::AreEqual(a1[i], pp[i]);
+				Assert::AreEqual(a1[i], log_entry[i]);
 			}
 		}
 
@@ -256,33 +256,29 @@ namespace AdventOfCode
 
 			Assert::AreEqual(size_t{ 2 }, v.size());
 
-			auto a1 = aoc::PowerParams::Bits_t{ true, true, true, false, true, true, true, true, false, true, false, true  };
-			for (auto i = 0; i < a1.size(); ++i)
+			const auto entry_1 = aoc::DiagnosticLog::Entry_t{ true, true, true, false, true, true, true, true, false, true, false, true  };
+			for (auto i = 0; i < entry_1.size(); ++i)
 			{
-				Assert::AreEqual(a1[i], v[0][i]);
+				Assert::AreEqual(entry_1[i], v[0][i]);
 			}
 
-			auto a2 = aoc::PowerParams::Bits_t{ false, true, true, false, false, false, true, true, true, false, true, false };
-			for (auto i = 0; i < a2.size(); ++i)
+			const auto Entry_2 = aoc::DiagnosticLog::Entry_t{ false, true, true, false, false, false, true, true, true, false, true, false };
+			for (auto i = 0; i < Entry_2.size(); ++i)
 			{
-				Assert::AreEqual(a2[i], v[1][i]);
+				Assert::AreEqual(Entry_2[i], v[1][i]);
 			}
 		}
 
-		TEST_METHOD(GammaRateIsCorrectlyCalculated)
+		TEST_METHOD(DiagnosticLogEntryAsWorks)
 		{
-			auto pp = aoc::PowerParams{};
-			pp.bits = { true, true, true, false, false, false, true, true, false, false, true, false };
-
-			Assert::AreEqual(uint32_t{ 0b111000110010 }, pp.gamma_rate());
+			Assert::AreEqual(uint32_t{ 0b111000110010 },
+				aoc::DiagnosticLog::entry_as<uint32_t>({ true, true, true, false, false, false, true, true, false, false, true, false }));
 		}
 
-		TEST_METHOD(EpsilonRateIsCorrectlyCalculated)
+		TEST_METHOD(DiagnosticLogFlippedEntryAsWorks)
 		{
-			auto pp = aoc::PowerParams{};
-			pp.bits = { true, true, true, false, false, false, true, true, false, false, true, false };
-
-			Assert::AreEqual(uint32_t{ 0b000111001101 }, pp.epsilon_rate());
+			Assert::AreEqual(uint32_t{ 0b000111001101 },
+				aoc::DiagnosticLog::flipped_entry_as<uint32_t>({ true, true, true, false, false, false, true, true, false, false, true, false }));
 		}
 
 		TEST_METHOD(CalculatePowerParamsFromFile)

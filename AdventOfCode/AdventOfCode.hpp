@@ -179,28 +179,13 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct PowerParams
+struct LogProcessor
 {
-	using Bits_t = DiagnosticLog::Entry_t;
-	Bits_t bits;
-
-	uint32_t gamma_rate() const
-	{
-		return DiagnosticLog::entry_as<uint32_t>(bits);
-	}
-
-	uint32_t epsilon_rate() const
-	{
-		return DiagnosticLog::flipped_entry_as<uint32_t>(bits);
-	}
-
 	template<typename LogLineIter_T>
 	static uint32_t power_consumption(LogLineIter_T begin, LogLineIter_T end)
 	{
-		auto most_frequent_bits = DiagnosticLog::get_most_frequent_bits(begin, end);
-		auto power_params = PowerParams{most_frequent_bits};
-
-		return power_params.gamma_rate() * power_params.epsilon_rate();
+		const auto most_frequent_bits = DiagnosticLog::get_most_frequent_bits(begin, end);
+		return DiagnosticLog::entry_as<uint32_t>(most_frequent_bits) * DiagnosticLog::flipped_entry_as<uint32_t>(most_frequent_bits);
 	}
 };
 
@@ -223,7 +208,7 @@ struct LifeSupportParams
 			});
 
 		const auto oxy_gen_element = std::next(log.begin(), std::distance(scores.begin(), std::max_element(scores.begin(), scores.end())));
-
+		DiagnosticLog::entry_as<uint32_t>(*oxy_gen_element);
 	}
 };
 
@@ -274,7 +259,7 @@ public:
 	template<typename LogLineIter_T>
 	uint32_t power_consumption(LogLineIter_T begin, LogLineIter_T end)
 	{
-		return PowerParams::power_consumption(begin, end);
+		return LogProcessor::power_consumption(begin, end);
 	}
 
 	uint32_t life_support_rating(const DiagnosticLog& log)

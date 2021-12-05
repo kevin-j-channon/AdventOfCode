@@ -269,21 +269,6 @@ namespace AdventOfCode
 			}
 		}
 
-		TEST_METHOD(AccumulatePowerParamsWorks)
-		{
-			std::stringstream ss("111011110101\n011000111010\n100000010010");
-			auto log = aoc::DiagnosticLog{};
-			log.load(ss);
-			
-			const auto power_params = aoc::Submarine().evaluate_power_params(log.begin(), log.end());
-
-			auto expected = aoc::DiagnosticLog::Entry_t{ true, true, true, false, false, false, true, true, false, false, true, false };
-			for (auto i = 0; i < expected.size(); ++i)
-			{
-				Assert::AreEqual(expected[i], power_params.bits[i]);
-			}
-		}
-
 		TEST_METHOD(GammaRateIsCorrectlyCalculated)
 		{
 			auto pp = aoc::PowerParams{};
@@ -308,11 +293,10 @@ namespace AdventOfCode
 			auto log = aoc::DiagnosticLog{};
 			log.load(data_file);
 
-			const auto power_params = aoc::Submarine().evaluate_power_params(log.begin(), log.end());
+			const auto power_consumption = aoc::Submarine().power_consumption(log.begin(), log.end());
 
-			Logger::WriteMessage(std::format("Gamma: {}, Epsilon: {}, Power: {}",
-				power_params.gamma_rate(), power_params.epsilon_rate(),
-				power_params.gamma_rate() * power_params.epsilon_rate()).c_str());
+			Logger::WriteMessage(std::format("Power: {}", power_consumption).c_str());
+			Assert::AreEqual(uint32_t{ 693486 }, power_consumption);
 		}
 
 		TEST_METHOD(BadDiagnosticLogEntryCausesException)
@@ -353,22 +337,6 @@ namespace AdventOfCode
 			auto log = aoc::DiagnosticLog{};
 
 			Assert::ExpectException<aoc::Exception>([&](){ log.load(ss); });
-		}
-
-		TEST_METHOD(PowerParamsCanBeEvaluatedFromLog)
-		{
-			std::stringstream ss("111011110101\n011000111010\n100000010010");
-
-			auto log = aoc::DiagnosticLog{};
-			log.load(ss);
-
-			const auto power_params = aoc::Submarine().evaluate_power_params(log.begin(), log.end());
-
-			auto expected = aoc::PowerParams::Bits_t{ true, true, true, false, false, false, true, true, false, false, true, false };
-			for (auto i = 0; i < expected.size(); ++i)
-			{
-				Assert::AreEqual(expected[i], power_params.bits[i]);
-			}
 		}
 	};
 }

@@ -202,9 +202,19 @@ public:
 	}
 
 	template<typename LogLineIter_T>
-	PowerParams evaluate_power_params(LogLineIter_T begin, LogLineIter_T end)
+	uint32_t power_consumption(LogLineIter_T begin, LogLineIter_T end)
 	{
-		auto bit_counts = std::accumulate(begin, end, std::array<int, aoc::DiagnosticLog::entry_size>{},
+		auto bit_counts = get_bit_counts(begin, end);
+		auto power_params = create_power_params_from_bit_counts(std::move(bit_counts));
+
+		return power_params.gamma_rate() * power_params.epsilon_rate();
+	}
+
+private:
+	template<typename LogEntryIter_T>
+	static std::array<int, aoc::DiagnosticLog::entry_size> get_bit_counts(LogEntryIter_T begin, LogEntryIter_T end)
+	{
+		return std::accumulate(begin, end, std::array<int, aoc::DiagnosticLog::entry_size>{},
 			[](auto&& curr, auto&& entry) {
 				std::transform(curr.begin(), curr.end(), entry.begin(), curr.begin(),
 					[](auto count, auto bit) {
@@ -213,9 +223,12 @@ public:
 
 				return curr;
 			});
+	}
 
+	static PowerParams create_power_params_from_bit_counts(std::array<int, aoc::DiagnosticLog::entry_size>&& counts)
+	{
 		auto out = PowerParams{};
-		std::transform(bit_counts.begin(), bit_counts.end(), out.bits.begin(), [](auto count) {
+		std::transform(counts.begin(), counts.end(), out.bits.begin(), [](auto count) {
 			return count >= 0 ? true : false;
 			});
 

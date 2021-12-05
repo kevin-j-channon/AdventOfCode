@@ -102,6 +102,48 @@ struct PowerParams
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class DiagnosticLog
+{
+public:
+	static constexpr uint32_t entry_size = 12;
+	using Entry_t = std::array<bool, entry_size>;
+
+private:
+	std::vector<Entry_t> entries;
+
+public:
+
+	using Iterator_t = decltype(entries.begin());
+
+	void load(std::istream& is) try
+	{
+		entries.clear();
+
+		using Iter_t = std::istream_iterator<std::string>;
+		std::transform(Iter_t(is), Iter_t(), std::back_inserter(entries), createEntryFromString);
+	}
+	catch (const Exception&)
+	{
+		is.setstate(std::ios::failbit);
+		entries.clear();
+
+		throw;
+	}
+
+private:
+	static Entry_t createEntryFromString(const std::string& str)
+	{
+		if (str.length() != entry_size)
+			throw Exception(std::format("Invalid log entry: {}", str));
+
+		auto entry = Entry_t{};
+		std::transform(str.begin(), str.end(), entry.begin(), [](auto c) { return c == '1' ? true : false; });
+		return entry;
+	}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 class Submarine
 {
 public:

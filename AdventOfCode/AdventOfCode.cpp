@@ -299,5 +299,48 @@ namespace AdventOfCode
 
 			Assert::AreEqual(uint32_t{ 0b000111001101 }, pp.epsilon_rate());
 		}
+
+		TEST_METHOD(CalculatePowerParamsFromFile)
+		{
+			std::ifstream data_file(DATA_DIR / "Day3_input.txt");
+			Assert::IsTrue(data_file.is_open());
+
+			using Iter_t = std::istream_iterator<aoc::PowerParams>;
+
+			const auto power_params = aoc::Submarine().evaluate_power_params(Iter_t(data_file), Iter_t());
+
+			Logger::WriteMessage(std::format("Gamma: {}, Epsilon: {}, Power: {}",
+				power_params.gamma_rate(), power_params.epsilon_rate(),
+				power_params.gamma_rate() * power_params.epsilon_rate()).c_str());
+		}
+
+		TEST_METHOD(DiagnosticLogCanBeLoadedFromStream)
+		{
+			std::stringstream ss("111011110101\n011000111010\n100000010010");
+			auto log = aoc::DiagnosticLog{};
+
+			log.load(ss);
+		}
+
+		TEST_METHOD(BadDiagnosticLogEntryCausesException)
+		{
+			// First entry has too many bits in it.
+			std::stringstream ss("1110111101011\n011000111010\n100000010010");
+			auto log = aoc::DiagnosticLog{};
+
+			Assert::ExpectException<aoc::Exception>([&]() { log.load(ss); });
+		}
+
+		TEST_METHOD(BadDiagnosticLogEntrySetsStreamFailbit)
+		{
+			// First entry has too many bits in it.
+			std::stringstream ss("1110111101011\n011000111010\n100000010010");
+			auto log = aoc::DiagnosticLog{};
+
+			try { log.load(ss); }
+			catch (const aoc::Exception&) {}
+
+			Assert::IsTrue(ss.fail());
+		}
 	};
 }

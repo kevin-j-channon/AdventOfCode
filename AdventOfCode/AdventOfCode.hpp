@@ -83,6 +83,7 @@ public:
 
 	using Iterator_t = decltype(entries.begin());
 	using ConstIterator_t = decltype(entries.cbegin());
+	using Size_t = decltype(entries.size());
 
 	DiagnosticLog(std::istream& is)
 	{
@@ -112,7 +113,9 @@ public:
 	ConstIterator_t end() const { return entries.end(); }
 	Iterator_t end() { return entries.end(); }
 
-	Entry_t get_most_frequent_bits()
+	Size_t size() const { return entries.size(); }
+
+	Entry_t get_most_frequent_bits() const
 	{
 		return get_most_frequent_bits(begin(), end());
 	}
@@ -122,6 +125,30 @@ public:
 	{
 		auto bit_counts = get_bit_counts(begin, end);
 		return create_most_common_bits(std::move(bit_counts));
+	}
+
+	template<typename Out_T>
+	static Out_T entry_as(const Entry_t& entry)
+	{
+		return std::accumulate(entry.begin(), entry.end(), Out_T{ 0 }, [](auto curr, auto next) {
+			curr <<= 1;
+			if (next)
+				curr |= 1;
+
+			return curr;
+			});
+	}
+
+	template<typename Out_T>
+	static Out_T flipped_entry_as(const Entry_t& entry)
+	{
+		return std::accumulate(entry.begin(), entry.end(), Out_T{ 0 }, [](auto curr, auto next) {
+			curr <<= 1;
+			if (!next)
+				curr |= 1;
+
+			return curr;
+			});
 	}
 
 private:
@@ -154,29 +181,17 @@ private:
 
 struct PowerParams
 {
-	using Bits_t = std::array<bool, DiagnosticLog::entry_size>;
+	using Bits_t = DiagnosticLog::Entry_t;
 	Bits_t bits;
 
 	uint32_t gamma_rate() const
 	{
-		return std::accumulate(bits.begin(), bits.end(), uint32_t{ 0 }, [](auto curr, auto next) {
-			curr <<= 1;
-			if (next)
-				curr |= 1;
-
-			return curr;
-			});
+		return DiagnosticLog::entry_as<uint32_t>(bits);
 	}
 
 	uint32_t epsilon_rate() const
 	{
-		return std::accumulate(bits.begin(), bits.end(), uint32_t{ 0 }, [](auto curr, auto next) {
-			curr <<= 1;
-			if (!next)
-				curr |= 1;
-
-			return curr;
-			});
+		return DiagnosticLog::flipped_entry_as<uint32_t>(bits);
 	}
 
 	template<typename LogLineIter_T>
@@ -186,6 +201,29 @@ struct PowerParams
 		auto power_params = PowerParams{most_frequent_bits};
 
 		return power_params.gamma_rate() * power_params.epsilon_rate();
+	}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct LifeSupportParams
+{
+	using Bits_t = std::array<bool, DiagnosticLog::entry_size>;
+	Bits_t bits;
+
+	uint32_t oxygen_gen_rating(const DiagnosticLog& log) const
+	{
+		const auto mfb = log.get_most_frequent_bits();
+		auto scores = std::vector<uint32_t>(log.size(), 0);
+		std::transform(log.begin(), log.end(), scores.begin(),
+			[&mfb](const auto& entry) {
+				auto i = uint32_t{ 0 };
+				while (entry[i] == mfb[i]) ++i;
+				return i;
+			});
+
+		const auto oxy_gen_element = std::next(log.begin(), std::distance(scores.begin(), std::max_element(scores.begin(), scores.end())));
+
 	}
 };
 
@@ -239,8 +277,7 @@ public:
 		return PowerParams::power_consumption(begin, end);
 	}
 
-	template<typename LogLineIter_T>
-	uint32_t life_support_rating(LogLineIter_T begin, LogLineIter_T end)
+	uint32_t life_support_rating(const DiagnosticLog& log)
 	{
 		return 0;
 	}

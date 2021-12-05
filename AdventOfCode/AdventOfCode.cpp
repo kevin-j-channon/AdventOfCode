@@ -354,7 +354,7 @@ namespace AdventOfCode
 
 			const auto log = aoc::DiagnosticLog{ss};
 
-			const auto lsr = aoc::Submarine().life_support_rating(log.begin(), log.end());
+			const auto lsr = aoc::Submarine().life_support_rating(log);
 
 			Logger::WriteMessage(std::format("Life support rating: {}", lsr).c_str());
 		}

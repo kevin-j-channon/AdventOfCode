@@ -163,12 +163,12 @@ class Submarine
 {
 public:
 
-	template<size_t WINDOW_SIZE, typename Iter_T>
-	uint32_t depth_score(Iter_T begin, Iter_T end)
+	template<size_t WINDOW_SIZE, typename LogLineIter_T>
+	uint32_t depth_score(LogLineIter_T begin, LogLineIter_T end)
 	{
 		auto current_idx = size_t{ 0 };
 
-		auto window = std::array<typename Iter_T::value_type, WINDOW_SIZE>{};
+		auto window = std::array<typename LogLineIter_T::value_type, WINDOW_SIZE>{};
 		for (auto it = window.begin(); it < window.end(); ++it, ++current_idx) {
 			*it = *begin++;
 		}
@@ -189,20 +189,20 @@ public:
 			});
 	}
 
-	template<typename Iter_T>
-	Direction net_direction(Iter_T begin, Iter_T end)
+	template<typename LogLineIter_T>
+	Direction net_direction(LogLineIter_T begin, LogLineIter_T end)
 	{
 		return std::accumulate(begin, end, Direction{});
 	}
 
-	template<typename Iter_T>
-	Direction net_aiming(Iter_T begin, Iter_T end)
+	template<typename LogLineIter_T>
+	Direction net_aiming(LogLineIter_T begin, LogLineIter_T end)
 	{
 		return std::accumulate(begin, end, Aiming{}).to_direction();
 	}
 
-	template<typename Iter_T>
-	PowerParams evaluate_power_params(Iter_T begin, Iter_T end)
+	template<typename LogLineIter_T>
+	PowerParams evaluate_power_params(LogLineIter_T begin, LogLineIter_T end)
 	{
 		auto bit_counts = std::accumulate(begin, end, std::array<int, aoc::DiagnosticLog::entry_size>{},
 			[](auto&& curr, auto&& entry) {

@@ -114,6 +114,7 @@ private:
 public:
 
 	using Iterator_t = decltype(entries.begin());
+	using ConstIterator_t = decltype(entries.cbegin());
 
 	void load(std::istream& is) try
 	{
@@ -129,6 +130,12 @@ public:
 
 		throw;
 	}
+
+	ConstIterator_t begin() const { return entries.begin(); }
+	Iterator_t begin() { return entries.begin(); }
+
+	ConstIterator_t end() const { return entries.end(); }
+	Iterator_t end() { return entries.end(); }
 
 private:
 	static Entry_t createEntryFromString(const std::string& str)

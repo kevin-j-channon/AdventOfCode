@@ -342,5 +342,15 @@ namespace AdventOfCode
 
 			Assert::IsTrue(ss.fail());
 		}
+
+		TEST_METHOD(DiagnosticLogBeginAndEndAreCorrect)
+		{
+			std::stringstream ss("111011110101\n011000111010\n100000010010");
+			auto log = aoc::DiagnosticLog{};
+
+			log.load(ss);
+
+			Assert::AreEqual(ptrdiff_t{ 3 }, std::distance(log.begin(), log.end()));
+		}
 	};
 }

@@ -112,26 +112,41 @@ public:
 	ConstIterator_t end() const { return entries.end(); }
 	Iterator_t end() { return entries.end(); }
 
-private:
-	static Entry_t createEntryFromString(const std::string& str)
+	Entry_t get_most_frequent_bits()
 	{
-		if (str.length() != entry_size)
-			throw Exception(std::format("Invalid log entry: {}", str));
-
-		auto entry = Entry_t{};
-		std::transform(str.begin(), str.end(), entry.begin(), charToBoolean);
-		return entry;
+		return get_most_frequent_bits(begin(), end());
 	}
 
-	static bool charToBoolean(char c)
+	template<typename LogEntryIter_T>
+	static Entry_t get_most_frequent_bits(LogEntryIter_T begin, LogEntryIter_T end)
 	{
-		switch(c)
-		{
-		case '0': return false;
-		case '1': return true;
-		default:
-			throw Exception(std::format("Invalid character in log line: {}", c));
-		}
+		auto bit_counts = get_bit_counts(begin, end);
+		return create_most_common_bits(std::move(bit_counts));
+	}
+
+private:
+	template<typename LogEntryIter_T>
+	static std::array<int, aoc::DiagnosticLog::entry_size> get_bit_counts(LogEntryIter_T begin, LogEntryIter_T end)
+	{
+		return std::accumulate(begin, end, std::array<int, aoc::DiagnosticLog::entry_size>{},
+			[](auto&& curr, auto&& entry) {
+				std::transform(curr.begin(), curr.end(), entry.begin(), curr.begin(),
+					[](auto count, auto bit) {
+						return count + (bit ? 1 : -1);
+					});
+
+				return curr;
+			});
+	}
+
+	static Entry_t create_most_common_bits(std::array<int, aoc::DiagnosticLog::entry_size>&& counts)
+	{
+		auto out = Entry_t{};
+		std::transform(counts.begin(), counts.end(), out.begin(), [](auto count) {
+			return count >= 0 ? true : false;
+			});
+
+		return out;
 	}
 };
 
@@ -167,35 +182,10 @@ struct PowerParams
 	template<typename LogLineIter_T>
 	static uint32_t power_consumption(LogLineIter_T begin, LogLineIter_T end)
 	{
-		auto bit_counts = get_bit_counts(begin, end);
-		auto power_params = create_power_params_from_bit_counts(std::move(bit_counts));
+		auto most_frequent_bits = DiagnosticLog::get_most_frequent_bits(begin, end);
+		auto power_params = PowerParams{most_frequent_bits};
 
 		return power_params.gamma_rate() * power_params.epsilon_rate();
-	}
-
-private:
-	template<typename LogEntryIter_T>
-	static std::array<int, aoc::DiagnosticLog::entry_size> get_bit_counts(LogEntryIter_T begin, LogEntryIter_T end)
-	{
-		return std::accumulate(begin, end, std::array<int, aoc::DiagnosticLog::entry_size>{},
-			[](auto&& curr, auto&& entry) {
-				std::transform(curr.begin(), curr.end(), entry.begin(), curr.begin(),
-					[](auto count, auto bit) {
-						return count + (bit ? 1 : -1);
-					});
-
-				return curr;
-			});
-	}
-
-	static PowerParams create_power_params_from_bit_counts(std::array<int, aoc::DiagnosticLog::entry_size>&& counts)
-	{
-		auto out = PowerParams{};
-		std::transform(counts.begin(), counts.end(), out.bits.begin(), [](auto count) {
-			return count >= 0 ? true : false;
-			});
-
-		return out;
 	}
 };
 

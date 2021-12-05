@@ -259,14 +259,14 @@ public:
 			});
 	}
 
-	template<typename LogLineIter_T>
-	Direction net_direction(LogLineIter_T begin, LogLineIter_T end)
+	template<typename Iter_T>
+	Direction net_direction(Iter_T begin, Iter_T end)
 	{
 		return std::accumulate(begin, end, Direction{});
 	}
 
-	template<typename LogLineIter_T>
-	Direction net_aiming(LogLineIter_T begin, LogLineIter_T end)
+	template<typename Iter_T>
+	Direction net_aiming(Iter_T begin, Iter_T end)
 	{
 		return std::accumulate(begin, end, Aiming{}).to_direction();
 	}

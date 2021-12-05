@@ -231,54 +231,54 @@ namespace AdventOfCode
 	TEST_CLASS(TestDay3)
 	{
 	public:
-		TEST_METHOD(ReadPowerParamsFromStream)
+		TEST_METHOD(ReadLogEntriedFromStream)
 		{
 			std::stringstream ss("111011110101");
-			auto pp = aoc::PowerParams{};
+			auto pp = aoc::DiagnosticLog::Entry_t{};
 
 			ss >> pp;
 
-			auto a1 = std::array<bool, aoc::PowerParams::bit_count>{ true, true, true, false, true, true, true, true, false, true, false, true  };
-			for (auto i = 0; i < aoc::PowerParams::bit_count; ++i)
+			auto a1 = aoc::PowerParams::Bits_t{ true, true, true, false, true, true, true, true, false, true, false, true  };
+			for (auto i = 0; i < a1.size(); ++i)
 			{
-				Assert::AreEqual(a1[i], pp.bits[i]);
+				Assert::AreEqual(a1[i], pp[i]);
 			}
 		}
 
 		TEST_METHOD(ReadMultiplePowerParamsFromStream)
 		{
 			std::stringstream ss("111011110101\n011000111010");
-			auto v = std::vector<aoc::PowerParams>{};
+			auto v = std::vector<aoc::DiagnosticLog::Entry_t>{};
 
-			using Iter_t = std::istream_iterator<aoc::PowerParams>;
+			using Iter_t = std::istream_iterator<aoc::DiagnosticLog::Entry_t>;
 
 			std::copy(Iter_t(ss), Iter_t(), std::back_inserter(v));
 
 			Assert::AreEqual(size_t{ 2 }, v.size());
 
 			auto a1 = aoc::PowerParams::Bits_t{ true, true, true, false, true, true, true, true, false, true, false, true  };
-			for (auto i = 0; i < aoc::PowerParams::bit_count; ++i)
+			for (auto i = 0; i < a1.size(); ++i)
 			{
-				Assert::AreEqual(a1[i], v[0].bits[i]);
+				Assert::AreEqual(a1[i], v[0][i]);
 			}
 
 			auto a2 = aoc::PowerParams::Bits_t{ false, true, true, false, false, false, true, true, true, false, true, false };
-			for (auto i = 0; i < aoc::PowerParams::bit_count; ++i)
+			for (auto i = 0; i < a2.size(); ++i)
 			{
-				Assert::AreEqual(a2[i], v[1].bits[i]);
+				Assert::AreEqual(a2[i], v[1][i]);
 			}
 		}
 
 		TEST_METHOD(AccumulatePowerParamsWorks)
 		{
 			std::stringstream ss("111011110101\n011000111010\n100000010010");
-
-			using Iter_t = std::istream_iterator<aoc::PowerParams>;
+			auto log = aoc::DiagnosticLog{};
+			log.load(ss);
 			
-			const auto power_params = aoc::Submarine().evaluate_power_params(Iter_t(ss), Iter_t());
+			const auto power_params = aoc::Submarine().evaluate_power_params(log.begin(), log.end());
 
-			auto expected = aoc::PowerParams::Bits_t{ true, true, true, false, false, false, true, true, false, false, true, false };
-			for (auto i = 0; i < aoc::PowerParams::bit_count; ++i)
+			auto expected = aoc::DiagnosticLog::Entry_t{ true, true, true, false, false, false, true, true, false, false, true, false };
+			for (auto i = 0; i < expected.size(); ++i)
 			{
 				Assert::AreEqual(expected[i], power_params.bits[i]);
 			}
@@ -305,9 +305,10 @@ namespace AdventOfCode
 			std::ifstream data_file(DATA_DIR / "Day3_input.txt");
 			Assert::IsTrue(data_file.is_open());
 
-			using Iter_t = std::istream_iterator<aoc::PowerParams>;
+			auto log = aoc::DiagnosticLog{};
+			log.load(data_file);
 
-			const auto power_params = aoc::Submarine().evaluate_power_params(Iter_t(data_file), Iter_t());
+			const auto power_params = aoc::Submarine().evaluate_power_params(log.begin(), log.end());
 
 			Logger::WriteMessage(std::format("Gamma: {}, Epsilon: {}, Power: {}",
 				power_params.gamma_rate(), power_params.epsilon_rate(),
@@ -352,6 +353,22 @@ namespace AdventOfCode
 			auto log = aoc::DiagnosticLog{};
 
 			Assert::ExpectException<aoc::Exception>([&](){ log.load(ss); });
+		}
+
+		TEST_METHOD(PowerParamsCanBeEvaluatedFromLog)
+		{
+			std::stringstream ss("111011110101\n011000111010\n100000010010");
+
+			auto log = aoc::DiagnosticLog{};
+			log.load(ss);
+
+			const auto power_params = aoc::Submarine().evaluate_power_params(log.begin(), log.end());
+
+			auto expected = aoc::PowerParams::Bits_t{ true, true, true, false, false, false, true, true, false, false, true, false };
+			for (auto i = 0; i < expected.size(); ++i)
+			{
+				Assert::AreEqual(expected[i], power_params.bits[i]);
+			}
 		}
 	};
 }

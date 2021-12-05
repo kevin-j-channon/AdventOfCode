@@ -70,38 +70,6 @@ struct Aiming
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct PowerParams
-{
-	static constexpr uint32_t bit_count = 12;
-
-	using Bits_t = std::array<bool, bit_count>;
-	Bits_t bits;
-
-	uint32_t gamma_rate() const
-	{
-		return std::accumulate(bits.begin(), bits.end(), uint32_t{ 0 }, [](auto curr, auto next) {
-			curr <<= 1;
-			if (next)
-				curr |= 1;
-
-			return curr;
-			});
-	}
-
-	uint32_t epsilon_rate() const
-	{
-		return std::accumulate(bits.begin(), bits.end(), uint32_t{ 0 }, [](auto curr, auto next) {
-			curr <<= 1;
-			if (!next)
-				curr |= 1;
-
-			return curr;
-			});
-	}
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
 class DiagnosticLog
 {
 public:
@@ -120,12 +88,11 @@ public:
 	{
 		entries.clear();
 
-		using Iter_t = std::istream_iterator<std::string>;
-		std::transform(Iter_t(is), Iter_t(), std::back_inserter(entries), createEntryFromString);
+		using Iter_t = std::istream_iterator<Entry_t>;
+		std::copy(Iter_t(is), Iter_t(), std::back_inserter(entries));
 	}
 	catch (const Exception&)
 	{
-		is.setstate(std::ios::failbit);
 		entries.clear();
 
 		throw;
@@ -157,6 +124,36 @@ private:
 		default:
 			throw Exception(std::format("Invalid character in log line: {}", c));
 		}
+	}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct PowerParams
+{
+	using Bits_t = std::array<bool, DiagnosticLog::entry_size>;
+	Bits_t bits;
+
+	uint32_t gamma_rate() const
+	{
+		return std::accumulate(bits.begin(), bits.end(), uint32_t{ 0 }, [](auto curr, auto next) {
+			curr <<= 1;
+			if (next)
+				curr |= 1;
+
+			return curr;
+			});
+	}
+
+	uint32_t epsilon_rate() const
+	{
+		return std::accumulate(bits.begin(), bits.end(), uint32_t{ 0 }, [](auto curr, auto next) {
+			curr <<= 1;
+			if (!next)
+				curr |= 1;
+
+			return curr;
+			});
 	}
 };
 
@@ -201,15 +198,15 @@ public:
 	template<typename Iter_T>
 	Direction net_aiming(Iter_T begin, Iter_T end)
 	{
-		return std::accumulate<>(begin, end, Aiming{}).to_direction();
+		return std::accumulate(begin, end, Aiming{}).to_direction();
 	}
 
 	template<typename Iter_T>
 	PowerParams evaluate_power_params(Iter_T begin, Iter_T end)
 	{
-		auto bit_counts = std::accumulate(begin, end, std::array<int, aoc::PowerParams::bit_count>{},
-			[](auto&& curr, auto&& pp) {
-				std::transform(curr.begin(), curr.end(), pp.bits.begin(), curr.begin(),
+		auto bit_counts = std::accumulate(begin, end, std::array<int, aoc::DiagnosticLog::entry_size>{},
+			[](auto&& curr, auto&& entry) {
+				std::transform(curr.begin(), curr.end(), entry.begin(), curr.begin(),
 					[](auto count, auto bit) {
 						return count + (bit ? 1 : -1);
 					});
@@ -273,19 +270,41 @@ istream& operator>>(istream& is, aoc::Direction& direction)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-istream& operator>>(istream& is, aoc::PowerParams& pp)
+istream& operator>>(istream& is, aoc::DiagnosticLog::Entry_t& entry)
 {
-	pp = aoc::PowerParams{};
+	entry = aoc::DiagnosticLog::Entry_t{};
 
 	auto param_str = std::string{};
 	is >> param_str;
 
-	if (param_str.length() != aoc::PowerParams::bit_count) {
+	if (param_str.empty())
+	{
 		is.setstate(std::ios::failbit);
 		return is;
 	}
 
-	std::transform(param_str.begin(), param_str.end(), pp.bits.begin(), [](auto c) { return c == '1' ? true : false; });
+	if (param_str.length() != aoc::DiagnosticLog::entry_size) {
+		is.setstate(std::ios::failbit);
+		throw aoc::Exception(std::format("Invalid log line: {}", param_str));
+	}
+
+	try {
+		std::transform(param_str.begin(), param_str.end(), entry.begin(),
+			[](auto c) {
+				switch (c)
+				{
+				case '0': return false;
+				case '1': return true;
+				default:
+					throw aoc::Exception(std::format("Invalid character in log line: {}", c));
+				}
+			});
+	}
+	catch (const aoc::Exception&)
+	{
+		is.setstate(std::ios::failbit);
+		throw;
+	}
 
 	return is;
 }

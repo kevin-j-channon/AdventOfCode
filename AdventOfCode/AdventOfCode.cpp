@@ -314,14 +314,6 @@ namespace AdventOfCode
 				power_params.gamma_rate() * power_params.epsilon_rate()).c_str());
 		}
 
-		TEST_METHOD(DiagnosticLogCanBeLoadedFromStream)
-		{
-			std::stringstream ss("111011110101\n011000111010\n100000010010");
-			auto log = aoc::DiagnosticLog{};
-
-			log.load(ss);
-		}
-
 		TEST_METHOD(BadDiagnosticLogEntryCausesException)
 		{
 			// First entry has too many bits in it.
@@ -351,6 +343,15 @@ namespace AdventOfCode
 			log.load(ss);
 
 			Assert::AreEqual(ptrdiff_t{ 3 }, std::distance(log.begin(), log.end()));
+		}
+
+		TEST_METHOD(InvalidCharacterInLogCausesException)
+		{
+			// Second entry has an invalid character in it.
+			std::stringstream ss("111011110101\n011000121010\n100000010010");
+			auto log = aoc::DiagnosticLog{};
+
+			Assert::ExpectException<aoc::Exception>([&](){ log.load(ss); });
 		}
 	};
 }

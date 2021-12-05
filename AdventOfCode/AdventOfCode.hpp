@@ -144,8 +144,19 @@ private:
 			throw Exception(std::format("Invalid log entry: {}", str));
 
 		auto entry = Entry_t{};
-		std::transform(str.begin(), str.end(), entry.begin(), [](auto c) { return c == '1' ? true : false; });
+		std::transform(str.begin(), str.end(), entry.begin(), charToBoolean);
 		return entry;
+	}
+
+	static bool charToBoolean(char c)
+	{
+		switch(c)
+		{
+		case '0': return false;
+		case '1': return true;
+		default:
+			throw Exception(std::format("Invalid character in log line: {}", c));
+		}
 	}
 };
 

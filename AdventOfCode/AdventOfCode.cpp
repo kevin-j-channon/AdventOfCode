@@ -238,7 +238,7 @@ namespace AdventOfCode
 
 			ss >> log_entry;
 
-			auto a1 = aoc::DiagnosticLog::Entry_t{ true, true, true, false, true, true, true, true, false, true, false, true  };
+			auto a1 = aoc::DiagnosticLog::Entry_t{ 1,1,1,0,1,1,1,1,0,1,0,1  };
 			for (auto i = 0; i < a1.size(); ++i)
 			{
 				Assert::AreEqual(a1[i], log_entry[i]);
@@ -256,13 +256,13 @@ namespace AdventOfCode
 
 			Assert::AreEqual(size_t{ 2 }, v.size());
 
-			const auto entry_1 = aoc::DiagnosticLog::Entry_t{ true, true, true, false, true, true, true, true, false, true, false, true  };
+			const auto entry_1 = aoc::DiagnosticLog::Entry_t{ 1,1,1,0,1,1,1,1,0,1,0,1  };
 			for (auto i = 0; i < entry_1.size(); ++i)
 			{
 				Assert::AreEqual(entry_1[i], v[0][i]);
 			}
 
-			const auto Entry_2 = aoc::DiagnosticLog::Entry_t{ false, true, true, false, false, false, true, true, true, false, true, false };
+			const auto Entry_2 = aoc::DiagnosticLog::Entry_t{ 0,1,1,0,0,0,1,1,1,0,1,0 };
 			for (auto i = 0; i < Entry_2.size(); ++i)
 			{
 				Assert::AreEqual(Entry_2[i], v[1][i]);
@@ -272,13 +272,13 @@ namespace AdventOfCode
 		TEST_METHOD(DiagnosticLogEntryAsWorks)
 		{
 			Assert::AreEqual(uint32_t{ 0b111000110010 },
-				aoc::DiagnosticLog::entry_as<uint32_t>({ true, true, true, false, false, false, true, true, false, false, true, false }));
+				aoc::DiagnosticLog::entry_as<uint32_t>({ 1,1,1,0,0,0,1,1,0,0,1,0 }));
 		}
 
 		TEST_METHOD(DiagnosticLogFlippedEntryAsWorks)
 		{
 			Assert::AreEqual(uint32_t{ 0b000111001101 },
-				aoc::DiagnosticLog::flipped_entry_as<uint32_t>({ true, true, true, false, false, false, true, true, false, false, true, false }));
+				aoc::DiagnosticLog::flipped_entry_as<uint32_t>({ 1,1,1,0,0,0,1,1,0,0,1,0 }));
 		}
 
 		TEST_METHOD(CalculatePowerParamsFromFile)
@@ -330,6 +330,20 @@ namespace AdventOfCode
 			auto log = aoc::DiagnosticLog{};
 
 			Assert::ExpectException<aoc::Exception>([&](){ log.load(ss); });
+		}
+
+		TEST_METHOD(DiagnosticLogMostFrequentBitsWorks)
+		{
+			std::stringstream ss("111011110101\n"
+				                 "011000111010\n"
+				                 "100000010010");
+
+			const auto log = aoc::DiagnosticLog{ ss };
+
+			const auto most_frequent_bits = log.get_most_frequent_bits();
+			const auto expected = aoc::DiagnosticLog::Entry_t{ 1,1,1,0,0,0,1,1,0,0,1,0 };
+
+			Assert::IsTrue(std::equal(expected.begin(), expected.end(), most_frequent_bits.begin()));
 		}
 
 		TEST_METHOD(LifeSupportBestMatchWorks)

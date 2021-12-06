@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <format>
 #include <istream>
-#include <bitset>
+#include <map>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -190,18 +190,39 @@ class LifeSupport
 public:
 	LifeSupport(const DiagnosticLog& log) : _log(log) {}
 
+	static uint32_t score_entry(const DiagnosticLog::Entry_t& entry, const DiagnosticLog::Entry_t& target)
+	{
+		return static_cast<uint32_t>(std::distance(entry.begin(), std::mismatch(entry.begin(), entry.end(), target.begin()).first));
+	}
+
 	uint32_t find_best_match_to(const DiagnosticLog::Entry_t& target) const
 	{
 		// Make a vector of scores: the number of bits at the start of each log line that match the most frequent bits.
 		auto scores = std::vector<uint32_t>(_log.size(), 0);
 		std::transform(_log.begin(), _log.end(), scores.begin(),
 			[&target](const auto& entry) {
-				return static_cast<uint32_t>(std::distance(entry.begin(), std::mismatch(entry.begin(), entry.end(), target.begin()).first));
+				return score_entry(entry, target);
 			});
 
-		const auto best_scoring_element = std::next(_log.begin(), std::distance(scores.begin(), std::max_element(scores.begin(), scores.end())));
+		// Count the number of occurances of each score
+		auto score_counts = std::accumulate(scores.begin(), scores.end(), std::map<uint32_t, uint32_t>{},
+			[](auto&& counts, auto&& score) {
+				counts[score]++;
+				return std::move(counts);
+			});
+
+		// find the lowest count for which the score is 1, which would be the first one that we would filter to.
+		const auto target_score_and_count = std::find_if(score_counts.begin(), score_counts.end(), [](auto score_and_count) {
+			return score_and_count.second == 1;
+			});
+
+		// Find the first log entry that has this score.
+		const auto final_element = std::find_if(_log.begin(), _log.end(),
+			[&target_score_and_count, &target](auto entry) {
+				return score_entry(entry, target) == target_score_and_count->first;
+			});
 		
-		return DiagnosticLog::entry_as<uint32_t>(*best_scoring_element);
+		return DiagnosticLog::entry_as<uint32_t>(*final_element);
 	}
 
 	uint32_t rating() const

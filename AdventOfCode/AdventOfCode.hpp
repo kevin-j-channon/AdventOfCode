@@ -151,6 +151,12 @@ public:
 			});
 	}
 
+	static Entry_t flip_entry(Entry_t entry)
+	{
+		std::transform(entry.begin(), entry.end(), entry.begin(), [](auto x) {return !x; });
+		return entry;
+	}
+
 private:
 	template<typename LogEntryIter_T>
 	static std::array<int, aoc::DiagnosticLog::entry_size> get_bit_counts(LogEntryIter_T begin, LogEntryIter_T end)
@@ -179,36 +185,51 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct LogProcessor
+class LifeSupport
 {
-	template<typename LogLineIter_T>
-	static uint32_t power_consumption(LogLineIter_T begin, LogLineIter_T end)
+public:
+	LifeSupport(const DiagnosticLog& log) : _log(log) {}
+
+	uint32_t find_best_match_to(const DiagnosticLog::Entry_t& target) const
 	{
-		const auto most_frequent_bits = DiagnosticLog::get_most_frequent_bits(begin, end);
-		return DiagnosticLog::entry_as<uint32_t>(most_frequent_bits) * DiagnosticLog::flipped_entry_as<uint32_t>(most_frequent_bits);
+		// Make a vector of scores: the number of bits at the start of each log line that match the most frequent bits.
+		auto scores = std::vector<uint32_t>(_log.size(), 0);
+		std::transform(_log.begin(), _log.end(), scores.begin(),
+			[&target](const auto& entry) {
+				return static_cast<uint32_t>(std::distance(entry.begin(), std::mismatch(entry.begin(), entry.end(), target.begin()).first));
+			});
+
+		const auto best_scoring_element = std::next(_log.begin(), std::distance(scores.begin(), std::max_element(scores.begin(), scores.end())));
+		
+		return DiagnosticLog::entry_as<uint32_t>(*best_scoring_element);
 	}
+
+	uint32_t rating() const
+	{
+		auto most_frequent_bits = _log.get_most_frequent_bits();
+		const auto o2_gen_rating = find_best_match_to(most_frequent_bits);
+		const auto co2_scrubber_rating = find_best_match_to(DiagnosticLog::flip_entry(std::move(most_frequent_bits)));
+
+		return o2_gen_rating * co2_scrubber_rating;
+	}
+
+private:
+	const DiagnosticLog& _log;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct LifeSupportParams
+struct LogProcessor
 {
-	using Bits_t = std::array<bool, DiagnosticLog::entry_size>;
-	Bits_t bits;
-
-	uint32_t oxygen_gen_rating(const DiagnosticLog& log) const
+	static uint32_t power_consumption(const DiagnosticLog& log)
 	{
-		const auto mfb = log.get_most_frequent_bits();
-		auto scores = std::vector<uint32_t>(log.size(), 0);
-		std::transform(log.begin(), log.end(), scores.begin(),
-			[&mfb](const auto& entry) {
-				auto i = uint32_t{ 0 };
-				while (entry[i] == mfb[i]) ++i;
-				return i;
-			});
+		const auto most_frequent_bits = log.get_most_frequent_bits();
+		return DiagnosticLog::entry_as<uint32_t>(most_frequent_bits) * DiagnosticLog::flipped_entry_as<uint32_t>(most_frequent_bits);
+	}
 
-		const auto oxy_gen_element = std::next(log.begin(), std::distance(scores.begin(), std::max_element(scores.begin(), scores.end())));
-		DiagnosticLog::entry_as<uint32_t>(*oxy_gen_element);
+	static uint32_t life_support_rating(const DiagnosticLog& log)
+	{
+		return LifeSupport(log).rating();
 	}
 };
 
@@ -256,15 +277,14 @@ public:
 		return std::accumulate(begin, end, Aiming{}).to_direction();
 	}
 
-	template<typename LogLineIter_T>
-	uint32_t power_consumption(LogLineIter_T begin, LogLineIter_T end)
+	uint32_t power_consumption(const DiagnosticLog& log)
 	{
-		return LogProcessor::power_consumption(begin, end);
+		return LogProcessor::power_consumption(log);
 	}
 
 	uint32_t life_support_rating(const DiagnosticLog& log)
 	{
-		return 0;
+		return LogProcessor::life_support_rating(log);
 	}
 };
 

@@ -288,7 +288,7 @@ namespace AdventOfCode
 
 			auto log = aoc::DiagnosticLog{data_file};
 
-			const auto power_consumption = aoc::Submarine().power_consumption(log.begin(), log.end());
+			const auto power_consumption = aoc::Submarine().power_consumption(log);
 
 			Logger::WriteMessage(std::format("Power: {}", power_consumption).c_str());
 			Assert::AreEqual(uint32_t{ 693486 }, power_consumption);
@@ -332,23 +332,27 @@ namespace AdventOfCode
 			Assert::ExpectException<aoc::Exception>([&](){ log.load(ss); });
 		}
 
-		TEST_METHOD(LifeSupportRatingIsCalculatedFromLogEntries)
+		TEST_METHOD(LifeSupportBestMatchWorks)
 		{
+			const auto target_entry = aoc::DiagnosticLog::Entry_t{ 0,1,1,0,1,0,0,1,0,1,1,0 };
+
 			constexpr auto log_lines =
 				"111011110101\n"
 				"011000111010\n"
-				"100000010010\n"
-				"000111100110\n"
-				"110011111011\n"
-				"001100010111\n"
-				"011000100100\n"
-				"110011111010\n"
-				"101011010111\n"
-				"010001001011";
+				"100000010010";
 
 			std::stringstream ss(log_lines);
+			const auto best_match = aoc::LifeSupport(aoc::DiagnosticLog{ ss }).find_best_match_to(target_entry);
 
-			const auto log = aoc::DiagnosticLog{ss};
+			Assert::AreEqual(aoc::DiagnosticLog::entry_as<uint32_t>({ 0,1,1,0,0,0,1,1,1,0,1,0 }), best_match);
+		}
+
+		TEST_METHOD(LifeSupportRatingIsCalculatedFromFile)
+		{
+			std::ifstream data_file(DATA_DIR / "Day3_input.txt");
+			Assert::IsTrue(data_file.is_open());
+
+			auto log = aoc::DiagnosticLog{ data_file };
 
 			const auto lsr = aoc::Submarine().life_support_rating(log);
 

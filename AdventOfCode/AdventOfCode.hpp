@@ -117,14 +117,26 @@ public:
 
 	Entry_t get_most_frequent_bits() const
 	{
-		return get_most_frequent_bits(begin(), end());
+		return most_frequent_bits(begin(), end());
 	}
 
 	template<typename LogEntryIter_T>
-	static Entry_t get_most_frequent_bits(LogEntryIter_T begin, LogEntryIter_T end)
+	static Entry_t most_frequent_bits(LogEntryIter_T begin, LogEntryIter_T end)
 	{
-		auto bit_counts = get_bit_counts(begin, end);
+		auto bit_counts = bit_balance(begin, end);
 		return create_most_common_bits(std::move(bit_counts));
+	}
+
+	Entry_t get_least_frequent_bits() const
+	{
+		return least_frequent_bits(begin(), end());
+	}
+
+	template<typename LogEntryIter_T>
+	static Entry_t least_frequent_bits(LogEntryIter_T begin, LogEntryIter_T end)
+	{
+		auto bit_counts = bit_balance(begin, end);
+		return create_least_common_bits(std::move(bit_counts));
 	}
 
 	template<typename Out_T>
@@ -159,7 +171,7 @@ public:
 
 private:
 	template<typename LogEntryIter_T>
-	static std::array<int, aoc::DiagnosticLog::entry_size> get_bit_counts(LogEntryIter_T begin, LogEntryIter_T end)
+	static std::array<int, aoc::DiagnosticLog::entry_size> bit_balance(LogEntryIter_T begin, LogEntryIter_T end)
 	{
 		return std::accumulate(begin, end, std::array<int, aoc::DiagnosticLog::entry_size>{},
 			[](auto&& curr, auto&& entry) {
@@ -181,6 +193,16 @@ private:
 
 		return out;
 	}
+
+	static Entry_t create_least_common_bits(std::array<int, aoc::DiagnosticLog::entry_size>&& counts)
+	{
+		auto out = Entry_t{};
+		std::transform(counts.begin(), counts.end(), out.begin(), [](auto count) {
+			return count >= 0 ? false : true;
+			});
+
+		return out;
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -195,41 +217,29 @@ public:
 		return static_cast<uint32_t>(std::distance(entry.begin(), std::mismatch(entry.begin(), entry.end(), target.begin()).first));
 	}
 
-	uint32_t find_best_match_to(const DiagnosticLog::Entry_t& target) const
+	template<typename BitSelector_T>
+	uint32_t filter_bits_matching(BitSelector_T bit_selector) const
 	{
-		// Make a vector of scores: the number of bits at the start of each log line that match the most frequent bits.
-		auto scores = std::vector<uint32_t>(_log.size(), 0);
-		std::transform(_log.begin(), _log.end(), scores.begin(),
-			[&target](const auto& entry) {
-				return score_entry(entry, target);
-			});
+		auto entries = std::vector<DiagnosticLog::Entry_t>(_log.begin(), _log.end());
 
-		// Count the number of occurances of each score
-		auto score_counts = std::accumulate(scores.begin(), scores.end(), std::map<uint32_t, uint32_t>{},
-			[](auto&& counts, auto&& score) {
-				counts[score]++;
-				return std::move(counts);
-			});
+		auto curr_bit_idx = uint32_t{ 0 };
+		auto end = entries.end();
+		while (std::distance(entries.begin(), end) > 1) {
+			auto bits_to_match = bit_selector(entries.begin(), end);
+			end = std::remove_if(entries.begin(), end, [&bits_to_match, curr_bit_idx](auto e) {
+				return e[curr_bit_idx] != bits_to_match[curr_bit_idx];
+				});
 
-		// find the lowest count for which the score is 1, which would be the first one that we would filter to.
-		const auto target_score_and_count = std::find_if(score_counts.begin(), score_counts.end(), [](auto score_and_count) {
-			return score_and_count.second == 1;
-			});
+			++curr_bit_idx;
+		}
 
-		// Find the first log entry that has this score.
-		const auto final_element = std::find_if(_log.begin(), _log.end(),
-			[&target_score_and_count, &target](auto entry) {
-				return score_entry(entry, target) == target_score_and_count->first;
-			});
-		
-		return DiagnosticLog::entry_as<uint32_t>(*final_element);
+		return DiagnosticLog::entry_as<uint32_t>(entries.front());
 	}
 
 	uint32_t rating() const
 	{
-		auto most_frequent_bits = _log.get_most_frequent_bits();
-		const auto o2_gen_rating = find_best_match_to(most_frequent_bits);
-		const auto co2_scrubber_rating = find_best_match_to(DiagnosticLog::flip_entry(std::move(most_frequent_bits)));
+		const auto o2_gen_rating = filter_bits_matching(DiagnosticLog::most_frequent_bits<DiagnosticLog::Iterator_t>);
+		const auto co2_scrubber_rating = filter_bits_matching(DiagnosticLog::least_frequent_bits<DiagnosticLog::Iterator_t>);
 
 		return o2_gen_rating * co2_scrubber_rating;
 	}

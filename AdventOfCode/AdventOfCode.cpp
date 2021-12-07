@@ -346,7 +346,21 @@ namespace AdventOfCode
 			Assert::IsTrue(std::equal(expected.begin(), expected.end(), most_frequent_bits.begin()));
 		}
 
-		TEST_METHOD(LifeSupportBestMatchWorks)
+		TEST_METHOD(DiagnosticLogLeastFrequentBitsWorks)
+		{
+			std::stringstream ss("111011110101\n"
+				"011000111010\n"
+				"100000010010");
+
+			const auto log = aoc::DiagnosticLog{ ss };
+
+			const auto least_frequent_bits = log.get_least_frequent_bits();
+			const auto expected = aoc::DiagnosticLog::Entry_t{ 0,0,0,1,1,1,0,0,1,1,0,1 };
+
+			Assert::IsTrue(std::equal(expected.begin(), expected.end(), least_frequent_bits.begin()));
+		}
+
+		TEST_METHOD(LifeSupportFilterBitsWorks)
 		{
 			const auto target_entry = aoc::DiagnosticLog::Entry_t{ 0,1,1,0,1,0,0,1,0,1,1,0 };
 
@@ -356,9 +370,55 @@ namespace AdventOfCode
 				"100000010010";
 
 			std::stringstream ss(log_lines);
-			const auto best_match = aoc::LifeSupport(aoc::DiagnosticLog{ ss }).find_best_match_to(target_entry);
+			const auto best_match = aoc::LifeSupport(aoc::DiagnosticLog{ ss }).filter_bits_matching(aoc::DiagnosticLog::most_frequent_bits<aoc::DiagnosticLog::Iterator_t>);
 
-			Assert::AreEqual(aoc::DiagnosticLog::entry_as<uint32_t>({ 0,1,1,0,0,0,1,1,1,0,1,0 }), best_match);
+			Assert::AreEqual(aoc::DiagnosticLog::entry_as<uint32_t>({ 1,1,1,0,1,1,1,1,0,1,0,1 }), best_match);
+		}
+
+		TEST_METHOD(FilterBitsForMostCommonOnExampleData)
+		{
+			constexpr auto log_lines =
+				"000000000100\n"
+				"000000011110\n"
+				"000000010110\n"
+				"000000010111\n"
+				"000000010101\n"
+				"000000001111\n"
+				"000000000111\n"
+				"000000011100\n"
+				"000000010000\n"
+				"000000011001\n"
+				"000000000010\n"
+				"000000001010";
+
+			std::stringstream ss(log_lines);
+			const auto log = aoc::DiagnosticLog{ ss };
+
+			const auto best_match = aoc::LifeSupport(log).filter_bits_matching(aoc::DiagnosticLog::most_frequent_bits<aoc::DiagnosticLog::Iterator_t>);
+			Assert::AreEqual(uint32_t{ 0b10111 }, best_match);
+		}
+
+		TEST_METHOD(FilterBitsForLeastCommonOnExampleData)
+		{
+			constexpr auto log_lines =
+				"001000000000\n"
+				"111100000000\n"
+				"101100000000\n"
+				"101110000000\n"
+				"101010000000\n"
+				"011110000000\n"
+				"001110000000\n"
+				"111000000000\n"
+				"100000000000\n"
+				"110010000000\n"
+				"000100000000\n"
+				"010100000000";
+
+			std::stringstream ss(log_lines);
+			const auto log = aoc::DiagnosticLog{ ss };
+
+			const auto best_match = aoc::LifeSupport(log).filter_bits_matching(aoc::DiagnosticLog::least_frequent_bits<aoc::DiagnosticLog::Iterator_t>);
+			Assert::AreEqual(uint32_t{ 0b10100000000 }, best_match);
 		}
 
 		TEST_METHOD(LifeSupportRatingIsCalculatedFromFile)

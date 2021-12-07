@@ -167,6 +167,7 @@
     <ClInclude Include="BoatSystems.hpp" />
     <ClInclude Include="Common.hpp" />
     <ClInclude Include="DiagnosticLog.hpp" />
+    <ClInclude Include="EntertainmentSystems.hpp" />
     <ClInclude Include="StringOperations.hpp" />
   </ItemGroup>
   <ItemGroup>

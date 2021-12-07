@@ -163,12 +163,6 @@ public:
 			});
 	}
 
-	static Entry_t flip_entry(Entry_t entry)
-	{
-		std::transform(entry.begin(), entry.end(), entry.begin(), [](auto x) {return !x; });
-		return entry;
-	}
-
 private:
 	template<typename LogEntryIter_T>
 	static std::array<int, aoc::DiagnosticLog::entry_size> bit_balance(LogEntryIter_T begin, LogEntryIter_T end)

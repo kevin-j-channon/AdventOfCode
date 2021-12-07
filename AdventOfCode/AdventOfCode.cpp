@@ -29,7 +29,7 @@ namespace AdventOfCode
 		{
 			auto measurements = std::vector<uint32_t>{ 1, 2, 3, 2, 1, 2, 3 };
 
-			auto depth_score = aoc::Submarine().depth_score<1>(measurements.begin(), measurements.end());
+			auto depth_score = aoc::Submarine().boat_systems().depth_score<1>(measurements.begin(), measurements.end());
 
 			Assert::AreEqual(uint32_t{ 4 }, depth_score);
 		}
@@ -38,7 +38,7 @@ namespace AdventOfCode
 		{
 			auto measurements = std::vector<uint32_t>{ 1, 22, 3, 200, 1000, 2, 3, 4, 100 };
 
-			auto depth_score = aoc::Submarine().depth_score<1>(measurements.begin(), measurements.end());
+			auto depth_score = aoc::Submarine().boat_systems().depth_score<1>(measurements.begin(), measurements.end());
 
 			Assert::AreEqual(uint32_t{ 6 }, depth_score);
 		}
@@ -47,7 +47,7 @@ namespace AdventOfCode
 		{
 			auto measurements = std::vector<uint32_t>{ 199, 200, 208, 210, 200, 207, 240, 269, 260, 263 };
 
-			auto depth_score = aoc::Submarine().depth_score<1>(measurements.begin(), measurements.end());
+			auto depth_score = aoc::Submarine().boat_systems().depth_score<1>(measurements.begin(), measurements.end());
 
 			Assert::AreEqual(uint32_t{ 7 }, depth_score);
 		}
@@ -57,7 +57,7 @@ namespace AdventOfCode
 			std::ifstream data_file(DATA_DIR / "Day1_input.txt");
 			Assert::IsTrue(data_file.is_open());
 
-			auto depth_score = aoc::Submarine().depth_score<1>(std::istream_iterator<uint32_t>(data_file), std::istream_iterator<uint32_t>());
+			auto depth_score = aoc::Submarine().boat_systems().depth_score<1>(std::istream_iterator<uint32_t>(data_file), std::istream_iterator<uint32_t>());
 
 			Assert::AreEqual(uint32_t{ 1502 }, depth_score);
 		}
@@ -65,7 +65,7 @@ namespace AdventOfCode
 		{
 			auto measurements = std::vector<uint32_t>{ 199, 200, 208, 210, 200, 207, 240, 269, 260, 263 };
 
-			auto depth_score = aoc::Submarine().depth_score<3>(measurements.begin(), measurements.end());
+			auto depth_score = aoc::Submarine().boat_systems().depth_score<3>(measurements.begin(), measurements.end());
 
 			Assert::AreEqual(uint32_t{ 5 }, depth_score);
 		}
@@ -75,7 +75,7 @@ namespace AdventOfCode
 			std::ifstream data_file(DATA_DIR / "Day1_input.txt");
 			Assert::IsTrue(data_file.is_open());
 
-			auto depth_score = aoc::Submarine().depth_score<3>(std::istream_iterator<uint32_t>(data_file), std::istream_iterator<uint32_t>());
+			auto depth_score = aoc::Submarine().boat_systems().depth_score<3>(std::istream_iterator<uint32_t>(data_file), std::istream_iterator<uint32_t>());
 
 			Assert::AreEqual(uint32_t{ 1538 }, depth_score);
 		}
@@ -151,7 +151,7 @@ namespace AdventOfCode
 			std::stringstream ss("forward 3\ndown 3\nforward 12\ndown 5\nup 2");
 
 			using StreamIter_t = std::istream_iterator<aoc::Direction>;
-			const auto net_direction = aoc::Submarine().net_direction(StreamIter_t(ss), StreamIter_t());
+			const auto net_direction = aoc::Submarine().boat_systems().net_direction(StreamIter_t(ss), StreamIter_t());
 
 			Assert::AreEqual(15, net_direction.x);
 			Assert::AreEqual( 6, net_direction.y);
@@ -163,7 +163,7 @@ namespace AdventOfCode
 			Assert::IsTrue(data_file.is_open());
 
 			using StreamIter_t = std::istream_iterator<aoc::Direction>;
-			const auto net_direction = aoc::Submarine().net_direction(StreamIter_t(data_file), StreamIter_t());
+			const auto net_direction = aoc::Submarine().boat_systems().net_direction(StreamIter_t(data_file), StreamIter_t());
 
 			Assert::AreEqual(1895, net_direction.x);
 			Assert::AreEqual(894, net_direction.y);
@@ -223,7 +223,7 @@ namespace AdventOfCode
 			std::stringstream ss("forward 5\ndown 5\nforward 8\nup 3\ndown 8\nforward 2");
 
 			using StreamIter_t = std::istream_iterator<aoc::Direction>;
-			const auto net_aim = aoc::Submarine().net_aiming(StreamIter_t(ss), StreamIter_t());
+			const auto net_aim = aoc::Submarine().boat_systems().net_aiming(StreamIter_t(ss), StreamIter_t());
 
 			Assert::AreEqual(15, net_aim.x);
 			Assert::AreEqual(60, net_aim.y);
@@ -290,7 +290,7 @@ namespace AdventOfCode
 
 			auto log = aoc::DiagnosticLog{data_file};
 
-			const auto power_consumption = aoc::Submarine().power_consumption(log);
+			const auto power_consumption = aoc::Submarine().boat_systems().power_consumption(log);
 
 			Logger::WriteMessage(std::format("Power: {}", power_consumption).c_str());
 			Assert::AreEqual(uint32_t{ 693486 }, power_consumption);
@@ -430,7 +430,7 @@ namespace AdventOfCode
 
 			auto log = aoc::DiagnosticLog{ data_file };
 
-			Assert::AreEqual(uint32_t{ 3379326 }, aoc::Submarine().life_support_rating(log));
+			Assert::AreEqual(uint32_t{ 3379326 }, aoc::Submarine().boat_systems().life_support_rating(log));
 		}
 	};
 }

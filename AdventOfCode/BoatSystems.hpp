@@ -113,6 +113,60 @@ struct LogProcessor
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class BoatSystems
+{
+public:
+	template<size_t WINDOW_SIZE, typename Iter_T>
+	uint32_t depth_score(Iter_T begin, Iter_T end) const
+	{
+		auto current_idx = size_t{ 0 };
+
+		auto window = std::array<typename Iter_T::value_type, WINDOW_SIZE>{};
+		for (auto it = window.begin(); it < window.end(); ++it, ++current_idx) {
+			*it = *begin++;
+		}
+
+		auto prev_score = std::accumulate(window.begin(), window.end(), uint32_t{ 0 });
+
+		return std::accumulate(begin, end, 0, [&window, &prev_score, &current_idx](auto curr, auto next) {
+
+			auto new_score = uint32_t{ prev_score - window[current_idx % window.size()] + next };
+
+			auto out = new_score > prev_score ? ++curr : curr;
+
+			prev_score = new_score;
+			window[current_idx % window.size()] = next;
+			++current_idx;
+
+			return out;
+			});
+	}
+
+	template<typename Iter_T>
+	Direction net_direction(Iter_T begin, Iter_T end) const 
+	{
+		return std::accumulate(begin, end, Direction{});
+	}
+
+	template<typename Iter_T>
+	Direction net_aiming(Iter_T begin, Iter_T end) const
+	{
+		return std::accumulate(begin, end, Aiming{}).to_direction();
+	}
+
+	uint32_t power_consumption(const DiagnosticLog& log) const
+	{
+		return LogProcessor::power_consumption(log);
+	}
+
+	uint32_t life_support_rating(const DiagnosticLog& log) const
+	{
+		return LogProcessor::life_support_rating(log);
+	}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 }	// namespace: aoc
 
 namespace std

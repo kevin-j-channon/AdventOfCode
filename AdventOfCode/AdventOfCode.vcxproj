@@ -164,6 +164,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AdventOfCode.hpp" />
+    <ClInclude Include="BoatSystems.hpp" />
+    <ClInclude Include="Common.hpp" />
+    <ClInclude Include="DiagnosticLog.hpp" />
     <ClInclude Include="StringOperations.hpp" />
   </ItemGroup>
   <ItemGroup>

@@ -1,8 +1,10 @@
+#include "Common.hpp"
+#include "DiagnosticLog.hpp"
+#include "BoatSystems.hpp"
 #include "AdventOfCode.hpp"
 
 #include "CppUnitTest.h"
 
-#include <ranges>
 #include <vector>
 #include <cstdint>
 #include <fstream>

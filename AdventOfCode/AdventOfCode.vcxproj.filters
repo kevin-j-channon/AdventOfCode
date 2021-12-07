@@ -29,6 +29,15 @@
     <ClInclude Include="StringOperations.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DiagnosticLog.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BoatSystems.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Data\Day1_input.txt">

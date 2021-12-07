@@ -370,7 +370,7 @@ namespace AdventOfCode
 				"100000010010";
 
 			std::stringstream ss(log_lines);
-			const auto best_match = aoc::LifeSupport(aoc::DiagnosticLog{ ss }).filter_bits_matching(aoc::DiagnosticLog::most_frequent_bits<aoc::DiagnosticLog::Iterator_t>);
+			const auto best_match = aoc::LifeSupport(aoc::DiagnosticLog{ ss }).filter_using_most_frequent_bits();
 
 			Assert::AreEqual(aoc::DiagnosticLog::entry_as<uint32_t>({ 1,1,1,0,1,1,1,1,0,1,0,1 }), best_match);
 		}
@@ -394,7 +394,7 @@ namespace AdventOfCode
 			std::stringstream ss(log_lines);
 			const auto log = aoc::DiagnosticLog{ ss };
 
-			const auto best_match = aoc::LifeSupport(log).filter_bits_matching(aoc::DiagnosticLog::most_frequent_bits<aoc::DiagnosticLog::Iterator_t>);
+			const auto best_match = aoc::LifeSupport(log).filter_using_most_frequent_bits();
 			Assert::AreEqual(uint32_t{ 0b10111 }, best_match);
 		}
 
@@ -417,7 +417,7 @@ namespace AdventOfCode
 			std::stringstream ss(log_lines);
 			const auto log = aoc::DiagnosticLog{ ss };
 
-			const auto best_match = aoc::LifeSupport(log).filter_bits_matching(aoc::DiagnosticLog::least_frequent_bits<aoc::DiagnosticLog::Iterator_t>);
+			const auto best_match = aoc::LifeSupport(log).filter_using_least_frequent_bits();
 			Assert::AreEqual(uint32_t{ 0b10100000000 }, best_match);
 		}
 
@@ -428,9 +428,7 @@ namespace AdventOfCode
 
 			auto log = aoc::DiagnosticLog{ data_file };
 
-			const auto lsr = aoc::Submarine().life_support_rating(log);
-
-			Logger::WriteMessage(std::format("Life support rating: {}", lsr).c_str());
+			Assert::AreEqual(uint32_t{ 3379326 }, aoc::Submarine().life_support_rating(log));
 		}
 	};
 }

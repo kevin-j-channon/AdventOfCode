@@ -236,10 +236,20 @@ public:
 		return DiagnosticLog::entry_as<uint32_t>(entries.front());
 	}
 
+	uint32_t filter_using_most_frequent_bits() const
+	{
+		return filter_bits_matching(DiagnosticLog::most_frequent_bits<DiagnosticLog::Iterator_t>);
+	}
+
+	uint32_t filter_using_least_frequent_bits() const
+	{
+		return filter_bits_matching(DiagnosticLog::least_frequent_bits<DiagnosticLog::Iterator_t>);
+	}
+
 	uint32_t rating() const
 	{
-		const auto o2_gen_rating = filter_bits_matching(DiagnosticLog::most_frequent_bits<DiagnosticLog::Iterator_t>);
-		const auto co2_scrubber_rating = filter_bits_matching(DiagnosticLog::least_frequent_bits<DiagnosticLog::Iterator_t>);
+		const auto o2_gen_rating = filter_using_most_frequent_bits();
+		const auto co2_scrubber_rating = filter_using_least_frequent_bits();
 
 		return o2_gen_rating * co2_scrubber_rating;
 	}

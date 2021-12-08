@@ -16,59 +16,73 @@ namespace aoc
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class Bingo
+namespace bingo
+{
+class Draws
 {
 public:
+	using Value_t = uint8_t;
 
-	using Draws_t = std::vector<uint8_t>;
+private:
+	std::vector<Value_t> _values;
 
-	class Board
-	{
-		using ValueGrid_t = std::vector<std::vector<uint8_t>>;
+public:
 
-	public:
-		Board(uint8_t size)
-			: _size{ size }
-		{}
+	using Iterator_t = decltype(_values.begin());
+	using ConstIterator_t = decltype(_values.cbegin());
+	using Size_t = decltype(_values.size());
 
-		void load(std::istream& stream)
-		{
-			for (auto row = 0; row < _size && stream.good(); ++row) {
-				auto line = std::string{};
-				std::getline(stream, line);
-				const auto value_strings = split(line, ',');
-				if (value_strings.size() != _size) {
-					throw Exception("Invalid bingo board size board");
-				}
+	ConstIterator_t begin() const { return _values.begin(); }
+	Iterator_t begin() { return _values.begin(); }
 
-				auto row_values = ValueGrid_t::value_type(_size, 0);
-				std::transform(value_strings.begin(), value_strings.end(), row_values.begin(), [](auto s) { return static_cast<uint8_t>(std::stol(s)); });
+	ConstIterator_t end() const { return _values.end(); }
+	Iterator_t end() { return _values.end(); }
 
-				_numbers.push_back(std::move(row_values));
-			}
-		}
-	private:
-		uint8_t _size;
-		ValueGrid_t _numbers;
-	};
-
-	using Boards_t = std::vector<Board>;
+	Size_t size() const { return _values.size(); }
 
 	void load(std::istream& stream)
 	{
 		auto line = std::string{};
 		std::getline(stream, line);
-		const auto draws_strings = split(line, ',');
-		_draws.resize(draws_strings.size(), 0);
-		std::transform(draws_strings.begin(), draws_strings.end(), _draws.begin(), [](auto s) { return static_cast<uint8_t>(std::stol(s)); });
+		
+		const auto value_strings = split(line, ',');
+
+		_values.resize(value_strings.size(), 0);
+		std::transform(value_strings.begin(), value_strings.end(), _values.begin(), [](auto s) { return static_cast<uint8_t>(std::stol(s)); });
 	}
+};
 
-	const Draws_t& draws() const { return _draws; }
-	const Boards_t& boards() const { return _boards; }
+class Board
+{
+	using ValueGrid_t = std::vector<std::vector<uint8_t>>;
 
+public:
+	Board(uint8_t size)
+		: _size{ size }
+	{}
+
+	void load(std::istream& stream)
+	{
+		for (auto row = 0; row < _size && stream.good(); ++row) {
+			auto line = std::string{};
+			std::getline(stream, line);
+			const auto value_strings = split(line, ' ', SplitBehaviour::drop_empty);
+			if (value_strings.size() != _size) {
+				throw Exception("Invalid bingo board size board");
+			}
+
+			auto row_values = ValueGrid_t::value_type(_size, 0);
+			std::transform(value_strings.begin(), value_strings.end(), row_values.begin(), [](auto s) { return static_cast<uint8_t>(std::stol(s)); });
+
+			_numbers.push_back(std::move(row_values));
+		}
+	}
 private:
-	Draws_t _draws;
-	Boards_t _boards;
+	uint8_t _size;
+	ValueGrid_t _numbers;
+};
+
+using Boards_t = std::vector<Board>;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -77,7 +91,6 @@ class EntertainmentSystems
 {
 public:
 
-	Bingo bingo() const { return Bingo{}; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

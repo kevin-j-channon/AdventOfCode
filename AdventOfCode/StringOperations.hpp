@@ -6,24 +6,35 @@
 #include <cwctype>
 #include <algorithm>
 
+enum class SplitBehaviour
+{
+    none,
+    drop_empty
+};
+
 template<typename Char_T>
-std::vector<std::basic_string<Char_T>> split(const std::basic_string<Char_T>& str, Char_T delimiter)
+std::vector<std::basic_string<Char_T>> split(const std::basic_string<Char_T>& str, Char_T delimiter, SplitBehaviour behaviour = SplitBehaviour::none)
 {
     auto result = std::vector<std::basic_string<Char_T>>();
 
     auto begin = str.cbegin();
-    while (true)
-    {
+    while (true) {
+        if (SplitBehaviour::drop_empty == behaviour) {
+            begin = std::find_if(begin, str.end(), [delimiter](auto c) { return c != delimiter; });
+        }
+
+        if (str.cend() == begin) {
+            break;
+        }
+
         auto pos = std::find(begin, str.cend(), delimiter);
 
         result.emplace_back(begin, pos);
 
-        if (str.cend() == pos)
-        {
+        if (str.cend() == pos) {
             break;
         }
-        else
-        {
+        else {
             begin = std::next(pos);
         }
     }

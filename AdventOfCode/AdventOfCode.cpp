@@ -442,27 +442,83 @@ namespace AdventOfCode
 		{
 			std::stringstream ss{ "7, 4, 9, 5\n" };
 
-			auto game = aoc::Bingo{};
+			auto draws = aoc::bingo::Draws{};
 
-			game.load(ss);
+			draws.load(ss);
 
 			const auto expected_draws = { 7, 4, 9, 5 };
-			Assert::IsTrue(std::equal(expected_draws.begin(), expected_draws.end(), game.draws().begin()));
+			Assert::IsTrue(std::equal(expected_draws.begin(), expected_draws.end(), draws.begin()));
+		}
+
+		TEST_METHOD(splitStringWorksWhenDropEmptyOptionIsSet)
+		{
+			const auto str = "1 2 3"s;
+			const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+
+			Assert::AreEqual(size_t{ 3 }, split_str.size());
+		}
+
+		TEST_METHOD(splitStringWorksWhenDropEmptyOptionIsNotSet)
+		{
+			const auto str = "1 2 3"s;
+			const auto split_str = split(str, ' ');
+
+			Assert::AreEqual(size_t{ 3 }, split_str.size());
+		}
+
+		TEST_METHOD(SplitStringDropsConsecutiveDelimitersWhenOptionIsSet)
+		{
+			const auto str = "1  2      3"s;
+			const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+
+			Assert::AreEqual(size_t{ 3 }, split_str.size());
+		}
+
+		TEST_METHOD(SplitStringDropsConsecutiveDelimitersAtBeginning)
+		{
+			const auto str = "   1 2      3"s;
+			const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+
+			Assert::AreEqual(size_t{ 3 }, split_str.size());
+		}
+
+		TEST_METHOD(SplitStringDropsConsecutiveDelimitersAtEnd)
+		{
+			const auto str = "1 2      3   "s;
+			const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+
+			Assert::AreEqual(size_t{ 3 }, split_str.size());
+		}
+
+		TEST_METHOD(SplitStringEmptyResultWhenStringIsOnlyDelimiters)
+		{
+			const auto str = "   "s;
+			const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+
+			Assert::IsTrue(split_str.empty());
+		}
+
+		TEST_METHOD(SplitStringNonEmptyResultWhenStringIsOnlyUndroppedDelimiters)
+		{
+			const auto str = "    "s;
+			const auto split_str = split(str, ' ', SplitBehaviour::none);
+
+			Assert::AreEqual(size_t{ 4 }, split_str.size());
 		}
 
 		TEST_METHOD(LoadExampleBingoGameBoards)
 		{
 			constexpr auto board_str =
 				"22 13 17 11  0\n"
-				"8  2 23  4 24\n"
+				" 8  2 23  4 24\n"
 				"21  9 14 16  7\n"
-				"6 10  3 18  5\n"
-				"1 12 20 15 19\n"
+				" 6 10  3 18  5\n"
+				" 1 12 20 15 19\n"
 				"\n";
 
 			std::stringstream ss{ board_str };
 
-			auto board = aoc::Bingo::Board{};
+			auto board = aoc::bingo::Board{5};
 
 			board.load(ss);
 		}

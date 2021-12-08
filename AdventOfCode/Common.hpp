@@ -42,12 +42,15 @@ class Table
 {
 public:
 	using Value_t = Value_T;
+	using Container_t = std::vector<Value_t>;
 
 private:
-	std::vector<Value_t> _data;
+	Container_t _data;
 
 public:
 	using Size_t = decltype(_data.size());
+	using RowIterator_t = decltype(_data.begin());
+	using ConstRowIterator_t = decltype(_data.cbegin());
 
 	Table(Size_t row_size, Size_t col_size)
 		: _data(row_size * col_size)
@@ -57,6 +60,12 @@ public:
 
 	Size_t row_size() const { return _row_size; }
 	Size_t col_size() const { return _col_size; }
+
+	ConstRowIterator_t row_begin(Size_t row) const { return std::next(_data.begin(), row * _row_size); }
+	RowIterator_t row_begin(Size_t row) { return std::next(_data.begin(), row * _row_size); }
+
+	ConstRowIterator_t row_end(Size_t row) const { return std::next(_data.begin(), (row + 1) * _row_size); }
+	RowIterator_t row_end(Size_t row) { return std::next(_data.begin(), (row + 1) * _row_size); }
 
 	Value_t& operator()(Size_t row, Size_t col)
 	{

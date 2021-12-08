@@ -96,6 +96,26 @@ public:
 		Assert::ExpectException<aoc::Exception>([&table]() { table.set(11, 0, 0); });
 		Assert::ExpectException<aoc::Exception>([&table]() { table.set(0, 11, 0); });
 	}
+
+	TEST_METHOD(RowIteratorsIterate)
+	{
+		auto table = aoc::Table<uint8_t>{ 10, 10 };
+
+		// Set all the values
+		for (auto r = 0; r < 10; ++r) {
+			auto c = 0;
+			for (auto it = table.row_begin(r); it != table.row_end(r); ++it, ++c) {
+				*it = r * c;
+			}
+		}
+
+		for (auto r = 0; r < 10; ++r) {
+			auto c = 0;
+			for (auto it = table.row_begin(r); it != table.row_end(r); ++it, ++c) {
+				Assert::AreEqual(static_cast<uint8_t>(r * c), *it);
+			}
+		}
+	}
 };
 }
 

@@ -57,6 +57,13 @@ class Board
 	using ValueGrid_t = std::vector<std::vector<uint8_t>>;
 
 public:
+
+	struct Cell
+	{
+		uint8_t value;
+		bool is_marked{ false };
+	};
+
 	Board(uint8_t size)
 		: _size{ size }
 	{}
@@ -71,15 +78,14 @@ public:
 				throw Exception("Invalid bingo board size board");
 			}
 
-			auto row_values = ValueGrid_t::value_type(_size, 0);
-			std::transform(value_strings.begin(), value_strings.end(), row_values.begin(), [](auto s) { return static_cast<uint8_t>(std::stol(s)); });
+			std::transform(value_strings.begin(), value_strings.end(),.begin(), [](auto s) { return static_cast<uint8_t>(std::stol(s)); });
 
 			_numbers.push_back(std::move(row_values));
 		}
 	}
 private:
 	uint8_t _size;
-	ValueGrid_t _numbers;
+	Table< _numbers;
 };
 
 using Boards_t = std::vector<Board>;

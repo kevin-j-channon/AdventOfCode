@@ -548,5 +548,24 @@ namespace AdventOfCode
 				}
 			}
 		}
+
+		TEST_METHOD(TableValuesCanBeSetAndRetrievedSafely)
+		{
+			auto table = aoc::Table<uint8_t>{ 10, 10 };
+
+			// Set all the values
+			for (auto r = 0; r < 10; ++r) {
+				for (auto c = 0; c < 10; ++c) {
+					table.set(r, c, r * c);
+				}
+			}
+
+			// Check all the values
+			for (auto r = 0; r < 10; ++r) {
+				for (auto c = 0; c < 10; ++c) {
+					Assert::AreEqual(static_cast<uint8_t>(r * c), table.at(r, c));
+				}
+			}
+		}
 	};
 }

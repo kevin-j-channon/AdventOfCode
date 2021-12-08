@@ -13,6 +13,13 @@ namespace aoc
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct Exception : public std::runtime_error
+{
+	Exception(const std::string& msg) : std::runtime_error{ msg } {}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 template<typename Value_T>
 struct Vec2d
 {
@@ -61,16 +68,32 @@ public:
 		return const_cast<Table&>(*this)(row, col);
 	}
 
+	const Value_t& at(Size_t row, Size_t col) const
+	{
+		_validate_element(row, col);
+
+		return this->operator()(row, col);
+	}
+
+	void set(Size_t row, Size_t col, Value_t val)
+	{
+		_validate_element(row, col);
+
+		this->operator()(row, col) = val;
+	}
+
 private:
+	void _validate_element(Size_t row, Size_t col) const
+	{
+		if (row >= _row_size)
+			throw Exception("Row out of range");
+
+		if (col >= _col_size)
+			throw Exception("Col out of range");
+	}
+
 	Size_t _row_size;
 	Size_t _col_size;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct Exception : public std::runtime_error
-{
-	Exception(const std::string& msg) : std::runtime_error{ msg } {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

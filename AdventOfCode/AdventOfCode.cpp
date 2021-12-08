@@ -522,5 +522,12 @@ namespace AdventOfCode
 
 			board.load(ss);
 		}
+
+		TEST_METHOD(TableRowsAndColumsInitialisedCorrectly)
+		{
+			auto table = aoc::Table<uint8_t>{ 3, 5 };
+			Assert::AreEqual(size_t{ 3 }, table.row_size());
+			Assert::AreEqual(size_t{ 5 }, table.col_size());
+		}
 	};
 }

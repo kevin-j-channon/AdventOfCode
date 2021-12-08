@@ -567,5 +567,16 @@ namespace AdventOfCode
 				}
 			}
 		}
+
+		TEST_METHOD(ExceptionIsThrownIsOutOfRangeTableCellsAreAccessed)
+		{
+			auto table = aoc::Table<uint8_t>{ 10, 10 };
+
+			Assert::ExpectException<aoc::Exception>([&table]() { table.at(11, 0); });
+			Assert::ExpectException<aoc::Exception>([&table]() { table.at(0, 11); });
+
+			Assert::ExpectException<aoc::Exception>([&table]() { table.set(11, 0, 0); });
+			Assert::ExpectException<aoc::Exception>([&table]() { table.set(0, 11, 0); });
+		}
 	};
 }

@@ -43,12 +43,23 @@ public:
 	using Size_t = decltype(_data.size());
 
 	Table(Size_t row_size, Size_t col_size)
-		: _row_size{row_size}
+		: _data(row_size * col_size)
+		, _row_size{row_size}
 		, _col_size{col_size}
 	{}
 
 	Size_t row_size() const { return _row_size; }
 	Size_t col_size() const { return _col_size; }
+
+	Value_t& operator()(Size_t row, Size_t col)
+	{
+		return _data[row * _row_size + col];
+	}
+
+	const Value_t& operator()(Size_t row, Size_t col) const
+	{
+		return const_cast<Table&>(*this)(row, col);
+	}
 
 private:
 	Size_t _row_size;

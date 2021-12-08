@@ -529,5 +529,24 @@ namespace AdventOfCode
 			Assert::AreEqual(size_t{ 3 }, table.row_size());
 			Assert::AreEqual(size_t{ 5 }, table.col_size());
 		}
+
+		TEST_METHOD(TableValuesCanBeSetAndRetrieved)
+		{
+			auto table = aoc::Table<uint8_t>{ 10, 10 };
+
+			// Set all the values
+			for (auto r = 0; r < 10; ++r) {
+				for (auto c = 0; c < 10; ++c) {
+					table(r, c) = r * c;
+				}
+			}
+
+			// Check all the values
+			for (auto r = 0; r < 10; ++r) {
+				for (auto c = 0; c < 10; ++c) {
+					Assert::AreEqual(static_cast<uint8_t>( r * c ), table(r, c));
+				}
+			}
+		}
 	};
 }

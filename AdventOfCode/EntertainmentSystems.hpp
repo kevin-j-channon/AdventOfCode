@@ -18,7 +18,15 @@ namespace aoc
 
 namespace bingo
 {
-class Draws
+
+class INumberDrawer
+{
+public:
+	virtual ~INumberDrawer() = default;
+};
+
+
+class FileBasedNumberDrawer : public INumberDrawer
 {
 public:
 	using Value_t = uint8_t;
@@ -44,7 +52,7 @@ public:
 	{
 		auto line = std::string{};
 		std::getline(stream, line);
-		
+
 		const auto value_strings = split(line, ',');
 
 		_values.resize(value_strings.size(), 0);
@@ -65,7 +73,7 @@ public:
 	};
 
 	Board(uint8_t size)
-		: _numbers{size, size }
+		: _numbers{ size, size }
 	{}
 
 	void load(std::istream& stream)
@@ -105,8 +113,19 @@ private:
 	Table<Cell> _numbers;
 };
 
-using Boards_t = std::vector<Board>;
+class Game
+{
+	using Boards_t = std::vector<Board>;
+public:
+	void load(std::streambuf& stream)
+	{
+
+	}
+
+private:
+
 };
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 

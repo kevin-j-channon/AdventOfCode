@@ -544,7 +544,7 @@ public:
 	{
 		std::stringstream ss{ "7, 4, 9, 5\n" };
 
-		auto draws = aoc::bingo::Draws{};
+		auto draws = aoc::bingo::FileBasedNumberDrawer{};
 
 		draws.load(ss);
 

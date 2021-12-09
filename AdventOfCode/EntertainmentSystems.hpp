@@ -117,13 +117,53 @@ class Game
 {
 	using Boards_t = std::vector<Board>;
 public:
-	void load(std::streambuf& stream)
-	{
 
+	Game()
+	{}
+
+	void load(std::istream& stream)
+	{
+		_load_drawer(stream);
+		_load_boards(stream);
 	}
 
 private:
 
+	void _load_drawer(std::istream& stream)
+	{
+		auto drawer = std::make_unique<FileBasedNumberDrawer>();
+		drawer->load(stream);
+		_drawer = std::move(drawer);
+	}
+
+	void _load_boards(std::istream& stream)
+	{
+		while (_skip_blank_line(stream))
+		{
+			_load_board(stream);
+		}
+	}
+
+	void _load_board(std::istream& stream)
+	{
+		auto board = Board{ 5 };
+		board.load(stream);
+		_boards.push_back(std::move(board));
+	}
+
+	bool _skip_blank_line(std::istream& stream)
+	{
+		auto line = std::string{};
+		getline(stream, line);
+
+		if (!line.empty())
+			throw Exception(std::format("Line that should have been blank actually contained \"{}\"", line));
+
+		return stream.eof();
+	}
+
+	std::unique_ptr<INumberDrawer> _drawer;
+	Boards_t _boards;
 };
 }
 

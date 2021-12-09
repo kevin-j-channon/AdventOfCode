@@ -52,24 +52,24 @@ public:
 	using RowIterator_t = decltype(_data.begin());
 	using ConstRowIterator_t = decltype(_data.cbegin());
 
-	Table(Size_t row_size, Size_t col_size)
-		: _data(row_size * col_size)
-		, _row_size{row_size}
-		, _col_size{col_size}
+	Table(Size_t rows, Size_t cols)
+		: _data(rows * cols)
+		, _rows{rows}
+		, _cols{cols}
 	{}
 
-	Size_t row_size() const { return _row_size; }
-	Size_t col_size() const { return _col_size; }
+	Size_t rows() const { return _rows; }
+	Size_t cols() const { return _cols; }
 
-	ConstRowIterator_t row_begin(Size_t row) const { return std::next(_data.begin(), row * _row_size); }
-	RowIterator_t row_begin(Size_t row) { return std::next(_data.begin(), row * _row_size); }
+	ConstRowIterator_t row_begin(Size_t row) const { return std::next(_data.begin(), row * _cols); }
+	RowIterator_t row_begin(Size_t row) { return std::next(_data.begin(), row * _cols); }
 
-	ConstRowIterator_t row_end(Size_t row) const { return std::next(_data.begin(), (row + 1) * _row_size); }
-	RowIterator_t row_end(Size_t row) { return std::next(_data.begin(), (row + 1) * _row_size); }
+	ConstRowIterator_t row_end(Size_t row) const { return std::next(_data.begin(), (row + 1) * _cols); }
+	RowIterator_t row_end(Size_t row) { return std::next(_data.begin(), (row + 1) * _cols); }
 
 	Value_t& operator()(Size_t row, Size_t col)
 	{
-		return _data[row * _row_size + col];
+		return _data[row * _cols + col];
 	}
 
 	const Value_t& operator()(Size_t row, Size_t col) const
@@ -94,15 +94,15 @@ public:
 private:
 	void _validate_element(Size_t row, Size_t col) const
 	{
-		if (row >= _row_size)
+		if (row >= _rows)
 			throw Exception("Row out of range");
 
-		if (col >= _col_size)
+		if (col >= _cols)
 			throw Exception("Col out of range");
 	}
 
-	Size_t _row_size;
-	Size_t _col_size;
+	Size_t _rows;
+	Size_t _cols;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

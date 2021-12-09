@@ -65,27 +65,44 @@ public:
 	};
 
 	Board(uint8_t size)
-		: _size{ size }
+		: _numbers{size, size }
 	{}
 
 	void load(std::istream& stream)
 	{
-		for (auto row = 0; row < _size && stream.good(); ++row) {
-			auto line = std::string{};
-			std::getline(stream, line);
-			const auto value_strings = split(line, ' ', SplitBehaviour::drop_empty);
-			if (value_strings.size() != _size) {
+		for (auto row = 0; row < _numbers.rows() && stream.good(); ++row) {
+			if (!stream.good())
+			{
 				throw Exception("Invalid bingo board size board");
 			}
 
-			std::transform(value_strings.begin(), value_strings.end(),.begin(), [](auto s) { return static_cast<uint8_t>(std::stol(s)); });
-
-			_numbers.push_back(std::move(row_values));
+			_load_row(stream, _numbers.row_begin(row));
 		}
 	}
 private:
-	uint8_t _size;
-	Table< _numbers;
+	static Cell _string_to_cell(const std::string& str)
+	{
+		const auto value = std::stol(str);
+		if (value > std::numeric_limits<uint8_t>::max())
+			throw Exception("Invalid board value");
+
+		return Cell{ static_cast<uint8_t>(value), false };
+	}
+
+	void _load_row(std::istream& stream, Table<Cell>::RowIterator_t row)
+	{
+		auto line = std::string{};
+		std::getline(stream, line);
+
+		const auto value_strings = split(line, ' ', SplitBehaviour::drop_empty);
+		if (value_strings.size() != _numbers.cols()) {
+			throw Exception("Invalid bingo board size board");
+		}
+
+		std::transform(value_strings.begin(), value_strings.end(), row, _string_to_cell);
+	}
+
+	Table<Cell> _numbers;
 };
 
 using Boards_t = std::vector<Board>;

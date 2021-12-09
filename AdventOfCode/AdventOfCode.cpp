@@ -44,8 +44,8 @@ public:
 	TEST_METHOD(TableRowsAndColumsInitialisedCorrectly)
 	{
 		auto table = aoc::Table<uint8_t>{ 3, 5 };
-		Assert::AreEqual(size_t{ 3 }, table.row_size());
-		Assert::AreEqual(size_t{ 5 }, table.col_size());
+		Assert::AreEqual(size_t{ 3 }, table.rows());
+		Assert::AreEqual(size_t{ 5 }, table.cols());
 	}
 
 	TEST_METHOD(TableValuesCanBeSetAndRetrieved)
@@ -540,6 +540,34 @@ TEST_CLASS(BingoGame)
 {
 public:
 
+	TEST_METHOD(LoadExampleDraws)
+	{
+		std::stringstream ss{ "7, 4, 9, 5\n" };
+
+		auto draws = aoc::bingo::Draws{};
+
+		draws.load(ss);
+
+		const auto expected_draws = { 7, 4, 9, 5 };
+		Assert::IsTrue(std::equal(expected_draws.begin(), expected_draws.end(), draws.begin()));
+	}
+
+	TEST_METHOD(LoadBoard)
+	{
+		constexpr auto board_str =
+			"22 13 17 11  0\n"
+			" 8  2 23  4 24\n"
+			"21  9 14 16  7\n"
+			" 6 10  3 18  5\n"
+			" 1 12 20 15 19\n"
+			"\n";
+
+		std::stringstream ss{ board_str };
+
+		auto board = aoc::bingo::Board{ 5 };
+
+		board.load(ss);
+	}
 };
 }
 
@@ -642,34 +670,6 @@ TEST_CLASS(TestDay4)
 {
 public:
 
-	TEST_METHOD(LoadExampleBingoGameDraws)
-	{
-		std::stringstream ss{ "7, 4, 9, 5\n" };
-
-		auto draws = aoc::bingo::Draws{};
-
-		draws.load(ss);
-
-		const auto expected_draws = { 7, 4, 9, 5 };
-		Assert::IsTrue(std::equal(expected_draws.begin(), expected_draws.end(), draws.begin()));
-	}
-
-	TEST_METHOD(LoadExampleBingoGameBoards)
-	{
-		constexpr auto board_str =
-			"22 13 17 11  0\n"
-			" 8  2 23  4 24\n"
-			"21  9 14 16  7\n"
-			" 6 10  3 18  5\n"
-			" 1 12 20 15 19\n"
-			"\n";
-
-		std::stringstream ss{ board_str };
-
-		auto board = aoc::bingo::Board{ 5 };
-
-		board.load(ss);
-	}
 
 };
 }

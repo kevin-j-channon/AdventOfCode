@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <optional>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -19,23 +20,16 @@ namespace aoc
 namespace bingo
 {
 
-class INumberDrawer
+template<typename Value_T>
+class FileBasedNumberDrawer
 {
 public:
-	virtual ~INumberDrawer() = default;
-};
-
-
-class FileBasedNumberDrawer : public INumberDrawer
-{
-public:
-	using Value_t = uint8_t;
+	using Value_t = Value_T;
 
 private:
 	std::vector<Value_t> _values;
 
 public:
-
 	using Iterator_t = decltype(_values.begin());
 	using ConstIterator_t = decltype(_values.cbegin());
 	using Size_t = decltype(_values.size());
@@ -56,14 +50,12 @@ public:
 		const auto value_strings = split(line, ',');
 
 		_values.resize(value_strings.size(), 0);
-		std::transform(value_strings.begin(), value_strings.end(), _values.begin(), [](auto s) { return static_cast<uint8_t>(std::stol(s)); });
+		std::transform(value_strings.begin(), value_strings.end(), _values.begin(), [](auto s) { return static_cast<Value_t>(std::stol(s)); });
 	}
 };
 
 class Board
 {
-	using ValueGrid_t = std::vector<std::vector<uint8_t>>;
-
 public:
 
 	struct Cell
@@ -76,7 +68,7 @@ public:
 		: _numbers{ size, size }
 	{}
 
-	void load(std::istream& stream)
+	Board& load(std::istream& stream)
 	{
 		for (auto row = 0; row < _numbers.rows() && stream.good(); ++row) {
 			if (!stream.good())
@@ -86,8 +78,36 @@ public:
 
 			_load_row(stream, _numbers.row_begin(row));
 		}
+
+		return *this;
 	}
+
+	bool mark(uint8_t number)
+	{
+		auto cell = _find(number);
+		if (!cell)
+			return false;
+
+		cell->is_marked = true;
+
+		return true;
+	}
+
 private:
+
+	const Cell* _find(uint8_t number) const
+	{
+		const auto it = std::find_if(_numbers.begin(), _numbers.end(), [number](auto n) {
+			return number == n.value;
+			});
+		if (_numbers.end() == it)
+			return nullptr;
+
+		return &(*it);
+	}
+
+	Cell* _find(uint8_t number) { return const_cast<Board*>(this)->find(number); }
+
 	static Cell _string_to_cell(const std::string& str)
 	{
 		const auto value = std::stol(str);
@@ -113,27 +133,64 @@ private:
 	Table<Cell> _numbers;
 };
 
+class Player
+{
+public:
+	Player(Board& board)
+		: _board{ board }
+	{}
+
+	bool check_for_win(uint8_t number)
+	{
+		auto maked_a_number = _board.mark(number);
+		if (!maked_a_number)
+			return false;
+
+		return _board.state() == Board::State_t::win;
+	}
+
+private:
+
+	bool _check_board_for_win() const
+	{
+		return false;
+	}
+
+	Board _board;
+};
+
+template<typename NumberDrawer_T>
 class Game
 {
 	using Boards_t = std::vector<Board>;
+	using Players_t = std::vector<Player>;
 public:
 
 	Game()
 	{}
 
-	void load(std::istream& stream)
+	Game&& load(std::istream& stream)
 	{
 		_load_drawer(stream);
 		_load_boards(stream);
+
+		return std::move(*this);
+	}
+
+	Game&& play()
+	{
+		const auto winning_number = std::find_if(_drawer.begin(), _drawer.end(), [this](auto number) {
+			return true;
+			});
+
+		return std::move(*this);
 	}
 
 private:
 
 	void _load_drawer(std::istream& stream)
 	{
-		auto drawer = std::make_unique<FileBasedNumberDrawer>();
-		drawer->load(stream);
-		_drawer = std::move(drawer);
+		_drawer.load(stream);
 	}
 
 	void _load_boards(std::istream& stream)
@@ -162,8 +219,9 @@ private:
 		return stream.eof();
 	}
 
-	std::unique_ptr<INumberDrawer> _drawer;
+	NumberDrawer_T _drawer;
 	Boards_t _boards;
+	Players_t _players;
 };
 }
 

@@ -49,6 +49,8 @@ private:
 
 public:
 	using Size_t = decltype(_data.size());
+	using Iterator_t = decltype(_data.begin());
+	using ConstIterator_t = decltype(_data.cbegin());
 	using RowIterator_t = decltype(_data.begin());
 	using ConstRowIterator_t = decltype(_data.cbegin());
 
@@ -60,6 +62,12 @@ public:
 
 	Size_t rows() const { return _rows; }
 	Size_t cols() const { return _cols; }
+
+	ConstIterator_t begin() const { return _data.begin(); }
+	Iterator_t begin() { return _data.begin(); }
+
+	ConstIterator_t end() const { return _data.end(); }
+	Iterator_t end() { return _data.end(); }
 
 	ConstRowIterator_t row_begin(Size_t row) const { return std::next(_data.begin(), row * _cols); }
 	RowIterator_t row_begin(Size_t row) { return std::next(_data.begin(), row * _cols); }

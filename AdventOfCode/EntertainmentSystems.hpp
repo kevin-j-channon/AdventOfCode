@@ -79,7 +79,7 @@ public:
 
 	Board& load(std::istream& stream)
 	{
-		for (auto row = 0; row < _numbers.rows() && stream.good(); ++row) {
+		for (auto row = 0; row < _numbers.row_count() && stream.good(); ++row) {
 			if (!stream.good())
 			{
 				throw Exception("Invalid bingo board size board");
@@ -114,7 +114,7 @@ private:
 
 	bool _have_row_win() const
 	{
-		for (auto row = 0; row < _numbers.rows(); ++row)
+		for (auto row = 0; row < _numbers.row_count(); ++row)
 		{
 			if (_is_winning_row(row))
 				return true;
@@ -159,7 +159,7 @@ private:
 		std::getline(stream, line);
 
 		const auto value_strings = split(line, ' ', SplitBehaviour::drop_empty);
-		if (value_strings.size() != _numbers.cols()) {
+		if (value_strings.size() != _numbers.col_count()) {
 			throw Exception("Invalid bingo board size board");
 		}
 

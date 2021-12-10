@@ -60,8 +60,8 @@ public:
 		, _cols{cols}
 	{}
 
-	Size_t rows() const { return _rows; }
-	Size_t cols() const { return _cols; }
+	Size_t row_count() const { return _rows; }
+	Size_t col_count() const { return _cols; }
 
 	ConstIterator_t begin() const { return _data.begin(); }
 	Iterator_t begin() { return _data.begin(); }

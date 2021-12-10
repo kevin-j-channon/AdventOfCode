@@ -56,8 +56,8 @@ public:
 	TEST_METHOD(TableRowsAndColumsInitialisedCorrectly)
 	{
 		auto table = aoc::Table<uint8_t>{ 3, 5 };
-		Assert::AreEqual(size_t{ 3 }, table.rows());
-		Assert::AreEqual(size_t{ 5 }, table.cols());
+		Assert::AreEqual(size_t{ 3 }, table.row_count());
+		Assert::AreEqual(size_t{ 5 }, table.col_count());
 	}
 
 	TEST_METHOD(TableValuesCanBeSetAndRetrieved)

@@ -55,7 +55,7 @@ public:
 	using ConstRowIterator_t = decltype(_data.cbegin());
 
 	Table(Size_t rows, Size_t cols)
-		: _data(rows * cols)
+		: _data(rows* cols, Value_t{})
 		, _rows{rows}
 		, _cols{cols}
 	{}

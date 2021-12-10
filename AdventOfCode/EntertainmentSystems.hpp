@@ -66,13 +66,16 @@ public:
 
 	struct Cell
 	{
-		uint8_t value;
+		uint8_t value{ 0 };
 		bool is_marked{ false };
 	};
 
 	Board(uint8_t size)
 		: _numbers{ size, size }
 	{}
+
+	Board(const Board&) = default;
+	Board& operator=(const Board&) = default;
 
 	Board& load(std::istream& stream)
 	{
@@ -195,6 +198,8 @@ public:
 		return _board->state();
 	}
 
+	const Board* board() const { return _board; }
+
 private:
 
 	bool _check_board_for_win() const
@@ -212,27 +217,53 @@ class Game
 	using Players_t = std::vector<Player>;
 public:
 
-	Game()
-	{}
+	struct WinData
+	{
+		uint8_t number;
+		Board board;
+	};
 
-	Game&& load(std::istream& stream)
+	Game& load(std::istream& stream)
 	{
 		_load_drawer(stream);
 		_load_boards(stream);
+		
+		_assign_boards_to_players();
 
-		return std::move(*this);
+		return *this;
 	}
 
-	Game&& play()
+	Game& play()
 	{
 		const auto winning_number = std::find_if(_drawer.begin(), _drawer.end(), [this](auto number) {
-			return true;
+			_winning_player = std::find_if(_players.begin(), _players.end(), [number](auto& player) {
+				return player.play_number(number) == Board::State_t::win;
+				});
+
+			return _players.end() != _winning_player;
 			});
 
-		return std::move(*this);
+		if (winning_number != _drawer.end())
+			_winning_number = *winning_number;
+
+		return *this;
+	}
+
+	std::optional<WinData> get_winner() const
+	{
+		if (!_winning_number)
+			return std::nullopt;
+
+		return std::optional<WinData>(WinData{ *_winning_number, *_winning_player->board()});
 	}
 
 private:
+
+	void _assign_boards_to_players()
+	{
+		_players.resize(_boards.size());
+		std::transform(_boards.begin(), _boards.end(), _players.begin(), [](auto& board) {return Player().assign_board(board); });
+	}
 
 	void _load_drawer(std::istream& stream)
 	{
@@ -262,12 +293,14 @@ private:
 		if (!line.empty())
 			throw Exception(std::format("Line that should have been blank actually contained \"{}\"", line));
 
-		return stream.eof();
+		return !stream.eof();
 	}
 
 	NumberDrawer_T _drawer;
 	Boards_t _boards;
 	Players_t _players;
+	Players_t::const_iterator _winning_player;
+	std::optional<uint8_t> _winning_number;
 };
 }
 

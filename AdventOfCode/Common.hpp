@@ -53,7 +53,6 @@ public:
 	using Iterator_t = decltype(_data.begin());
 	using ConstIterator_t = decltype(_data.cbegin());
 	using RowIterator_t = decltype(_data.begin());
-	using ConstRowIterator_t = decltype(_data.cbegin());
 
 	using ConstRow_t = std::ranges::subrange<decltype(_data.cbegin())>;
 	using Row_t = std::ranges::subrange<decltype(_data.begin())>;
@@ -87,6 +86,58 @@ public:
 			std::next(_data.begin(), idx * _cols),
 			std::next(_data.begin(), (idx + 1) * _cols)
 		);
+	}
+
+	template<typename Iter_T, typename Size_T>
+	class RowIteratorBase_t
+	{
+	public:
+
+		RowIteratorBase_t(Iter_T begin, Size_T stride)
+			: _it{begin}
+			, _stride{stride}
+		{}
+
+		void operator++()
+		{
+			_it += _stride;
+		}
+
+		void operator--()
+		{
+			_it -= _stride;
+		}
+
+	private:
+
+		Iter_T _it;
+		Size_T _stride;
+	};
+
+	class ConstRowIterator_t : public RowIteratorBase_t<ConstIterator_t, Size_t>
+	{
+	public:
+		using value_type = ConstRow_t;
+		using reference = value_type&;
+		using pointer = value_type*;
+		using difference_type = std::ptrdiff_t;
+
+		ConstRowIterator_t(ConstIterator_t begin, Size_t stride)
+			: RowIteratorBase_t<ConstIterator_t, Size_t>{std::move(begin), stride}
+		{}
+
+		ConstRowIterator_t(const ConstRowIterator_t&) = default;
+		ConstRowIterator_t& operator=(const ConstRowIterator_t&) = default;
+	};
+
+	ConstRowIterator_t rows_begin() const
+	{
+		return ConstRowIterator_t{ _data.begin(), _cols };
+	}
+
+	ConstRowIterator_t rows_end() const
+	{
+		return ConstRowIterator_t{ _data.end(), _cols };
 	}
 
 	Value_t& operator()(Size_t row, Size_t col)

@@ -148,6 +148,21 @@ public:
 			}
 		}
 	}
+
+	TEST_METHOD(RowIteratorIncrements)
+	{
+		auto table = aoc::Table<uint8_t>{ 10, 10 };
+
+		// Set all the values
+		for (auto r = 0; r < 10; ++r) {
+			for (auto c = 0; c < 10; ++c) {
+				table.set(r, c, r * c);
+			}
+		}
+
+		auto row = table.rows_begin();
+		++row;
+	}
 };
 }
 

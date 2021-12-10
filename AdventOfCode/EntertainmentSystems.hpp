@@ -173,23 +173,26 @@ public:
 		: _board{ nullptr }
 	{}
 
-	Player(Board& board)
-		: _board{ &board }
-	{}
-
 	Player(const Player&) = default;
 	Player& operator=(const Player&) = default;
 
-	bool check_for_win(uint8_t number)
+	Player& assign_board(Board& board)
+	{
+		_board = &board;
+
+		return *this;
+	}
+
+	Board::State_t play_number(uint8_t number)
 	{
 		if (!_board)
-			return false;
+			throw Exception("Trying to play a Bingo without a board");
 
 		auto maked_a_number = _board->mark(number);
 		if (!maked_a_number)
-			return false;
+			return Board::State_t::no_win;
 
-		return _board->state() == Board::State_t::win;
+		return _board->state();
 	}
 
 private:

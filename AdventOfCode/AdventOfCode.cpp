@@ -14,6 +14,18 @@
 #include <filesystem>
 #include <algorithm>
 
+template<>
+std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString<aoc::bingo::Board::State_t>(const enum aoc::bingo::Board::State_t& state)
+{
+	switch (state)
+	{
+	case aoc::bingo::Board::State_t::no_win: return L"no win";
+	case aoc::bingo::Board::State_t::win: return L"win";
+	default:
+		return L"UNKNOWN";
+	}
+}
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace std::string_literals;
 
@@ -647,6 +659,11 @@ public:
 			.play();
 	}
 
+	TEST_METHOD(PlayingWithoutABoardCausesAnException)
+	{
+		Assert::ExpectException<aoc::Exception>([]() {aoc::bingo::Player().play_number(10); });
+	}
+
 	TEST_METHOD(PlayerCanCheckBoardIfBoardHasWon)
 	{
 		constexpr auto board_str =
@@ -658,9 +675,11 @@ public:
 
 		auto board = aoc::bingo::Board{ 3 }.load(ss);
 
-		auto player = aoc::bingo::Player{ board };
+		auto player = aoc::bingo::Player().assign_board(board);
 
-		Assert::IsFalse(player.check_for_win(22));
+		Assert::AreEqual(aoc::bingo::Board::State_t::no_win, player.play_number(22));
+		Assert::AreEqual(aoc::bingo::Board::State_t::no_win, player.play_number(13));
+		Assert::AreEqual(aoc::bingo::Board::State_t::win, player.play_number(17));
 	}
 };
 }

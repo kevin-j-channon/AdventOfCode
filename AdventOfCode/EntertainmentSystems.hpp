@@ -85,7 +85,7 @@ public:
 				throw Exception("Invalid bingo board size board");
 			}
 
-			_load_row(stream, _numbers.row_begin(row));
+			_load_row(stream, _numbers.row(row).begin());
 		}
 
 		return *this;
@@ -125,7 +125,7 @@ private:
 	
 	bool _is_winning_row(uint8_t row) const
 	{
-		return std::all_of(_numbers.row_begin(row), _numbers.row_end(row),
+		return std::all_of(_numbers.row(row).begin(), _numbers.row(row).end(),
 			[](const auto& cell) {
 				return cell.is_marked;
 			});

@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <ranges>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -54,6 +55,9 @@ public:
 	using RowIterator_t = decltype(_data.begin());
 	using ConstRowIterator_t = decltype(_data.cbegin());
 
+	using ConstRow_t = std::ranges::subrange<decltype(_data.cbegin())>;
+	using Row_t = std::ranges::subrange<decltype(_data.begin())>;
+
 	Table(Size_t rows, Size_t cols)
 		: _data(rows* cols, Value_t{})
 		, _rows{rows}
@@ -69,11 +73,21 @@ public:
 	ConstIterator_t end() const { return _data.end(); }
 	Iterator_t end() { return _data.end(); }
 
-	ConstRowIterator_t row_begin(Size_t row) const { return std::next(_data.begin(), row * _cols); }
-	RowIterator_t row_begin(Size_t row) { return std::next(_data.begin(), row * _cols); }
+	ConstRow_t row(Size_t idx) const
+	{
+		return ConstRow_t(
+			std::next(_data.begin(), idx * _cols),
+			std::next(_data.begin(), (idx + 1) * _cols)
+		);
+	}
 
-	ConstRowIterator_t row_end(Size_t row) const { return std::next(_data.begin(), (row + 1) * _cols); }
-	RowIterator_t row_end(Size_t row) { return std::next(_data.begin(), (row + 1) * _cols); }
+	Row_t row(Size_t idx)
+	{
+		return Row_t(
+			std::next(_data.begin(), idx * _cols),
+			std::next(_data.begin(), (idx + 1) * _cols)
+		);
+	}
 
 	Value_t& operator()(Size_t row, Size_t col)
 	{

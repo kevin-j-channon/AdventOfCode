@@ -116,14 +116,14 @@ public:
 		// Set all the values
 		for (auto r = 0; r < 10; ++r) {
 			auto c = 0;
-			for (auto it = table.row_begin(r); it != table.row_end(r); ++it, ++c) {
+			for (auto it = table.row(r).begin(); it != table.row(r).end(); ++it, ++c) {
 				*it = r * c;
 			}
 		}
 
 		for (auto r = 0; r < 10; ++r) {
 			auto c = 0;
-			for (auto it = table.row_begin(r); it != table.row_end(r); ++it, ++c) {
+			for (auto it = table.row(r).begin(); it != table.row(r).end(); ++it, ++c) {
 				Assert::AreEqual(static_cast<uint8_t>(r * c), *it);
 			}
 		}

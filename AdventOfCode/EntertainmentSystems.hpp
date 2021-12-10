@@ -58,6 +58,12 @@ class Board
 {
 public:
 
+	enum class State_t
+	{
+		no_win,
+		win
+	};
+
 	struct Cell
 	{
 		uint8_t value;
@@ -93,7 +99,34 @@ public:
 		return true;
 	}
 
+	State_t state() const
+	{
+		if (_have_row_win())
+			return State_t::win;
+
+		return State_t::no_win;
+	}
+
 private:
+
+	bool _have_row_win() const
+	{
+		for (auto row = 0; row < _numbers.rows(); ++row)
+		{
+			if (_is_winning_row(row))
+				return true;
+		}
+
+		return false;
+	}
+	
+	bool _is_winning_row(uint8_t row) const
+	{
+		return std::all_of(_numbers.row_begin(row), _numbers.row_end(row),
+			[](const auto& cell) {
+				return cell.is_marked;
+			});
+	}
 
 	const Cell* _find(uint8_t number) const
 	{
@@ -106,7 +139,7 @@ private:
 		return &(*it);
 	}
 
-	Cell* _find(uint8_t number) { return const_cast<Board*>(this)->find(number); }
+	Cell* _find(uint8_t number) { return const_cast<Cell*>(const_cast<const Board*>(this)->_find(number)); }
 
 	static Cell _string_to_cell(const std::string& str)
 	{
@@ -136,17 +169,27 @@ private:
 class Player
 {
 public:
-	Player(Board& board)
-		: _board{ board }
+	Player()
+		: _board{ nullptr }
 	{}
+
+	Player(Board& board)
+		: _board{ &board }
+	{}
+
+	Player(const Player&) = default;
+	Player& operator=(const Player&) = default;
 
 	bool check_for_win(uint8_t number)
 	{
-		auto maked_a_number = _board.mark(number);
+		if (!_board)
+			return false;
+
+		auto maked_a_number = _board->mark(number);
 		if (!maked_a_number)
 			return false;
 
-		return _board.state() == Board::State_t::win;
+		return _board->state() == Board::State_t::win;
 	}
 
 private:
@@ -156,7 +199,7 @@ private:
 		return false;
 	}
 
-	Board _board;
+	Board* _board;
 };
 
 template<typename NumberDrawer_T>

@@ -116,17 +116,16 @@ private:
 	{
 		for (auto row = 0; row < _numbers.row_count(); ++row)
 		{
-			if (_is_winning_row(row))
+			if (_is_winning_row(_numbers.row(row)))
 				return true;
 		}
 
 		return false;
 	}
 	
-	bool _is_winning_row(uint8_t row) const
+	bool _is_winning_row(const Table<Cell>::ConstRow_t& row) const
 	{
-		return std::all_of(_numbers.row(row).begin(), _numbers.row(row).end(),
-			[](const auto& cell) {
+		return std::all_of(row.begin(), row.end(), [](const auto& cell) {
 				return cell.is_marked;
 			});
 	}

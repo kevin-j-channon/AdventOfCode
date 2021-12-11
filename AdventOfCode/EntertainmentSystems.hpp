@@ -4,6 +4,8 @@
 
 #include "StringOperations.hpp"
 
+#include <armadillo>
+
 #include <istream>
 #include <string>
 #include <vector>
@@ -79,13 +81,13 @@ public:
 
 	Board& load(std::istream& stream)
 	{
-		for (auto row = 0; row < _numbers.row_count() && stream.good(); ++row) {
+		for (auto row = 0; row < _numbers.n_rows && stream.good(); ++row) {
 			if (!stream.good())
 			{
 				throw Exception("Invalid bingo board size board");
 			}
 
-			_load_row(stream, _numbers.row(row).begin());
+			_load_row(stream, row);
 		}
 
 		return *this;
@@ -114,31 +116,34 @@ private:
 
 	bool _have_row_win() const
 	{
-		for (auto row = 0; row < _numbers.row_count(); ++row)
+		for (auto row = 0; row < _numbers.n_rows; ++row)
 		{
-			if (_is_winning_row(_numbers.row(row)))
+			if (_is_winning_row(row))
 				return true;
 		}
 
 		return false;
 	}
 	
-	bool _is_winning_row(const Table<Cell>::ConstRow_t& row) const
+	bool _is_winning_row(size_t row_idx) const
 	{
-		return std::all_of(row.begin(), row.end(), [](const auto& cell) {
-				return cell.is_marked;
-			});
+		const auto row = _numbers.row(row_idx);
+		for (size_t cell_idx = 0; cell_idx < row.n_elem; ++cell_idx) {
+			if (!row[cell_idx].is_marked)
+				return false;
+		}
+
+		return true;
 	}
 
 	const Cell* _find(uint8_t number) const
 	{
-		const auto it = std::find_if(_numbers.begin(), _numbers.end(), [number](auto n) {
-			return number == n.value;
-			});
-		if (_numbers.end() == it)
-			return nullptr;
+		for (const auto& cell : _numbers) {
+			if (cell.value == number)
+				return &cell;
+		}
 
-		return &(*it);
+		return nullptr;
 	}
 
 	Cell* _find(uint8_t number) { return const_cast<Cell*>(const_cast<const Board*>(this)->_find(number)); }
@@ -152,20 +157,23 @@ private:
 		return Cell{ static_cast<uint8_t>(value), false };
 	}
 
-	void _load_row(std::istream& stream, Table<Cell>::RowIterator_t row)
+	void _load_row(std::istream& stream, size_t row_idx)
 	{
 		auto line = std::string{};
 		std::getline(stream, line);
 
 		const auto value_strings = split(line, ' ', SplitBehaviour::drop_empty);
-		if (value_strings.size() != _numbers.col_count()) {
+		if (value_strings.size() != _numbers.n_cols) {
 			throw Exception("Invalid bingo board size board");
 		}
 
-		std::transform(value_strings.begin(), value_strings.end(), row, _string_to_cell);
+		auto row = _numbers.row(row_idx);
+		for (size_t idx = 0; idx < row.n_elem; ++idx) {
+			row[idx] = _string_to_cell(value_strings[idx]);
+		}
 	}
 
-	Table<Cell> _numbers;
+	arma::field<Cell> _numbers;
 };
 
 class Player

@@ -84,6 +84,9 @@ public:
 
 	const Id_t& id() const { return _id; }
 
+	auto begin() const { return _numbers.begin(); }
+	auto end() const { return _numbers.end(); }
+
 	Board& load(std::istream& stream)
 	{
 		for (auto row = 0; row < _numbers.n_rows && stream.good(); ++row) {
@@ -287,7 +290,23 @@ public:
 		return std::optional<WinData>(WinData{ *_winning_number, *_winning_player->board()});
 	}
 
+	std::optional<uint32_t> score() const
+	{
+		const auto win_data = get_winner();
+		if (!win_data)
+			return std::nullopt;
+
+		return win_data->number * _sum_unmarked_cells(win_data->board);
+	}
+
 private:
+
+	uint32_t _sum_unmarked_cells(const Board& board) const
+	{
+		return std::accumulate(board.begin(), board.end(), uint32_t{ 0 }, [](auto curr, const auto& cell) {
+			return cell.is_marked ? curr : curr + cell.value;
+			});
+	}
 
 	void _assign_boards_to_players()
 	{

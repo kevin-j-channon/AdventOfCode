@@ -214,14 +214,26 @@ class Player
 public:
 	Player()
 		: _board{ nullptr }
+		, _in_play{ false }
 	{}
 
-	Player(const Player&) = default;
-	Player& operator=(const Player&) = default;
+	Player(const Player& other)
+		: _board{other._board}
+		, _in_play{other._in_play}
+	{}
+
+	Player& operator=(const Player& other)
+	{
+		_board = other._board;
+		_in_play = other._in_play;
+
+		return *this;
+	}
 
 	Player& assign_board(Board& board)
 	{
 		_board = &board;
+		_in_play = Board::State_t::no_win == _board->state();
 
 		return *this;
 	}
@@ -232,7 +244,7 @@ public:
 			throw Exception("Trying to play a Bingo without a board");
 
 		if (!_in_play)
-			return Board::State_t::win;
+			throw Exception(std::format("Trying to play an out-of-play board ({})", _board->id()));
 
 		auto maked_a_number = _board->mark(number);
 		if (!maked_a_number)
@@ -279,6 +291,8 @@ public:
 
 	Game& play_to_win()
 	{
+		_winning_player = _players.end();
+
 		const auto winning_number = std::find_if(_drawer.begin(), _drawer.end(), [this](auto number) {
 			_winning_player = std::find_if(_players.begin(), _players.end(), [number](auto& player) {
 				return player.play_number(number) == Board::State_t::win;
@@ -295,26 +309,25 @@ public:
 
 	Game& play_to_lose()
 	{
+		_winning_player = _players.end();
+
 		const auto winning_number = std::find_if(_drawer.begin(), _drawer.end(), [this](auto number) {
 
-			// Remove any players that have already won.
-			const auto in_play_end = std::remove_if(_players.begin(), _players.end(), [](auto& p) {
+			_players.erase(std::remove_if(_players.begin(), _players.end(), [](auto& p) {
 				return !p.is_in_play();
-				});
+				}), _players.end());
 
-			// Play all the remaining players.
-			std::for_each(_players.begin(), in_play_end, [number](auto& player) { player.play_number(number); });
+			std::for_each(_players.begin(), _players.end(), [number](auto& player) { player.play_number(number); });
 
-			// Check for any new winner.
-			_winning_player = std::find_if(_players.begin(), in_play_end, [](auto& player) {
+			_winning_player = std::find_if(_players.begin(), _players.end(), [](auto& player) {
 				return !player.is_in_play();
 				});
 
-			if (_winning_player == in_play_end) {
+			if (_winning_player == _players.end()) {
 				return false;
 			}
 
-			if (std::distance(_players.begin(), in_play_end) > 1) {
+			if (_players.size() > 1) {
 				return false;
 			}
 

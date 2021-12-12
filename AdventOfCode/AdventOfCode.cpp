@@ -1,9 +1,11 @@
+#include "CppUnitTest.h"
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
 #include "Common.hpp"
 #include "DiagnosticLog.hpp"
 #include "BoatSystems.hpp"
 #include "AdventOfCode.hpp"
 
-#include "CppUnitTest.h"
 
 #include <vector>
 #include <cstdint>
@@ -14,7 +16,6 @@
 #include <filesystem>
 #include <algorithm>
 
-using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace std::string_literals;
 
 template<>
@@ -814,7 +815,7 @@ public:
 		Assert::AreEqual(uint32_t{ 4512 }, *game_score);
 	}
 
-	TEST_METHOD(EvaluateFullInput)
+	TEST_METHOD(FindWinningScoreForFullInput)
 	{
 		std::ifstream data_file(DATA_DIR / "Day4_input.txt");
 		Assert::IsTrue(data_file.is_open());
@@ -862,6 +863,20 @@ public:
 		Assert::IsTrue(std::nullopt != winner);
 		Assert::AreEqual(uint8_t{ 13 }, winner->number);
 		Assert::AreEqual(aoc::bingo::Board::Id_t{ 1 }, winner->board.id());
+	}
+
+	TEST_METHOD(FindLosingScoreForFullInput)
+	{
+		std::ifstream data_file(DATA_DIR / "Day4_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto game_score = aoc::Submarine().entertainment().bingo_game()
+			.load(data_file)
+			.play_to_lose()
+			.score();
+
+		Assert::IsTrue(std::nullopt != game_score);
+		Assert::AreEqual(uint32_t{ 6594 }, *game_score);
 	}
 };
 }

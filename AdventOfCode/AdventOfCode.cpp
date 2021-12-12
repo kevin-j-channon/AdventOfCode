@@ -50,6 +50,33 @@ public:
 		Assert::AreEqual(6, v3.y);
 	}
 };
+
+TEST_CLASS(Line2d)
+{
+public:
+	TEST_METHOD(StreamExtractionWorks)
+	{
+		std::stringstream ss("0,9 -> 5,7");
+		auto line = aoc::Line2d<uint32_t>{};
+
+		ss >> line;
+
+		Assert::AreEqual(uint32_t{ 0 }, line.start.x);
+		Assert::AreEqual(uint32_t{ 9 }, line.start.y);
+		Assert::AreEqual(uint32_t{ 5 }, line.finish.x);
+		Assert::AreEqual(uint32_t{ 7 }, line.finish.y);
+	}
+
+	TEST_METHOD(ExtractStringFailsIfStartIsMalformed)
+	{
+		std::stringstream ss("09 -> 5,7");
+		auto line = aoc::Line2d<uint32_t>{};
+
+		ss >> line;
+
+		Assert::IsTrue(ss.fail());
+	}
+};
 }
 
 namespace string_operations

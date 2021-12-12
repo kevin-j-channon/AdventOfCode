@@ -68,3 +68,45 @@ std::basic_string<Char_T> strip(const std::basic_string<Char_T>& str)
 
     return std::basic_string<Char_T>(begin, end);
 }
+
+template<typename Value_T>
+Value_T string_to(const std::string& str)
+{
+    static_assert(false, "Unimplemented string conversion");
+}
+
+template<>
+int string_to(const std::string& str)
+{
+    return std::stol(str);
+}
+
+template<>
+long string_to(const std::string& str)
+{
+    return std::stol(str);
+}
+
+template<>
+unsigned int string_to(const std::string& str)
+{
+    return std::stol(str);
+}
+
+template<>
+unsigned long string_to(const std::string& str)
+{
+    return std::stoul(str);
+}
+
+template<>
+long long string_to(const std::string& str)
+{
+    return std::stoul(str);
+}
+
+template<>
+unsigned long long string_to(const std::string& str)
+{
+    return std::stoull(str);
+}

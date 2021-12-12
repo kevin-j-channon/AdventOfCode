@@ -818,7 +818,7 @@ public:
 		std::ifstream data_file(DATA_DIR / "Day4_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
-		const auto game_score = aoc::bingo::Game<aoc::bingo::FileBasedNumberDrawer<uint8_t>>{}
+		const auto game_score = aoc::Submarine().entertainment().bingo_game()
 			.load(data_file)
 			.play()
 			.score();

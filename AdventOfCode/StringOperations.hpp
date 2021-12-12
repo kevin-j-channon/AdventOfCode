@@ -78,7 +78,7 @@ Value_T string_to(const std::string& str)
 template<>
 int string_to(const std::string& str)
 {
-    return std::stol(str);
+    return std::stoi(str);
 }
 
 template<>

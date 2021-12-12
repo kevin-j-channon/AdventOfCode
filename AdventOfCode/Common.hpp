@@ -108,7 +108,7 @@ namespace std
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
-istream& operator>>(istream& is, aoc::Line2d<Value_T>& line)
+istream& operator>>(istream& is, aoc::Line2d<Value_T>& line) try
 {
 	line = aoc::Line2d<Value_T>{{0, 0}, {0, 0}};
 
@@ -149,6 +149,16 @@ istream& operator>>(istream& is, aoc::Line2d<Value_T>& line)
 	line.finish = std::move(finish);
 
 	return is;
+}
+catch (std::invalid_argument&)
+{
+	is.setstate(std::ios::failbit);
+	throw aoc::Exception("Failed to extract Line2d from stream");
+}
+catch (std::out_of_range&)
+{
+	is.setstate(std::ios::failbit);
+	throw aoc::Exception("Failed to extract Line2d from stream");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

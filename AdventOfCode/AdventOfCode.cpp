@@ -67,7 +67,7 @@ public:
 		Assert::AreEqual(uint32_t{ 7 }, line.finish.y);
 	}
 
-	TEST_METHOD(ExtractStringFailsIfStartIsMalformed)
+	TEST_METHOD(StreamExtractionFailsIfStartIsMalformed)
 	{
 		std::stringstream ss("09 -> 5,7");
 		auto line = aoc::Line2d<uint32_t>{};
@@ -77,7 +77,7 @@ public:
 		Assert::IsTrue(ss.fail());
 	}
 
-	TEST_METHOD(ExtractStringFailsIfFinishIsMalformed)
+	TEST_METHOD(StreamExtractionFailsIfFinishIsMalformed)
 	{
 		std::stringstream ss("0,9 -> 57");
 		auto line = aoc::Line2d<uint32_t>{};
@@ -87,9 +87,19 @@ public:
 		Assert::IsTrue(ss.fail());
 	}
 
-	TEST_METHOD(ExtractStringFailsIfArrowIsMalformed)
+	TEST_METHOD(StreamExtractionFailsIfArrowIsMalformed)
 	{
 		std::stringstream ss("0,9 , 5,7");
+		auto line = aoc::Line2d<uint32_t>{};
+
+		Assert::ExpectException<aoc::Exception>([&]() { ss >> line; });
+
+		Assert::IsTrue(ss.fail());
+	}
+
+	TEST_METHOD(StreamExtractionFailsIfThereAreNonnumericElements)
+	{
+		std::stringstream ss("0,X , 5,7");
 		auto line = aoc::Line2d<uint32_t>{};
 
 		Assert::ExpectException<aoc::Exception>([&]() { ss >> line; });

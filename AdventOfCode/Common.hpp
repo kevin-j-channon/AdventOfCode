@@ -108,6 +108,39 @@ namespace std
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
+istream& operator>>(std::istream& is, aoc::Vec2d<Value_T>& vec) try
+{
+	if (is.eof())
+		return is;
+
+	auto str = std::string{};
+	is >> str;
+
+	auto x_and_y_str = split(str, ',');
+	if (x_and_y_str.size() != 2) {
+		is.setstate(std::ios::failbit);
+		throw aoc::Exception("Failed to read Vec2d");
+	}
+
+	vec.x = string_to<Value_T>(x_and_y_str[0]);
+	vec.y = string_to<Value_T>(x_and_y_str[1]);
+
+	return is;
+}
+catch (std::invalid_argument&)
+{
+	is.setstate(std::ios::failbit);
+	throw aoc::Exception("Failed to extract Line2d from stream");
+}
+catch (std::out_of_range&)
+{
+	is.setstate(std::ios::failbit);
+	throw aoc::Exception("Failed to extract Line2d from stream");
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
 istream& operator>>(istream& is, aoc::Line2d<Value_T>& line) try
 {
 	line = aoc::Line2d<Value_T>{{0, 0}, {0, 0}};
@@ -115,38 +148,17 @@ istream& operator>>(istream& is, aoc::Line2d<Value_T>& line) try
 	if (is.eof())
 		return is;
 
-	auto point_str = std::string{};
-	is >> point_str;
+	is >> line.start;
 
-	auto x_and_y_str = split(point_str, ',');
-	if (x_and_y_str.size() != 2) {
+	// Skip the arrow part
+	char arrow_buffer[5] = { 0 };
+	is.read(arrow_buffer, 4);
+	if (strcmp(arrow_buffer, " -> ") != 0) {
 		is.setstate(std::ios::failbit);
-		throw aoc::Exception("Failed to read line start point");
+		throw aoc::Exception("Invalid arrow in Line2d serialization");
 	}
 
-	auto start = aoc::Vec2d<Value_T>{ static_cast<Value_T>(std::stol(x_and_y_str[0])), static_cast<Value_T>(std::stol(x_and_y_str[1])) };
-
-	// This isn't a point, but the arrow. We reuse this string though, instead of creating a pointless one.
-	is >> point_str;
-	if (point_str != "->") {
-		is.setstate(std::ios::failbit);
-		throw aoc::Exception(std::format("Invalid point seperator: {}", point_str));
-	}
-
-	// This is the second point.
-	point_str.clear();
-	is >> point_str;
-
-	x_and_y_str = split(point_str, ',');
-	if (x_and_y_str.size() != 2) {
-		is.setstate(std::ios::failbit);
-		throw aoc::Exception("Failed to read line start point");
-	}
-
-	auto finish = aoc::Vec2d<Value_T>{ string_to<uint32_t>(x_and_y_str[0]), string_to<uint32_t>(x_and_y_str[1]) };
-
-	line.start = std::move(start);
-	line.finish = std::move(finish);
+	is >> line.finish;
 
 	return is;
 }

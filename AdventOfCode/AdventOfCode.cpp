@@ -49,6 +49,37 @@ public:
 		Assert::AreEqual(4, v3.x);
 		Assert::AreEqual(6, v3.y);
 	}
+
+	TEST_METHOD(StreamExtractionWorksForValidStream)
+	{
+		std::stringstream ss("1,2");
+		auto v = aoc::Vec2d<uint32_t>{};
+
+		ss >> v;
+
+		Assert::AreEqual(uint32_t{ 1 }, v.x);
+		Assert::AreEqual(uint32_t{ 2 }, v.y);
+	}
+
+	TEST_METHOD(StreamExtractionFailsIfMalformed)
+	{
+		std::stringstream ss("09");
+		auto v = aoc::Vec2d<uint32_t>{};
+
+		Assert::ExpectException<aoc::Exception>([&]() { ss >> v; });
+
+		Assert::IsTrue(ss.fail());
+	}
+
+	TEST_METHOD(StreamExtractionFailsIfThereAreNonnumericElements)
+	{
+		std::stringstream ss("0,X");
+		auto v = aoc::Vec2d<uint32_t>{};
+
+		Assert::ExpectException<aoc::Exception>([&]() { ss >> v; });
+
+		Assert::IsTrue(ss.fail());
+	}
 };
 
 TEST_CLASS(Line2d)

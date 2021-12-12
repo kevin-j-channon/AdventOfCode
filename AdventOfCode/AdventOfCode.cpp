@@ -171,26 +171,32 @@ public:
 
 	TEST_METHOD(IsVerticalIdentifiesAnUpwardVerticalLine)
 	{
-		std::stringstream ss("7,0 -> 7,4");
-		const auto line = aoc::Line2d<uint32_t>{}.from(ss);
-
-		Assert::IsTrue(aoc::is_vertical(line));
+		Assert::IsTrue(aoc::is_vertical(aoc::Line2d<uint32_t>{ {7, 0}, {7, 4} }));
 	}
 
 	TEST_METHOD(IsVerticalIdentifiesADownwardVerticalLine)
 	{
-		std::stringstream ss("10,5 -> 10,1");
-		const auto line = aoc::Line2d<uint32_t>{}.from(ss);
-
-		Assert::IsTrue(aoc::is_vertical(line));
+		Assert::IsTrue(aoc::is_vertical(aoc::Line2d<uint32_t>{ {10, 5}, {10, 1} }));
 	}
 
 	TEST_METHOD(IsVerticalIsFalseForNonVerticalLines)
 	{
-		std::stringstream ss("10,5 -> 9,1");
-		const auto line = aoc::Line2d<uint32_t>{}.from(ss);
+		Assert::IsFalse(aoc::is_vertical(aoc::Line2d<uint32_t>{ {10, 5}, {9, 1}}));
+	}
 
-		Assert::IsFalse(aoc::is_vertical(line));
+	TEST_METHOD(IsHorizontalIdentifiesALeftHorizontalLine)
+	{
+		Assert::IsTrue(aoc::is_horizontal(aoc::Line2d<uint32_t>{ {7, 0}, {10, 0}}));
+	}
+
+	TEST_METHOD(IsHorizontalIdentifiesARightHorizontalLine)
+	{
+		Assert::IsTrue(aoc::is_horizontal(aoc::Line2d<uint32_t>{ {10, 5}, {4, 5}}));
+	}
+
+	TEST_METHOD(IsHorizontalIsFalseForNonVerticalLines)
+	{
+		Assert::IsFalse(aoc::is_horizontal(aoc::Line2d<uint32_t>{ {3, 5}, {9, 1}}));
 	}
 };
 }

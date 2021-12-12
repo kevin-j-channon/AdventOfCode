@@ -176,6 +176,22 @@ public:
 
 		Assert::IsTrue(aoc::is_vertical(line));
 	}
+
+	TEST_METHOD(IsVerticalIdentifiesADownwardVerticalLine)
+	{
+		std::stringstream ss("10,5 -> 10,1");
+		const auto line = aoc::Line2d<uint32_t>{}.from(ss);
+
+		Assert::IsTrue(aoc::is_vertical(line));
+	}
+
+	TEST_METHOD(IsVerticalIsFalseForNonVerticalLines)
+	{
+		std::stringstream ss("10,5 -> 9,1");
+		const auto line = aoc::Line2d<uint32_t>{}.from(ss);
+
+		Assert::IsFalse(aoc::is_vertical(line));
+	}
 };
 }
 

@@ -76,6 +76,16 @@ public:
 
 		Assert::IsTrue(ss.fail());
 	}
+
+	TEST_METHOD(ExtractStringFailsIfFinishIsMalformed)
+	{
+		std::stringstream ss("0,9 -> 57");
+		auto line = aoc::Line2d<uint32_t>{};
+
+		ss >> line;
+
+		Assert::IsTrue(ss.fail());
+	}
 };
 }
 

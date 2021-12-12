@@ -116,6 +116,11 @@ istream& operator>>(istream& is, aoc::Line2d<Value_T>& line)
 	is >> point_str;
 
 	x_and_y_str = split(point_str, ',');
+	if (x_and_y_str.size() != 2) {
+		is.setstate(std::ios::failbit);
+		return is;
+	}
+
 	auto finish = aoc::Vec2d<Value_T>{ string_to<uint32_t>(x_and_y_str[0]), string_to<uint32_t>(x_and_y_str[1]) };
 
 	line.start = std::move(start);

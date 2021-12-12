@@ -812,5 +812,19 @@ public:
 		Assert::IsTrue(std::nullopt != game_score);
 		Assert::AreEqual(uint32_t{ 4512 }, *game_score);
 	}
+
+	TEST_METHOD(EvaluateFullInput)
+	{
+		std::ifstream data_file(DATA_DIR / "Day4_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto game_score = aoc::bingo::Game<aoc::bingo::FileBasedNumberDrawer<uint8_t>>{}
+			.load(data_file)
+			.play()
+			.score();
+
+		Assert::IsTrue(std::nullopt != game_score);
+		Assert::AreEqual(uint32_t{ 2745 }, *game_score);
+	}
 };
 }

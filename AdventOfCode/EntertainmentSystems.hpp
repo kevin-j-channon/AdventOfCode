@@ -113,11 +113,13 @@ public:
 
 	State_t state() const
 	{
-		if (_have_row_win())
+		if (_have_row_win()) {
 			return State_t::win;
+		}
 
-		if (_have_column_win())
+		if (_have_column_win()) {
 			return State_t::win;
+		}
 
 		return State_t::no_win;
 	}
@@ -229,18 +231,27 @@ public:
 		if (!_board)
 			throw Exception("Trying to play a Bingo without a board");
 
+		if (!_in_play)
+			return Board::State_t::win;
+
 		auto maked_a_number = _board->mark(number);
 		if (!maked_a_number)
 			return Board::State_t::no_win;
 
-		return _board->state();
+		const auto board_state = _board->state();
+		_in_play = Board::State_t::no_win == board_state;
+
+		return board_state;
 	}
+
+	bool is_in_play() const { return _in_play; }
 
 	const Board* board() const { return _board; }
 
 private:
 
 	Board* _board;
+	bool _in_play;
 };
 
 template<typename NumberDrawer_T>
@@ -266,7 +277,7 @@ public:
 		return *this;
 	}
 
-	Game& play()
+	Game& play_to_win()
 	{
 		const auto winning_number = std::find_if(_drawer.begin(), _drawer.end(), [this](auto number) {
 			_winning_player = std::find_if(_players.begin(), _players.end(), [number](auto& player) {
@@ -274,6 +285,40 @@ public:
 				});
 
 			return _players.end() != _winning_player;
+			});
+
+		if (winning_number != _drawer.end())
+			_winning_number = *winning_number;
+
+		return *this;
+	}
+
+	Game& play_to_lose()
+	{
+		const auto winning_number = std::find_if(_drawer.begin(), _drawer.end(), [this](auto number) {
+
+			// Remove any players that have already won.
+			const auto in_play_end = std::remove_if(_players.begin(), _players.end(), [](auto& p) {
+				return !p.is_in_play();
+				});
+
+			// Play all the remaining players.
+			std::for_each(_players.begin(), in_play_end, [number](auto& player) { player.play_number(number); });
+
+			// Check for any new winner.
+			_winning_player = std::find_if(_players.begin(), in_play_end, [](auto& player) {
+				return !player.is_in_play();
+				});
+
+			if (_winning_player == in_play_end) {
+				return false;
+			}
+
+			if (std::distance(_players.begin(), in_play_end) > 1) {
+				return false;
+			}
+
+			return true;
 			});
 
 		if (winning_number != _drawer.end())

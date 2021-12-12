@@ -54,7 +54,7 @@ public:
 TEST_CLASS(Line2d)
 {
 public:
-	TEST_METHOD(StreamExtractionWorks)
+	TEST_METHOD(StreamExtractionWorksForValidStream)
 	{
 		std::stringstream ss("0,9 -> 5,7");
 		auto line = aoc::Line2d<uint32_t>{};
@@ -80,6 +80,16 @@ public:
 	TEST_METHOD(ExtractStringFailsIfFinishIsMalformed)
 	{
 		std::stringstream ss("0,9 -> 57");
+		auto line = aoc::Line2d<uint32_t>{};
+
+		ss >> line;
+
+		Assert::IsTrue(ss.fail());
+	}
+
+	TEST_METHOD(ExtractStringFailsIfArrowIsMalformed)
+	{
+		std::stringstream ss("0,9 , 5,7");
 		auto line = aoc::Line2d<uint32_t>{};
 
 		ss >> line;

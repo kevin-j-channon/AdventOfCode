@@ -97,6 +97,9 @@ istream& operator>>(istream& is, aoc::Line2d<Value_T>& line)
 {
 	line = aoc::Line2d<Value_T>{{0, 0}, {0, 0}};
 
+	if (is.eof())
+		return is;
+
 	auto point_str = std::string{};
 	is >> point_str;
 
@@ -110,6 +113,10 @@ istream& operator>>(istream& is, aoc::Line2d<Value_T>& line)
 
 	// This isn't a point, but the arrow. We reuse this string though, instead of creating a pointless one.
 	is >> point_str;
+	if (point_str != "->") {
+		is.setstate(std::ios::failbit);
+		return is;
+	}
 
 	// This is the second point.
 	point_str.clear();

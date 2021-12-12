@@ -90,6 +90,14 @@ struct Line2d
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<typename Value_T>
+bool is_vertical(const Line2d<Value_T>& line)
+{
+	return line.start.x == line.finish.x;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -113,7 +121,7 @@ istream& operator>>(istream& is, aoc::Line2d<Value_T>& line)
 	auto x_and_y_str = split(point_str, ',');
 	if (x_and_y_str.size() != 2) {
 		is.setstate(std::ios::failbit);
-		return is;
+		throw aoc::Exception("Failed to read line start point");
 	}
 
 	auto start = aoc::Vec2d<Value_T>{ static_cast<Value_T>(std::stol(x_and_y_str[0])), static_cast<Value_T>(std::stol(x_and_y_str[1])) };
@@ -122,7 +130,7 @@ istream& operator>>(istream& is, aoc::Line2d<Value_T>& line)
 	is >> point_str;
 	if (point_str != "->") {
 		is.setstate(std::ios::failbit);
-		return is;
+		throw aoc::Exception(std::format("Invalid point seperator: {}", point_str));
 	}
 
 	// This is the second point.
@@ -132,7 +140,7 @@ istream& operator>>(istream& is, aoc::Line2d<Value_T>& line)
 	x_and_y_str = split(point_str, ',');
 	if (x_and_y_str.size() != 2) {
 		is.setstate(std::ios::failbit);
-		return is;
+		throw aoc::Exception("Failed to read line start point");
 	}
 
 	auto finish = aoc::Vec2d<Value_T>{ string_to<uint32_t>(x_and_y_str[0]), string_to<uint32_t>(x_and_y_str[1]) };

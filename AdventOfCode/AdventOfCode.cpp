@@ -72,7 +72,7 @@ public:
 		std::stringstream ss("09 -> 5,7");
 		auto line = aoc::Line2d<uint32_t>{};
 
-		ss >> line;
+		Assert::ExpectException<aoc::Exception>( [&]() { ss >> line; });
 
 		Assert::IsTrue(ss.fail());
 	}
@@ -82,7 +82,7 @@ public:
 		std::stringstream ss("0,9 -> 57");
 		auto line = aoc::Line2d<uint32_t>{};
 
-		ss >> line;
+		Assert::ExpectException<aoc::Exception>([&]() { ss >> line; });
 
 		Assert::IsTrue(ss.fail());
 	}
@@ -92,7 +92,7 @@ public:
 		std::stringstream ss("0,9 , 5,7");
 		auto line = aoc::Line2d<uint32_t>{};
 
-		ss >> line;
+		Assert::ExpectException<aoc::Exception>([&]() { ss >> line; });
 
 		Assert::IsTrue(ss.fail());
 	}
@@ -118,7 +118,7 @@ public:
 
 	TEST_METHOD(FromMethodReadsFromStream)
 	{
-		std::stringstream ss("7, 0 -> 7, 4");
+		std::stringstream ss("7,0 -> 7,4");
 
 		const auto line = aoc::Line2d<uint32_t>{}.from(ss);
 
@@ -126,6 +126,14 @@ public:
 		Assert::AreEqual(uint32_t{ 0 }, line.start.y);
 		Assert::AreEqual(uint32_t{ 7 }, line.finish.x);
 		Assert::AreEqual(uint32_t{ 4 }, line.finish.y);
+	}
+
+	TEST_METHOD(IsVerticalIdentifiesAnUpwardVerticalLine)
+	{
+		std::stringstream ss("7,0 -> 7,4");
+		const auto line = aoc::Line2d<uint32_t>{}.from(ss);
+
+		Assert::IsTrue(aoc::is_vertical(line));
 	}
 };
 }

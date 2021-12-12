@@ -96,6 +96,25 @@ public:
 
 		Assert::IsTrue(ss.fail());
 	}
+
+	TEST_METHOD(ExtractMoreThanOneLineFromStream)
+	{
+		std::stringstream ss("0,9 -> 5,7\n8,0 -> 0,8");
+		auto line1 = aoc::Line2d<uint32_t>{};
+		auto line2 = aoc::Line2d<uint32_t>{};
+
+		ss >> line1 >> line2;
+
+		Assert::AreEqual(uint32_t{ 0 }, line1.start.x);
+		Assert::AreEqual(uint32_t{ 9 }, line1.start.y);
+		Assert::AreEqual(uint32_t{ 5 }, line1.finish.x);
+		Assert::AreEqual(uint32_t{ 7 }, line1.finish.y);
+
+		Assert::AreEqual(uint32_t{ 8 }, line2.start.x);
+		Assert::AreEqual(uint32_t{ 0 }, line2.start.y);
+		Assert::AreEqual(uint32_t{ 0 }, line2.finish.x);
+		Assert::AreEqual(uint32_t{ 8 }, line2.finish.y);
+	}
 };
 }
 

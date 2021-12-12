@@ -79,6 +79,13 @@ struct Line2d
 
 	Vec2d<Value_T> start;
 	Vec2d<Value_T> finish;
+
+	This_t& from(std::istream& is)
+	{
+		is >> *this;
+
+		return *this;
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -115,6 +115,18 @@ public:
 		Assert::AreEqual(uint32_t{ 0 }, line2.finish.x);
 		Assert::AreEqual(uint32_t{ 8 }, line2.finish.y);
 	}
+
+	TEST_METHOD(FromMethodReadsFromStream)
+	{
+		std::stringstream ss("7, 0 -> 7, 4");
+
+		const auto line = aoc::Line2d<uint32_t>{}.from(ss);
+
+		Assert::AreEqual(uint32_t{ 7 }, line.start.x);
+		Assert::AreEqual(uint32_t{ 0 }, line.start.y);
+		Assert::AreEqual(uint32_t{ 7 }, line.finish.x);
+		Assert::AreEqual(uint32_t{ 4 }, line.finish.y);
+	}
 };
 }
 

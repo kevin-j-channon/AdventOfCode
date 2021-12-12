@@ -60,6 +60,8 @@ class Board
 {
 public:
 
+	using Id_t = uint32_t;
+
 	enum class State_t
 	{
 		no_win,
@@ -72,18 +74,20 @@ public:
 		bool is_marked{ false };
 	};
 
-	Board(uint8_t size)
-		: _numbers{ size, size }
+	Board(Id_t id, uint8_t size)
+		: _id{ id }
+		, _numbers{ size, size }
 	{}
 
 	Board(const Board&) = default;
 	Board& operator=(const Board&) = default;
 
+	const Id_t& id() const { return _id; }
+
 	Board& load(std::istream& stream)
 	{
 		for (auto row = 0; row < _numbers.n_rows && stream.good(); ++row) {
-			if (!stream.good())
-			{
+			if (!stream.good()) {
 				throw Exception("Invalid bingo board size board");
 			}
 
@@ -109,6 +113,9 @@ public:
 		if (_have_row_win())
 			return State_t::win;
 
+		if (_have_column_win())
+			return State_t::win;
+
 		return State_t::no_win;
 	}
 
@@ -116,8 +123,7 @@ private:
 
 	bool _have_row_win() const
 	{
-		for (auto row = 0; row < _numbers.n_rows; ++row)
-		{
+		for (auto row = 0; row < _numbers.n_rows; ++row) {
 			if (_is_winning_row(row))
 				return true;
 		}
@@ -130,6 +136,27 @@ private:
 		const auto row = _numbers.row(row_idx);
 		for (size_t cell_idx = 0; cell_idx < row.n_elem; ++cell_idx) {
 			if (!row[cell_idx].is_marked)
+				return false;
+		}
+
+		return true;
+	}
+
+	bool _have_column_win() const
+	{
+		for (auto col = 0; col < _numbers.n_cols; ++col) {
+			if (_is_winning_column(col))
+				return true;
+		}
+
+		return false;
+	}
+
+	bool _is_winning_column(size_t col_idx) const
+	{
+		const auto col = _numbers.col(col_idx);
+		for (size_t cell_idx = 0; cell_idx < col.n_elem; ++cell_idx) {
+			if (!col[cell_idx].is_marked)
 				return false;
 		}
 
@@ -173,6 +200,7 @@ private:
 		}
 	}
 
+	Id_t _id;
 	arma::field<Cell> _numbers;
 };
 
@@ -208,11 +236,6 @@ public:
 	const Board* board() const { return _board; }
 
 private:
-
-	bool _check_board_for_win() const
-	{
-		return false;
-	}
 
 	Board* _board;
 };
@@ -279,15 +302,16 @@ private:
 
 	void _load_boards(std::istream& stream)
 	{
+		auto board_id = Board::Id_t{ 0 };
 		while (_skip_blank_line(stream))
 		{
-			_load_board(stream);
+			_load_board(board_id++, stream);
 		}
 	}
 
-	void _load_board(std::istream& stream)
+	void _load_board(const Board::Id_t& id, std::istream& stream)
 	{
-		auto board = Board{ 5 };
+		auto board = Board{ id, 5 };
 		board.load(stream);
 		_boards.push_back(std::move(board));
 	}
@@ -316,7 +340,7 @@ private:
 class EntertainmentSystems
 {
 public:
-
+	auto bingo_game() const { return bingo::Game<bingo::FileBasedNumberDrawer<uint8_t>>{}; }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

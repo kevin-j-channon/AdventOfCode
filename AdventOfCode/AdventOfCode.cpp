@@ -483,6 +483,11 @@ public:
 		Assert::IsTrue(std::equal(expected_draws.begin(), expected_draws.end(), draws.begin()));
 	}
 
+	TEST_METHOD(BoardIdReturnsCorrectId)
+	{
+		Assert::AreEqual(aoc::bingo::Board::Id_t{ 10 }, aoc::bingo::Board{ 10, 3 }.id());
+	}
+
 	TEST_METHOD(LoadBoard)
 	{
 		constexpr auto board_str =
@@ -495,7 +500,7 @@ public:
 
 		std::stringstream ss{ board_str };
 
-		auto board = aoc::bingo::Board{ 5 };
+		auto board = aoc::bingo::Board{ 0, 5 };
 
 		board.load(ss);
 	}
@@ -570,7 +575,7 @@ public:
 
 		std::stringstream ss{ board_str };
 
-		auto board = aoc::bingo::Board{ 3 }.load(ss);
+		auto board = aoc::bingo::Board{ 0, 3 }.load(ss);
 
 		auto player = aoc::bingo::Player().assign_board(board);
 
@@ -612,6 +617,43 @@ public:
 
 		Assert::IsTrue(std::nullopt != winner);
 		Assert::AreEqual(uint8_t{ 24 }, winner->number);
+		Assert::AreEqual(aoc::bingo::Board::Id_t{ 2 }, winner->board.id());
+	}
+
+	TEST_METHOD(GameDetectsColumnWin)
+	{
+
+		constexpr auto game_str =
+			"1, 2, 3, 4, 5, 6, 7\n"
+			"\n"
+			"22 13 17 11  0\n"
+			" 8  2 23  4 24\n"
+			"21  9 14 16  7\n"
+			" 6 10  3 18  5\n"
+			" 1 12 20 15 19\n"
+			"\n"
+			" 8  1  0 30 22\n"
+			" 9  2 13 17 21\n"
+			"19  3  7 25 23\n"
+			"20  4 10 24 11\n"
+			"14  5 16 12  6\n"
+			"\n"
+			"14 21 17 24  4\n"
+			"10 16 15  9 19\n"
+			"18  8 23 26 20\n"
+			"22 11 13  6  5\n"
+			" 2  0 12  3  7";
+
+		std::stringstream ss{ game_str };
+
+		auto winner = aoc::bingo::Game<aoc::bingo::FileBasedNumberDrawer<uint8_t>>{}
+			.load(ss)
+			.play()
+			.get_winner();
+
+		Assert::IsTrue(std::nullopt != winner);
+		Assert::AreEqual(uint8_t{ 5 }, winner->number);
+		Assert::AreEqual(aoc::bingo::Board::Id_t{ 1 }, winner->board.id());
 	}
 };
 }

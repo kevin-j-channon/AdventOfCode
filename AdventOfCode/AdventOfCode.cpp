@@ -33,6 +33,69 @@ std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString<aoc::bingo:
 
 const auto DATA_DIR = std::filesystem::path(R"(..\..\AdventOfCode\Data)"s);
 
+namespace program
+{
+TEST_CLASS(Story)
+{
+public:
+	TEST_METHOD(_)
+	{
+		using namespace aoc;
+
+		auto sub = Submarine{};
+
+		// Day 1
+		{
+			Logger::WriteMessage("Day 1:\n");
+
+			using Iter_t = std::istream_iterator<uint32_t>;
+			{
+				// Part 1
+				std::ifstream data_file(DATA_DIR / "Day1_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto depth_score_1 = sub.boat_systems().depth_score<1>(Iter_t{ data_file }, Iter_t{});
+				Logger::WriteMessage(std::format("\tCalculated depth score with window-size of 1: {}\n", depth_score_1).c_str());
+			}
+
+			// Part 2
+			{
+				std::ifstream data_file(DATA_DIR / "Day1_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto depth_score_3 = sub.boat_systems().depth_score<3>(Iter_t{ data_file }, Iter_t{});
+				Logger::WriteMessage(std::format("\tCalculated depth score with window-size of 3: {}\n", depth_score_3).c_str());
+			}
+		}
+
+		// Day 2
+		{
+			Logger::WriteMessage("Day 2:\n");
+
+			using Iter_t = std::istream_iterator<aoc::Direction>;
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day2_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto net_direction = sub.boat_systems().net_direction(Iter_t{ data_file }, Iter_t{});
+				Logger::WriteMessage(std::format("\tNet direction: ({}, {})\n", net_direction.x, net_direction.y).c_str());
+			}
+
+			// Part 2
+			{
+				std::ifstream data_file(DATA_DIR / "Day2_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto net_aiming = sub.boat_systems().net_aiming(Iter_t{ data_file }, Iter_t{});
+				Logger::WriteMessage(std::format("\tNet aiming: ({}, {})\n", net_aiming.x, net_aiming.y).c_str());
+			}
+		}
+	}
+};
+}
+
 namespace common
 {
 TEST_CLASS(Vec2d)
@@ -1089,6 +1152,22 @@ public:
 
 		Assert::IsTrue(std::nullopt != game_score);
 		Assert::AreEqual(uint32_t{ 6594 }, *game_score);
+	}
+};
+}
+
+namespace day_5
+{
+TEST_CLASS(TestDay5)
+{
+public:
+	TEST_METHOD(FindVentScoreForFullInput)
+	{
+		std::ifstream data_file(DATA_DIR / "Day5_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto vent_score = aoc::Submarine().boat_systems().detect_vents(data_file);
+		Logger::WriteMessage(std::format("Vent score: {}", vent_score).c_str());
 	}
 };
 }

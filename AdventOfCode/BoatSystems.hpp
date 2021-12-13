@@ -138,9 +138,12 @@ private:
 
 	static std::vector<Line_t> _load_lines(std::istream& is)
 	{
-		using Iter_t = std::istream_iterator<Line_t>;
+		auto line = Line_t{};
 		auto lines = std::vector<Line_t>{};
-		std::copy(Iter_t{ is }, Iter_t{}, std::back_inserter(lines));
+		while (!is.eof() && !is.fail()){
+			is >> line;
+			lines.push_back(line);
+		}
 
 		return lines;
 	}

@@ -122,7 +122,8 @@ std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
 	auto out = std::vector<Vec2d<Value_T>>{};
 	
 	if (is_vertical(line)) {
-		for (auto y = line.start.y; y <= line.finish.y; ++y) {
+		const auto y_max = std::max(line.start.y, line.finish.y);
+		for (auto y = std::min(line.start.y, line.finish.y); y <= y_max; ++y) {
 			out.push_back(Vec2d<Value_T>{line.start.x, y});
 		}
 	} else if (is_horizontal(line)) {
@@ -134,7 +135,7 @@ std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
 		throw Exception("Only horizontal or vertical lines can be rasterized");
 	}
 
-	return std::move(out);
+	return out;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

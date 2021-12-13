@@ -230,6 +230,15 @@ public:
 
 		Assert::IsTrue(std::equal(expected_points.begin(), expected_points.end(), points.begin()));
 	}
+
+	TEST_METHOD(RasterizeLeftHorizontalLinesWorks)
+	{
+		const auto points = aoc::rasterize(aoc::Line2d<uint32_t>{ {5, 1}, { 1, 1 } });
+
+		const auto expected_points = std::vector<aoc::Vec2d<uint32_t>>{ {1,1}, {2,1}, {3,1}, {4,1}, {5,1} };
+
+		Assert::IsTrue(std::equal(expected_points.begin(), expected_points.end(), points.begin()));
+	}
 };
 }
 

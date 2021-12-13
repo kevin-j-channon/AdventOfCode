@@ -127,7 +127,8 @@ std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
 			out.push_back(Vec2d<Value_T>{line.start.x, y});
 		}
 	} else if (is_horizontal(line)) {
-		for (auto x = line.start.x; x <= line.finish.x; ++x) {
+		const auto x_max = std::max(line.start.x, line.finish.x);
+		for (auto x = std::min(line.start.x, line.finish.x); x <= x_max; ++x) {
 			out.push_back(Vec2d<Value_T>{x, line.start.y});
 		}
 	}

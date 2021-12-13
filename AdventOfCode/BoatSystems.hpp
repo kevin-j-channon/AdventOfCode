@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <vector>
 #include <format>
+#include <istream>
+#include <map>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -113,6 +115,78 @@ struct LogProcessor
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class VentAnalyzer
+{
+	using Line_t = Line2d<uint32_t>;
+	using Point_t = Vec2d<Line_t::Value_t>;
+public:
+	VentAnalyzer(std::istream& data_stream)
+		: _data_stream{ data_stream }
+	{}
+
+	uint32_t score() const
+	{
+		auto lines = _load_lines(_data_stream);
+		auto relevant_lines = _filter_for_horizontal_or_vertical_lines(std::move(lines));
+		auto points = rasterize_lines(std::move(relevant_lines));
+		auto point_densities = _calculate_point_densities(std::move(points));
+
+		return _calculate_score(std::move(point_densities));
+	}
+
+private:
+
+	static std::vector<Line_t> _load_lines(std::istream& is)
+	{
+		using Iter_t = std::istream_iterator<Line_t>;
+		auto lines = std::vector<Line_t>{};
+		std::copy(Iter_t{ is }, Iter_t{}, std::back_inserter(lines));
+
+		return lines;
+	}
+
+	static std::vector<Line_t> _filter_for_horizontal_or_vertical_lines(std::vector<Line_t> lines)
+	{
+		lines.erase(std::remove_if(lines.begin(), lines.end(), [](auto&& line) {
+				return !(is_vertical(line) || is_horizontal(line));
+			}), lines.end());
+
+		return std::move(lines);
+	}
+
+	static std::vector<Point_t> rasterize_lines(std::vector<Line_t> lines)
+	{
+		return std::accumulate(lines.begin(), lines.end(), std::vector<Point_t>{},
+			[](auto&& curr, const auto& line) {
+				const auto points = rasterize(line);
+				curr.insert(curr.end(), points.begin(), points.end());
+
+				return std::move(curr);
+			});
+	}
+
+	static std::map<Point_t, uint32_t> _calculate_point_densities(std::vector<Point_t> points)
+	{
+		return std::accumulate(points.begin(), points.end(), std::map<Point_t, uint32_t>{},
+			[](auto&& curr, const auto& point) {
+				curr[point]++;
+
+				return std::move(curr);
+			});
+	}
+
+	static uint32_t _calculate_score(std::map<Point_t, uint32_t> point_densities)
+	{
+		return static_cast<uint32_t>(std::count_if(point_densities.begin(), point_densities.end(), [](const auto& point_and_count) {
+			return point_and_count.second > 1;
+			}));
+	}
+
+	std::istream& _data_stream;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 class BoatSystems
 {
 public:
@@ -162,6 +236,11 @@ public:
 	uint32_t life_support_rating(const DiagnosticLog& log) const
 	{
 		return LogProcessor::life_support_rating(log);
+	}
+
+	uint32_t detect_vents(std::istream& data_stream) const
+	{
+		return VentAnalyzer{ data_stream }.score();
 	}
 };
 

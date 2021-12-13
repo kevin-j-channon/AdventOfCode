@@ -54,6 +54,18 @@ struct Vec2d
 		return !(*this == other);
 	}
 
+
+	bool operator<(const This_t& other) const
+	{
+		if (x != other.x)
+			return x < other.x;
+
+		if (y != other.y)
+			return y < other.y;
+
+		return false;
+	}
+
 	Value_T x;
 	Value_T y;
 };

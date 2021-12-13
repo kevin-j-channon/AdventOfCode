@@ -469,7 +469,6 @@ TEST_CLASS(LifeSupportSystems)
 {
 public:
 
-
 	TEST_METHOD(LifeSupportFilterBitsWorks)
 	{
 		const auto target_entry = aoc::DiagnosticLog::Entry_t{ 0,1,1,0,1,0,0,1,0,1,1,0 };
@@ -529,6 +528,29 @@ public:
 
 		const auto best_match = aoc::LifeSupport(log).filter_using_least_frequent_bits();
 		Assert::AreEqual(uint32_t{ 0b10100000000 }, best_match);
+	}
+};
+
+TEST_CLASS(VentAnalysis)
+{
+public:
+	TEST_METHOD(VentAnalyserScoresExampleData)
+	{
+		constexpr auto data_str =
+			"0,9 -> 5,9\n"
+			"8,0 -> 0,8\n"
+			"9,4 -> 3,4\n"
+			"2,2 -> 2,1\n"
+			"7,0 -> 7,4\n"
+			"6,4 -> 2,0\n"
+			"0,9 -> 2,9\n"
+			"3,4 -> 1,4\n"
+			"0,0 -> 8,8\n"
+			"5,5 -> 8,2";
+
+		std::stringstream data{ data_str };
+
+		Assert::AreEqual(uint32_t{ 5 }, aoc::VentAnalyzer{ data }.score());
 	}
 };
 }

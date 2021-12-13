@@ -198,6 +198,15 @@ public:
 	{
 		Assert::IsFalse(aoc::is_horizontal(aoc::Line2d<uint32_t>{ {3, 5}, {9, 1}}));
 	}
+
+	TEST_METHOD(RasterizeVerticalLinesWorks)
+	{
+		const auto points = aoc::rasterize(aoc::Line2d<uint32_t>{ {1, 1}, { 1, 5 } });
+
+		const auto expected_points = std::vector<aoc::Vec2d<uint32_t>>{ {1,1}, {1,2}, {1,3}, {1,4}, {1,5} };
+
+		Assert::IsTrue(std::equal(expected_points.begin(), expected_points.end(), points.begin()));
+	}
 };
 }
 

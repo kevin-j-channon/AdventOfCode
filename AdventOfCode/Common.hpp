@@ -44,6 +44,16 @@ struct Vec2d
 	Vec2d(This_t&&) = default;
 	This_t& operator=(This_t&&) = default;
 
+	bool operator==(const This_t& other) const
+	{
+		return x == other.x && y == other.y;
+	}
+
+	bool operator!=(const This_t& other) const
+	{
+		return !(*this == other);
+	}
+
 	Value_T x;
 	Value_T y;
 };
@@ -102,6 +112,29 @@ template<typename Value_T>
 bool is_horizontal(const Line2d<Value_T>& line)
 {
 	return line.start.y == line.finish.y;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
+std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
+{
+	auto out = std::vector<Vec2d<Value_T>>{};
+	
+	if (is_vertical(line)) {
+		for (auto y = line.start.y; y <= line.finish.y; ++y) {
+			out.push_back(Vec2d<Value_T>{line.start.x, y});
+		}
+	} else if (is_horizontal(line)) {
+		for (auto x = line.start.x; x <= line.finish.x; ++x) {
+			out.push_back(Vec2d<Value_T>{x, line.start.y});
+		}
+	}
+	else {
+		throw Exception("Only horizontal or vertical lines can be rasterized");
+	}
+
+	return std::move(out);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

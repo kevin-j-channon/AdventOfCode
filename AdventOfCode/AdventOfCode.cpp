@@ -262,6 +262,31 @@ public:
 		Assert::IsFalse(aoc::is_horizontal(aoc::Line2d<uint32_t>{ {3, 5}, {9, 1}}));
 	}
 
+	TEST_METHOD(IsDiagonalIdentifiesUpRightDiagonalLine)
+	{
+		Assert::IsTrue(aoc::is_diagonal(aoc::Line2d<uint32_t>{ {1, 1}, { 5, 5 }}));
+	}
+
+	TEST_METHOD(IsDiagonalIdentifiesUpLeftDiagonalLine)
+	{
+		Assert::IsTrue(aoc::is_diagonal(aoc::Line2d<uint32_t>{ {9, 7}, { 5, 11 }}));
+	}
+	
+	TEST_METHOD(IsDiagonalIdentifiesDownRightDiagonalLine)
+	{
+		Assert::IsTrue(aoc::is_diagonal(aoc::Line2d<uint32_t>{ {1, 6}, { 6, 1 }}));
+	}
+
+	TEST_METHOD(IsDiagonalIdentifiesDownLeftDiagonalLine)
+	{
+		Assert::IsTrue(aoc::is_diagonal(aoc::Line2d<uint32_t>{ {6, 6}, { 1, 1 }}));
+	}
+
+	TEST_METHOD(IsDiagonalIsFalseForNonDiagonalLine)
+	{
+		Assert::IsTrue(aoc::is_diagonal(aoc::Line2d<uint32_t>{ {1, 1}, { 3, 5 }}));
+	}
+
 	TEST_METHOD(RasterizeVerticalLinesWorks)
 	{
 		const auto points = aoc::rasterize(aoc::Line2d<uint32_t>{ {1, 1}, { 1, 5 } });
@@ -270,7 +295,6 @@ public:
 
 		Assert::IsTrue(std::equal(expected_points.begin(), expected_points.end(), points.begin()));
 	}
-
 	TEST_METHOD(RasterizeHorizontalLinesWorks)
 	{
 		const auto points = aoc::rasterize(aoc::Line2d<uint32_t>{ {1, 1}, { 5, 1 } });

@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <istream>
+#include <cmath>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -124,6 +125,14 @@ template<typename Value_T>
 bool is_horizontal(const Line2d<Value_T>& line)
 {
 	return line.start.y == line.finish.y;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
+bool is_diagonal(const Line2d<Value_T>& line)
+{
+	return std::abs(static_cast<int>(line.finish.x) - static_cast<int>(line.start.x)) == std::abs(static_cast<int>(line.finish.y) - static_cast<int>(line.start.y));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

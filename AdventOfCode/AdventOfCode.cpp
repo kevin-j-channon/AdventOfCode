@@ -1167,7 +1167,7 @@ public:
 		Assert::IsTrue(data_file.is_open());
 
 		const auto vent_score = aoc::Submarine().boat_systems().detect_vents(data_file);
-		Logger::WriteMessage(std::format("Vent score: {}", vent_score).c_str());
+		Assert::AreEqual(uint32_t{ 6267 }, vent_score);
 	}
 };
 }

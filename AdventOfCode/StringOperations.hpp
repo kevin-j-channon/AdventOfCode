@@ -90,7 +90,7 @@ auto string_to(const std::string& str) -> long
 template<>
 auto string_to(const std::string& str) -> unsigned int
 {
-    return std::stol(str);
+    return std::stoul(str);
 }
 
 template<>
@@ -102,7 +102,7 @@ auto string_to(const std::string& str) -> unsigned long
 template<>
 auto string_to(const std::string& str) -> long long
 {
-    return std::stoul(str);
+    return std::stoll(str);
 }
 
 template<>

@@ -1120,6 +1120,13 @@ public:
 		Assert::ExpectException<aoc::Exception>([&data]() { aoc::LanternfishShoal{}.load(data); });
 		Assert::IsTrue(data.fail());
 	}
+
+	TEST_METHOD(ReadingShoalFromStringWithOutOfRangeValueRaisesAocException)
+	{
+		std::stringstream data("3,4,5,-3,2");
+		Assert::ExpectException<aoc::Exception>([&data]() { aoc::LanternfishShoal{}.load(data); });
+		Assert::IsTrue(data.fail());
+	}
 };
 }
 

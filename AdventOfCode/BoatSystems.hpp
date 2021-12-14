@@ -137,8 +137,7 @@ public:
 	{
 		auto lines = _load_lines(_data_stream);
 		auto relevant_lines = _filter_for<FORMATIONS>(std::move(lines));
-		auto points = rasterize_lines<FORMATIONS>(std::move(relevant_lines));
-		auto point_densities = _calculate_point_densities(std::move(points));
+		auto point_densities = _calculate_point_densities<FORMATIONS>(std::move(relevant_lines));
 
 		return _calculate_score(std::move(point_densities));
 	}
@@ -188,25 +187,17 @@ private:
 	}
 
 	template<size_t FORMATIONS>
-	static std::vector<Point_t> rasterize_lines(std::vector<Line_t> lines)
+	static std::map<Point_t, uint32_t> _calculate_point_densities(std::vector<Line_t> lines)
 	{
-		return std::accumulate(lines.begin(), lines.end(), std::vector<Point_t>{},
-			[](auto&& curr, const auto& line) {
-				const auto points = rasterize<FORMATIONS>(line);
-				curr.insert(curr.end(), points.begin(), points.end());
+		auto out = std::map<Point_t, uint32_t>{};
 
-				return std::move(curr);
-			});
-	}
+		for (auto& line : lines) {
+			for (auto& point : rasterize<FORMATIONS>(line)) {
+				out[point]++;
+			}
+		}
 
-	static std::map<Point_t, uint32_t> _calculate_point_densities(std::vector<Point_t> points)
-	{
-		return std::accumulate(points.begin(), points.end(), std::map<Point_t, uint32_t>{},
-			[](auto&& curr, const auto& point) {
-				curr[point]++;
-
-				return std::move(curr);
-			});
+		return out;
 	}
 
 	static uint32_t _calculate_score(std::map<Point_t, uint32_t> point_densities)

@@ -186,7 +186,7 @@ std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
 
 			auto out = std::vector<Vec2d<Value_T>>{ upper.x - lower.x + 1 };
 
-			for (auto point = lower; point != upper; ++point.x, point.y += y_increment)
+			for (auto point = lower; point.x <= upper.x; ++point.x, point.y += y_increment)
 			{
 				out[point.x - lower.x] = point;
 			}

@@ -92,6 +92,94 @@ public:
 				Logger::WriteMessage(std::format("\tNet aiming: ({}, {})\n", net_aiming.x, net_aiming.y).c_str());
 			}
 		}
+
+		// Day 3
+		{
+			Logger::WriteMessage("Day 3:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day3_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				auto log = aoc::DiagnosticLog{ data_file };
+
+				const auto power_consumption = aoc::Submarine().boat_systems().power_consumption(log);
+
+				Logger::WriteMessage(std::format("\tPower: {}\n", power_consumption).c_str());
+			}
+
+			// Part 2
+			{
+				std::ifstream data_file(DATA_DIR / "Day3_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				auto log = aoc::DiagnosticLog{ data_file };
+
+				Logger::WriteMessage(std::format("\tLife support rating: {}\n",
+					aoc::Submarine().boat_systems().life_support_rating(log)).c_str());
+			}
+		}
+
+		// Day 4
+		{
+			Logger::WriteMessage("Day 4:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day4_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto game_score = aoc::Submarine().entertainment().bingo_game()
+					.load(data_file)
+					.play_to_win()
+					.score();
+
+				Logger::WriteMessage(std::format("\tWinning bingo score: {}\n", *game_score).c_str());
+			}
+
+			// Part 2
+			{
+				std::ifstream data_file(DATA_DIR / "Day4_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto game_score = aoc::Submarine().entertainment().bingo_game()
+					.load(data_file)
+					.play_to_lose()
+					.score();
+
+				Logger::WriteMessage(std::format("\tLosing bingo score: {}\n", *game_score).c_str());
+			}
+		}
+
+		// Day 5
+		{
+			Logger::WriteMessage("Day 5:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day5_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto vent_score = aoc::Submarine()
+					.boat_systems()
+					.detect_vents<aoc::VentAnalyzer::horizontal | aoc::VentAnalyzer::vertical>(data_file);
+
+				Logger::WriteMessage(std::format("\tHorizontal|vertical vent score: {}\n", vent_score).c_str());
+			}
+
+			// Part 2
+			{
+				std::ifstream data_file(DATA_DIR / "Day5_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto vent_score = aoc::Submarine()
+					.boat_systems()
+					.detect_vents<aoc::VentAnalyzer::horizontal | aoc::VentAnalyzer::vertical | aoc::VentAnalyzer::diagonal>(data_file);
+
+				Logger::WriteMessage(std::format("\tHorizontal|vertical|diagonal vent score: {}\n", vent_score).c_str());
+			}
+		}
 	}
 };
 }
@@ -1221,6 +1309,18 @@ public:
 			.detect_vents<aoc::VentAnalyzer::horizontal | aoc::VentAnalyzer::vertical>(data_file);
 
 		Assert::AreEqual(uint32_t{ 6267 }, vent_score);
+	}
+
+	TEST_METHOD(FindVentScoreWithDiagonalsForFullInput)
+	{
+		std::ifstream data_file(DATA_DIR / "Day5_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto vent_score = aoc::Submarine()
+			.boat_systems()
+			.detect_vents<aoc::VentAnalyzer::horizontal | aoc::VentAnalyzer::vertical | aoc::VentAnalyzer::diagonal>(data_file);
+
+		Assert::AreEqual(uint32_t{ 20196 }, vent_score);
 	}
 };
 }

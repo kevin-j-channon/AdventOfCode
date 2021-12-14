@@ -123,9 +123,9 @@ class VentAnalyzer
 public:
 	enum Formation
 	{
-		horizontal = 0b001,
-	    vertical   = 0b010,
-		diagonal   = 0b100,
+		horizontal = Line_t::horizontal,
+	    vertical   = Line_t::vertical,
+		diagonal   = Line_t::diagonal,
 	};
 
 	VentAnalyzer(std::istream& data_stream)
@@ -137,7 +137,7 @@ public:
 	{
 		auto lines = _load_lines(_data_stream);
 		auto relevant_lines = _filter_for<FORMATIONS>(std::move(lines));
-		auto points = rasterize_lines(std::move(relevant_lines));
+		auto points = rasterize_lines<FORMATIONS>(std::move(relevant_lines));
 		auto point_densities = _calculate_point_densities(std::move(points));
 
 		return _calculate_score(std::move(point_densities));
@@ -163,23 +163,23 @@ private:
 		auto should_be_removed = [](auto&& line) -> bool {
 			if constexpr (static_cast<bool>(FORMATIONS & Formation::horizontal)) {
 				if (is_horizontal(line)) {
-					return true;
+					return false;
 				}
 			}
 
 			if constexpr (static_cast<bool>(FORMATIONS & Formation::vertical)) {
 				if (is_vertical(line)) {
-					return true;
+					return false;
 				}
 			}
 
 			if constexpr (static_cast<bool>(FORMATIONS & Formation::diagonal)) {
 				if (is_diagonal(line)) {
-					return true;
+					return false;
 				}
 			}
 
-			return false;
+			return true;
 		};
 
 		lines.erase(std::remove_if(lines.begin(), lines.end(), should_be_removed), lines.end());
@@ -187,11 +187,12 @@ private:
 		return std::move(lines);
 	}
 
+	template<size_t FORMATIONS>
 	static std::vector<Point_t> rasterize_lines(std::vector<Line_t> lines)
 	{
 		return std::accumulate(lines.begin(), lines.end(), std::vector<Point_t>{},
 			[](auto&& curr, const auto& line) {
-				const auto points = rasterize(line);
+				const auto points = rasterize<FORMATIONS>(line);
 				curr.insert(curr.end(), points.begin(), points.end());
 
 				return std::move(curr);

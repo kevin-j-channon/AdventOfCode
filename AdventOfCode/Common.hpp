@@ -87,6 +87,13 @@ struct Line2d
 	using Value_t = Value_T;
 	using This_t = Line2d<Value_t>;
 
+	enum Orientation
+	{
+		horizontal = 0b001,
+		vertical   = 0b010,
+		diagonal   = 0b100,
+	};
+
 	Line2d() {}
 
 	Line2d(Vec2d<Value_t> start_, Vec2d<Value_t> finish_)
@@ -137,43 +144,58 @@ bool is_diagonal(const Line2d<Value_T>& line)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<typename Value_T>
+template<size_t ORIENTATION, typename Value_T>
 std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
 {
 	auto out = std::vector<Vec2d<Value_T>>{};
 	
-	if (is_vertical(line)) {
-		const auto y_min = std::min(line.start.y, line.finish.y);
-		const auto y_max = std::max(line.start.y, line.finish.y);
+	if constexpr (static_cast<bool>(ORIENTATION & Line2d<Value_T>::horizontal)) {
+		if (is_vertical(line)) {
+			const auto y_min = std::min(line.start.y, line.finish.y);
+			const auto y_max = std::max(line.start.y, line.finish.y);
 
-		out.resize(y_max - y_min + 1);
+			auto out = std::vector<Vec2d<Value_T>>{ y_max - y_min + 1 };
 
-		for (auto y = y_min; y <= y_max; ++y) {
-			out[y - y_min] = Vec2d<Value_T>{line.start.x, y};
-		}
-	} else if (is_horizontal(line)) {
-		const auto x_min = std::min(line.start.x, line.finish.x);
-		const auto x_max = std::max(line.start.x, line.finish.x);
+			for (auto y = y_min; y <= y_max; ++y) {
+				out[y - y_min] = Vec2d<Value_T>{ line.start.x, y };
+			}
 
-		out.resize(x_max - x_min + 1);
-
-		for (auto x = x_min; x <= x_max; ++x) {
-			out[x - x_min] = Vec2d<Value_T>{x, line.start.y};
+			return out;
 		}
 	}
-	else if (is_diagonal(line)) {
-		const auto [lower, upper] = line.start.x < line.finish.x ? std::make_pair(line.start, line.finish) : std::make_pair(line.finish, line.start );
-		const auto y_increment = lower.y < upper.y ? 1 : -1;
-		for (auto point = lower; point != upper; ++point.x, point.y += y_increment)
-		{
-			out.push_back(point);
+
+	if constexpr (static_cast<bool>(ORIENTATION & Line2d<Value_T>::vertical)) {
+		if (is_horizontal(line)) {
+			const auto x_min = std::min(line.start.x, line.finish.x);
+			const auto x_max = std::max(line.start.x, line.finish.x);
+
+			auto out = std::vector<Vec2d<Value_T>>{x_max - x_min + 1};
+
+			for (auto x = x_min; x <= x_max; ++x) {
+				out[x - x_min] = Vec2d<Value_T>{ x, line.start.y };
+			}
+
+			return out;
 		}
 	}
-	else {
-		throw Exception("Only horizontal or vertical lines can be rasterized");
+
+	if constexpr (static_cast<bool>(ORIENTATION & Line2d<Value_T>::diagonal)) {
+		if (is_diagonal(line)) {
+			const auto [lower, upper] = line.start.x < line.finish.x ? std::make_pair(line.start, line.finish) : std::make_pair(line.finish, line.start);
+			const auto y_increment = lower.y < upper.y ? 1 : -1;
+
+			auto out = std::vector<Vec2d<Value_T>>{ upper.x - lower.x + 1 };
+
+			for (auto point = lower; point != upper; ++point.x, point.y += y_increment)
+			{
+				out[point.x - lower.x] = point;
+			}
+
+			return out;
+		}
 	}
 
-	return out;
+	throw Exception("Only horizontal or vertical lines can be rasterized");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

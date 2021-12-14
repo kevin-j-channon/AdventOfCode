@@ -289,7 +289,8 @@ public:
 
 	TEST_METHOD(RasterizeVerticalLinesWorks)
 	{
-		const auto points = aoc::rasterize(aoc::Line2d<uint32_t>{ {1, 1}, { 1, 5 } });
+		using Line_t = aoc::Line2d<uint32_t>;
+		const auto points = aoc::rasterize<Line_t::horizontal | Line_t::vertical>(Line_t{ {1, 1}, { 1, 5 } });
 
 		const auto expected_points = std::vector<aoc::Vec2d<uint32_t>>{ {1,1}, {1,2}, {1,3}, {1,4}, {1,5} };
 
@@ -297,7 +298,8 @@ public:
 	}
 	TEST_METHOD(RasterizeHorizontalLinesWorks)
 	{
-		const auto points = aoc::rasterize(aoc::Line2d<uint32_t>{ {1, 1}, { 5, 1 } });
+		using Line_t = aoc::Line2d<uint32_t>;
+		const auto points = aoc::rasterize<Line_t::horizontal | Line_t::vertical>(Line_t{ {1, 1}, { 5, 1 } });
 
 		const auto expected_points = std::vector<aoc::Vec2d<uint32_t>>{ {1,1}, {2,1}, {3,1}, {4,1}, {5,1} };
 
@@ -306,12 +308,16 @@ public:
 
 	TEST_METHOD(RasterizeThrowsForNonHorizontalOrVerticalLines)
 	{
-		Assert::ExpectException<aoc::Exception>([]() {aoc::rasterize(aoc::Line2d<uint32_t>{ {1, 2}, { 5, 1 } }); });
+		using Line_t = aoc::Line2d<uint32_t>;
+		Assert::ExpectException<aoc::Exception>([]() {
+			aoc::rasterize<Line_t::horizontal | Line_t::vertical>(Line_t{ {1, 2}, { 5, 1 } });
+		});
 	}
 
 	TEST_METHOD(RasterizeDownwardVerticalLinesWorks)
 	{
-		const auto points = aoc::rasterize(aoc::Line2d<uint32_t>{ {1, 5}, { 1, 1 } });
+		using Line_t = aoc::Line2d<uint32_t>;
+		const auto points = aoc::rasterize<Line_t::horizontal | Line_t::vertical>(Line_t{ {1, 5}, { 1, 1 } });
 
 		const auto expected_points = std::vector<aoc::Vec2d<uint32_t>>{ {1,1}, {1,2}, {1,3}, {1,4}, {1,5} };
 
@@ -320,7 +326,8 @@ public:
 
 	TEST_METHOD(RasterizeLeftHorizontalLinesWorks)
 	{
-		const auto points = aoc::rasterize(aoc::Line2d<uint32_t>{ {5, 1}, { 1, 1 } });
+		using Line_t = aoc::Line2d<uint32_t>;
+		const auto points = aoc::rasterize<Line_t::horizontal | Line_t::vertical>(Line_t{ {5, 1}, { 1, 1 } });
 
 		const auto expected_points = std::vector<aoc::Vec2d<uint32_t>>{ {1,1}, {2,1}, {3,1}, {4,1}, {5,1} };
 

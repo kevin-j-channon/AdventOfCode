@@ -284,7 +284,7 @@ public:
 
 	TEST_METHOD(IsDiagonalIsFalseForNonDiagonalLine)
 	{
-		Assert::IsTrue(aoc::is_diagonal(aoc::Line2d<uint32_t>{ {1, 1}, { 3, 5 }}));
+		Assert::IsFalse(aoc::is_diagonal(aoc::Line2d<uint32_t>{ {1, 1}, { 3, 5 }}));
 	}
 
 	TEST_METHOD(RasterizeVerticalLinesWorks)
@@ -637,7 +637,7 @@ public:
 
 		std::stringstream data{ data_str };
 
-		Assert::AreEqual(uint32_t{ 5 }, aoc::VentAnalyzer{ data }.score());
+		Assert::AreEqual(uint32_t{ 5 }, aoc::VentAnalyzer{ data }.score<aoc::VentAnalyzer::horizontal | aoc::VentAnalyzer::vertical>());
 	}
 };
 }
@@ -1190,7 +1190,10 @@ public:
 		std::ifstream data_file(DATA_DIR / "Day5_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
-		const auto vent_score = aoc::Submarine().boat_systems().detect_vents(data_file);
+		const auto vent_score = aoc::Submarine()
+			.boat_systems()
+			.detect_vents<aoc::VentAnalyzer::horizontal | aoc::VentAnalyzer::vertical>(data_file);
+
 		Assert::AreEqual(uint32_t{ 6267 }, vent_score);
 	}
 };

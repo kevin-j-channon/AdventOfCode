@@ -10,6 +10,7 @@
 #include <format>
 #include <istream>
 #include <map>
+#include <bitset>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -120,14 +121,22 @@ class VentAnalyzer
 	using Line_t = Line2d<uint32_t>;
 	using Point_t = Vec2d<Line_t::Value_t>;
 public:
+	enum Formation
+	{
+		horizontal = 0b001,
+	    vertical   = 0b010,
+		diagonal   = 0b100,
+	};
+
 	VentAnalyzer(std::istream& data_stream)
 		: _data_stream{ data_stream }
 	{}
 
+	template<size_t FORMATIONS>
 	uint32_t score() const
 	{
 		auto lines = _load_lines(_data_stream);
-		auto relevant_lines = _filter_for_horizontal_or_vertical_lines(std::move(lines));
+		auto relevant_lines = _filter_for<FORMATIONS>(std::move(lines));
 		auto points = rasterize_lines(std::move(relevant_lines));
 		auto point_densities = _calculate_point_densities(std::move(points));
 
@@ -148,11 +157,32 @@ private:
 		return lines;
 	}
 
-	static std::vector<Line_t> _filter_for_horizontal_or_vertical_lines(std::vector<Line_t> lines)
+	template<size_t FORMATIONS>
+	static std::vector<Line_t> _filter_for(std::vector<Line_t> lines)
 	{
-		lines.erase(std::remove_if(lines.begin(), lines.end(), [](auto&& line) {
-				return !(is_vertical(line) || is_horizontal(line));
-			}), lines.end());
+		auto should_be_removed = [](auto&& line) -> bool {
+			if constexpr (static_cast<bool>(FORMATIONS & Formation::horizontal)) {
+				if (is_horizontal(line)) {
+					return true;
+				}
+			}
+
+			if constexpr (static_cast<bool>(FORMATIONS & Formation::vertical)) {
+				if (is_vertical(line)) {
+					return true;
+				}
+			}
+
+			if constexpr (static_cast<bool>(FORMATIONS & Formation::diagonal)) {
+				if (is_diagonal(line)) {
+					return true;
+				}
+			}
+
+			return false;
+		};
+
+		lines.erase(std::remove_if(lines.begin(), lines.end(), should_be_removed), lines.end());
 
 		return std::move(lines);
 	}
@@ -241,9 +271,10 @@ public:
 		return LogProcessor::life_support_rating(log);
 	}
 
+	template<size_t FORMATIONS>
 	uint32_t detect_vents(std::istream& data_stream) const
 	{
-		return VentAnalyzer{ data_stream }.score();
+		return VentAnalyzer{ data_stream }.score<FORMATIONS>();
 	}
 };
 

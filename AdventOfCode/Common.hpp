@@ -143,14 +143,30 @@ std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
 	auto out = std::vector<Vec2d<Value_T>>{};
 	
 	if (is_vertical(line)) {
+		const auto y_min = std::min(line.start.y, line.finish.y);
 		const auto y_max = std::max(line.start.y, line.finish.y);
-		for (auto y = std::min(line.start.y, line.finish.y); y <= y_max; ++y) {
-			out.push_back(Vec2d<Value_T>{line.start.x, y});
+
+		out.resize(y_max - y_min + 1);
+
+		for (auto y = y_min; y <= y_max; ++y) {
+			out[y - y_min] = Vec2d<Value_T>{line.start.x, y};
 		}
 	} else if (is_horizontal(line)) {
+		const auto x_min = std::min(line.start.x, line.finish.x);
 		const auto x_max = std::max(line.start.x, line.finish.x);
-		for (auto x = std::min(line.start.x, line.finish.x); x <= x_max; ++x) {
-			out.push_back(Vec2d<Value_T>{x, line.start.y});
+
+		out.resize(x_max - x_min + 1);
+
+		for (auto x = x_min; x <= x_max; ++x) {
+			out[x - x_min] = Vec2d<Value_T>{x, line.start.y};
+		}
+	}
+	else if (is_diagonal(line)) {
+		const auto [lower, upper] = line.start.x < line.finish.x ? std::make_pair(line.start, line.finish) : std::make_pair(line.finish, line.start );
+		const auto y_increment = lower.y < upper.y ? 1 : -1;
+		for (auto point = lower; point != upper; ++point.x, point.y += y_increment)
+		{
+			out.push_back(point);
 		}
 	}
 	else {

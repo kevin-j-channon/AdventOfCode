@@ -1377,3 +1377,22 @@ public:
 	}
 };
 }
+
+namespace day_6
+{
+TEST_CLASS(TestDay6)
+{
+public:
+	TEST_METHOD(FindFishCountForFullInput)
+	{
+		std::ifstream data_file(DATA_DIR / "Day6_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		auto shoal = aoc::LanternfishShoal{}.load(data_file);
+
+		const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(80)).shoal().size();
+
+		Assert::AreEqual(aoc::LanternfishShoal::Size_t{ 360268 }, number_of_fish);
+	}
+};
+}

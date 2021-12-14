@@ -5,7 +5,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "DiagnosticLog.hpp"
 #include "BoatSystems.hpp"
 #include "AdventOfCode.hpp"
-#include "LanternFish.hpp"
+#include "Lanternfish.hpp"
 
 #include <vector>
 #include <cstdint>
@@ -1103,7 +1103,22 @@ TEST_CLASS(LanternFish)
 public:
 	TEST_METHOD(FishFromIntHasCorrectLife)
 	{
-		Assert::AreEqual(uint32_t{ 3 }, aoc::LanternFish{ 3 }.days_until_spawning());
+		Assert::AreEqual(uint32_t{ 3 }, aoc::Lanternfish{ 3 }.days_until_spawning());
+	}
+
+	TEST_METHOD(ShoalOfFishCanBeReadFromStream)
+	{
+		std::stringstream data("3,4,3,1,2");
+		const auto shoal = aoc::LanternfishShoal{}.load(data);
+
+		Assert::AreEqual(aoc::LanternfishShoal::Size_t{ 5 }, shoal.size());
+	}
+
+	TEST_METHOD(ReadingShoalFromMalformedStringRaisesAocException)
+	{
+		std::stringstream data("3,4,X,1,2");
+		Assert::ExpectException<aoc::Exception>([&data]() { aoc::LanternfishShoal{}.load(data); });
+		Assert::IsTrue(data.fail());
 	}
 };
 }

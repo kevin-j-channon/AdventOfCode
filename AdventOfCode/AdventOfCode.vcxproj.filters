@@ -41,7 +41,7 @@
     <ClInclude Include="EntertainmentSystems.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LanternFish.hpp">
+    <ClInclude Include="Lanternfish.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

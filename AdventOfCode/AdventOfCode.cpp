@@ -15,8 +15,10 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include <string>
 #include <filesystem>
 #include <algorithm>
+#include <chrono>
 
 using namespace std::string_literals;
+using namespace std::chrono_literals;
 
 template<>
 std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString<aoc::bingo::Board::State_t>(const aoc::bingo::Board::State_t& state)
@@ -1126,6 +1128,23 @@ public:
 		std::stringstream data("3,4,5,-3,2");
 		Assert::ExpectException<aoc::Exception>([&data]() { aoc::LanternfishShoal{}.load(data); });
 		Assert::IsTrue(data.fail());
+	}
+
+	TEST_METHOD(ExampleShoalIsCorrectAfter18Days)
+	{
+		std::stringstream data("3,4,3,1,2");
+		auto shoal = aoc::LanternfishShoal{}.load(data);
+
+		const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(18)).shoal().size();
+
+		Assert::AreEqual(aoc::LanternfishShoal::Size_t{ 26 }, number_of_fish);
+	}
+
+	TEST_METHOD(DecrementingTimeToSpawningBelowZeroResetsTime)
+	{
+		auto fish = aoc::Lanternfish{ 0 };
+		fish.decrement_time_to_spawning();
+		Assert::AreEqual(aoc::Lanternfish::days_until_spawning_reset_value, fish.days_until_spawning());
 	}
 };
 }

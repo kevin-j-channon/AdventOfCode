@@ -5,7 +5,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "DiagnosticLog.hpp"
 #include "BoatSystems.hpp"
 #include "AdventOfCode.hpp"
-
+#include "LanternFish.hpp"
 
 #include <vector>
 #include <cstdint>
@@ -1092,6 +1092,18 @@ public:
 		Assert::IsTrue(std::nullopt != winner);
 		Assert::AreEqual(uint8_t{ 5 }, winner->number);
 		Assert::AreEqual(aoc::bingo::Board::Id_t{ 1 }, winner->board.id());
+	}
+};
+}
+
+namespace modelling
+{
+TEST_CLASS(LanternFish)
+{
+public:
+	TEST_METHOD(FishFromIntHasCorrectLife)
+	{
+		Assert::AreEqual(uint32_t{ 3 }, aoc::LanternFish{ 3 }.days_until_spawning());
 	}
 };
 }

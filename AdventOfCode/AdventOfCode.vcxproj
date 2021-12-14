@@ -168,6 +168,7 @@
     <ClInclude Include="Common.hpp" />
     <ClInclude Include="DiagnosticLog.hpp" />
     <ClInclude Include="EntertainmentSystems.hpp" />
+    <ClInclude Include="LanternFish.hpp" />
     <ClInclude Include="StringOperations.hpp" />
   </ItemGroup>
   <ItemGroup>
@@ -176,6 +177,7 @@
     <Text Include="Data\Day3_input.txt" />
     <Text Include="Data\Day4_input.txt" />
     <Text Include="Data\Day5_input.txt" />
+    <Text Include="Data\Day6_input.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

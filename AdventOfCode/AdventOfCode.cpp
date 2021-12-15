@@ -1425,17 +1425,14 @@ public:
 
 	TEST_METHOD(FindVentScoreWithDiagonalsForFullInput)
 	{
-		for (int i = 0; i < 100; ++i)
-		{
-			std::ifstream data_file(DATA_DIR / "Day5_input.txt");
-			Assert::IsTrue(data_file.is_open());
+		std::ifstream data_file(DATA_DIR / "Day5_input.txt");
+		Assert::IsTrue(data_file.is_open());
 
-			const auto vent_score = aoc::Submarine()
-				.boat_systems()
-				.detect_vents<aoc::VentAnalyzer::horizontal | aoc::VentAnalyzer::vertical | aoc::VentAnalyzer::diagonal>(data_file);
+		const auto vent_score = aoc::Submarine()
+			.boat_systems()
+			.detect_vents<aoc::VentAnalyzer::horizontal | aoc::VentAnalyzer::vertical | aoc::VentAnalyzer::diagonal>(data_file);
 
-			Assert::AreEqual(uint32_t{ 20196 }, vent_score);
-		}
+		Assert::AreEqual(uint32_t{ 20196 }, vent_score);
 	}
 };
 }

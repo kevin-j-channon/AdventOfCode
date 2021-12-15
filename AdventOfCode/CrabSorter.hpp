@@ -54,7 +54,7 @@ public:
 	{
 		const auto max_position = *std::max_element(_positions.begin(), _positions.end());
 
-		auto out = std::make_pair(std::numeric_limits<uint32_t>::max(), size_t{ 0 });
+		auto out = std::make_pair(size_t{ 0 }, std::numeric_limits<uint32_t>::max());
 
 		for (size_t position = 0; position <= max_position; ++position) {
 			const auto cost = _position_cost(position);

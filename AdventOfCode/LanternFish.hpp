@@ -11,6 +11,7 @@
 #include <stdexcept>
 #include <format>
 #include <chrono>
+#include <array>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -103,20 +104,6 @@ public:
 	Iterator_t end() { return _fish.end(); }
 	ConstIterator_t end() const { return _fish.end(); }
 
-	void add_fish(std::vector<Lanternfish>&& new_fish)
-	{
-		_fish.insert(_fish.end(), new_fish.begin(), new_fish.end());
-	}
-
-	void log() const
-	{
-		for (auto& fish : _fish) {
-			Logger::WriteMessage(std::format("{}, ", fish.days_until_spawning()).c_str());
-		}
-
-		Logger::WriteMessage("\n");
-	}
-
 private:
 
 	void _load(std::istream& stream)
@@ -139,8 +126,12 @@ class LanternfishShoalModel
 {
 public:
 	LanternfishShoalModel(LanternfishShoal& shoal)
-		: _shoal{ shoal }
-	{}
+	{
+		std::fill(_fish_counts.begin(), _fish_counts.end(), 0);
+		std::for_each(shoal.begin(), shoal.end(), [this](const auto& fish) {
+			_fish_counts[fish.days_until_spawning()]++;
+			});
+	}
 
 	LanternfishShoalModel& run_for(std::chrono::days run_time)
 	{
@@ -150,33 +141,19 @@ public:
 		return *this;
 	}
 
-	const LanternfishShoal& shoal() const { return _shoal; }
+	LanternfishShoal::Size_t shoal_size() const { return std::accumulate(_fish_counts.begin(), _fish_counts.end(), LanternfishShoal::Size_t{0}); }
 
 private:
 
 	void _step()
 	{
-		_decremnent_time_until_spawning();
-		_spawn_fish();
+		const auto zero_day_fish_count = _fish_counts[0];
+		std::copy(std::next(_fish_counts.begin()), _fish_counts.end(), _fish_counts.begin());
+		_fish_counts.back() = zero_day_fish_count;
+		_fish_counts[Lanternfish::days_until_spawning_reset_value] += zero_day_fish_count;
 	}
 
-	void _decremnent_time_until_spawning()
-	{
-		std::for_each(_shoal.begin(), _shoal.end(), [](auto& fish) {
-			fish.decrement_time_to_spawning();
-			});
-	}
-
-	void _spawn_fish()
-	{
-		const auto new_fish_count = std::count_if(_shoal.begin(), _shoal.end(), [](const auto& fish) {
-			return fish.spawn_now();
-			});
-
-		_shoal.add_fish(std::vector<Lanternfish>( new_fish_count, Lanternfish{}));
-	}
-
-	LanternfishShoal& _shoal;
+	std::array<LanternfishShoal::Size_t, Lanternfish::max_days_until_spawning + 1> _fish_counts;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

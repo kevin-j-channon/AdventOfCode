@@ -194,7 +194,7 @@ public:
 
 				auto shoal = aoc::LanternfishShoal{}.load(data_file);
 
-				const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(80)).shoal().size();
+				const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(80)).shoal_size();
 
 				Logger::WriteMessage(std::format("\tShoal size after 80 days: {}\n", number_of_fish).c_str());
 			}
@@ -1157,7 +1157,7 @@ public:
 		std::stringstream data("3,4,3,1,2");
 		auto shoal = aoc::LanternfishShoal{}.load(data);
 
-		const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(18)).shoal().size();
+		const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(18)).shoal_size();
 
 		Assert::AreEqual(aoc::LanternfishShoal::Size_t{ 26 }, number_of_fish);
 	}
@@ -1412,7 +1412,7 @@ public:
 
 		auto shoal = aoc::LanternfishShoal{}.load(data_file);
 
-		const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(80)).shoal().size();
+		const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(80)).shoal_size();
 
 		Assert::AreEqual(aoc::LanternfishShoal::Size_t{ 360268 }, number_of_fish);
 	}

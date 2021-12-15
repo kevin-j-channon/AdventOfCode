@@ -7,6 +7,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "AdventOfCode.hpp"
 #include "Lanternfish.hpp"
 #include "CrabSorter.hpp"
+#include "DigitAnalyser.hpp"
 
 #include <vector>
 #include <cstdint>
@@ -1517,6 +1518,25 @@ public:
 
 		Assert::AreEqual(size_t{ 459 }, best_position);
 		Assert::AreEqual(uint32_t{ 86397080 }, cost);
+	}
+};
+}
+
+namespace day_8
+{
+TEST_CLASS(TestDay8)
+{
+public:
+	TEST_METHOD(LoadDisplayDataFromStream)
+	{
+		constexpr auto data_string =
+			"be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe";
+
+		std::stringstream ss(data_string);
+		const auto digit_data = aoc::DigitAnalyser{}.load(ss);
+
+		const auto output_vals = digit_data.output_value_strings();
+		Assert::AreEqual(size_t{ 4 }, output_vals.size());
 	}
 };
 }

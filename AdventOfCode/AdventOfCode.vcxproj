@@ -168,6 +168,7 @@
     <ClInclude Include="Common.hpp" />
     <ClInclude Include="CrabSorter.hpp" />
     <ClInclude Include="DiagnosticLog.hpp" />
+    <ClInclude Include="DigitAnalyser.hpp" />
     <ClInclude Include="EntertainmentSystems.hpp" />
     <ClInclude Include="Lanternfish.hpp" />
     <ClInclude Include="StringOperations.hpp" />

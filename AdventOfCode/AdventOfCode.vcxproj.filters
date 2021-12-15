@@ -44,6 +44,9 @@
     <ClInclude Include="Lanternfish.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CrabSorter.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Data\Day1_input.txt">

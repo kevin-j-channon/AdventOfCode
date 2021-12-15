@@ -166,6 +166,7 @@
     <ClInclude Include="AdventOfCode.hpp" />
     <ClInclude Include="BoatSystems.hpp" />
     <ClInclude Include="Common.hpp" />
+    <ClInclude Include="CrabSorter.hpp" />
     <ClInclude Include="DiagnosticLog.hpp" />
     <ClInclude Include="EntertainmentSystems.hpp" />
     <ClInclude Include="Lanternfish.hpp" />

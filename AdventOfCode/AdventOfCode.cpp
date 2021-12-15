@@ -6,6 +6,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "BoatSystems.hpp"
 #include "AdventOfCode.hpp"
 #include "Lanternfish.hpp"
+#include "CrabSorter.hpp"
 
 #include <vector>
 #include <cstdint>
@@ -1434,6 +1435,23 @@ public:
 		const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(256)).shoal_size();
 
 		Assert::AreEqual(aoc::LanternfishShoal::Size_t{ 1632146183902 }, number_of_fish);
+	}
+};
+}
+
+namespace day_7
+{
+TEST_CLASS(CrabSorting)
+{
+public:
+	TEST_METHOD(LoadCrabPositionsFromStream)
+	{
+		std::stringstream data("16,1,2,0,4,2,7,1,2,14");
+
+		const auto positions = aoc::crab_sorting::load(data);
+
+		const auto expected_positions = { 16, 1, 2, 0, 4, 2, 7, 1, 2, 14 };
+		Assert::IsTrue(std::equal(expected_positions.begin(), expected_positions.end(), positions.begin()));
 	}
 };
 }

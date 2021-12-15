@@ -1527,7 +1527,7 @@ namespace day_8
 TEST_CLASS(TestDay8)
 {
 public:
-	TEST_METHOD(LoadDisplayDataFromStream)
+	TEST_METHOD(LoadOutputValueStringFromStream)
 	{
 		constexpr auto data_string =
 			"be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe";
@@ -1537,6 +1537,18 @@ public:
 
 		const auto output_vals = digit_data.output_value_strings();
 		Assert::AreEqual(size_t{ 4 }, output_vals.size());
+	}
+
+	TEST_METHOD(LoadReferenceValueStringFromStream)
+	{
+		constexpr auto data_string =
+			"be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe";
+
+		std::stringstream ss(data_string);
+		const auto digit_data = aoc::DigitAnalyser{}.load(ss);
+
+		const auto ref_vals = digit_data.reference_value_strings();
+		Assert::AreEqual(size_t{ 10 }, ref_vals.size());
 	}
 };
 }

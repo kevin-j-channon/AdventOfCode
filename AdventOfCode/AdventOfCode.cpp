@@ -201,7 +201,14 @@ public:
 
 			// Part 2
 			{
-				
+				std::ifstream data_file(DATA_DIR / "Day6_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				auto shoal = aoc::LanternfishShoal{}.load(data_file);
+
+				const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(256)).shoal_size();
+
+				Logger::WriteMessage(std::format("\tShoal size after 256 days: {}\n", number_of_fish).c_str());
 			}
 		}
 	}
@@ -1405,7 +1412,7 @@ namespace day_6
 TEST_CLASS(TestDay6)
 {
 public:
-	TEST_METHOD(FindFishCountForFullInput)
+	TEST_METHOD(FindFishCountForFullInput_80Days)
 	{
 		std::ifstream data_file(DATA_DIR / "Day6_input.txt");
 		Assert::IsTrue(data_file.is_open());
@@ -1415,6 +1422,18 @@ public:
 		const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(80)).shoal_size();
 
 		Assert::AreEqual(aoc::LanternfishShoal::Size_t{ 360268 }, number_of_fish);
+	}
+
+	TEST_METHOD(FindFishCountForFullInput_256Days)
+	{
+		std::ifstream data_file(DATA_DIR / "Day6_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		auto shoal = aoc::LanternfishShoal{}.load(data_file);
+
+		const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(256)).shoal_size();
+
+		Assert::AreEqual(aoc::LanternfishShoal::Size_t{ 1632146183902 }, number_of_fish);
 	}
 };
 }

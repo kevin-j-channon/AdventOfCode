@@ -1448,10 +1448,20 @@ public:
 	{
 		std::stringstream data("16,1,2,0,4,2,7,1,2,14");
 
-		const auto positions = aoc::crab_sorting::load(data);
+		const auto sorter = aoc::CrabSorter{}.load(data);
 
 		const auto expected_positions = { 16, 1, 2, 0, 4, 2, 7, 1, 2, 14 };
-		Assert::IsTrue(std::equal(expected_positions.begin(), expected_positions.end(), positions.begin()));
+		Assert::IsTrue(std::equal(expected_positions.begin(), expected_positions.end(), sorter.positions().begin()));
+	}
+
+	TEST_METHOD(CalculateBestPosition)
+	{
+		std::stringstream data("16,1,2,0,4,2,7,1,2,14");
+
+		const auto [best_position, cost] = aoc::CrabSorter{}.load(data).best_position_and_cost();
+
+		Assert::AreEqual(size_t{ 2 }, best_position);
+		Assert::AreEqual(uint32_t{ 37 }, cost);
 	}
 };
 }

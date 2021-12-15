@@ -1463,5 +1463,15 @@ public:
 		Assert::AreEqual(size_t{ 2 }, best_position);
 		Assert::AreEqual(uint32_t{ 37 }, cost);
 	}
+
+	TEST_METHOD(CalculateBestPositionForAllInput)
+	{
+		std::ifstream data_file(DATA_DIR / "Day7_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto [best_position, cost] = aoc::CrabSorter{}.load(data_file).best_position_and_cost();
+
+		Logger::WriteMessage(std::format("Best position: {}\ncost: {}\n", best_position, cost).c_str());
+	}
 };
 }

@@ -182,6 +182,28 @@ public:
 				Logger::WriteMessage(std::format("\tHorizontal|vertical|diagonal vent score: {}\n", vent_score).c_str());
 			}
 		}
+
+		// Day 6
+		{
+			Logger::WriteMessage("Day 6:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day6_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				auto shoal = aoc::LanternfishShoal{}.load(data_file);
+
+				const auto number_of_fish = aoc::LanternfishShoalModel{ shoal }.run_for(std::chrono::days(80)).shoal().size();
+
+				Logger::WriteMessage(std::format("\tShoal size after 80 days: {}\n", number_of_fish).c_str());
+			}
+
+			// Part 2
+			{
+				
+			}
+		}
 	}
 };
 }

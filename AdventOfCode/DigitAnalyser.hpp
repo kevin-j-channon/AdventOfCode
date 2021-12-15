@@ -9,10 +9,10 @@
 
 namespace aoc
 {
-class DigitAnalyser
+class DigitData
 {
 public:
-	DigitAnalyser& load(std::istream& stream)
+	DigitData& load(std::istream& stream)
 	{
 		auto line = std::string{};
 		std::getline(stream, line);

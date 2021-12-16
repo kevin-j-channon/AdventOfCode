@@ -1551,7 +1551,7 @@ public:
 		Assert::AreEqual(size_t{ 10 }, ref_vals.size());
 	}
 
-	TEST_METHOD(LoadAllExampleDataIntoDataAnalyser)
+	TEST_METHOD(ScoreIsCalculatedCorrectlyForSampleData)
 	{
 		constexpr auto data_string =
 			"be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe\n"
@@ -1569,6 +1569,16 @@ public:
 		const auto score = aoc::DigitAnalyser{}.load(ss).count_1478();
 
 		Assert::AreEqual(uint32_t{ 26 }, score);
+	}
+
+	TEST_METHOD(ScoreIsCalculatedCorrectlyForFullInput)
+	{
+		std::ifstream data_file(DATA_DIR / "Day8_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto score = aoc::DigitAnalyser{}.load(data_file).count_1478();
+
+		Assert::AreEqual(uint32_t{ 554 }, score);
 	}
 };
 }

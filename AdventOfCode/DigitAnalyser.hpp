@@ -49,12 +49,135 @@ public:
 	const OutputDigits_t& output_value_strings() const { return _output_value_strings; }
 	OutputDigits_t& output_value_strings() { return _output_value_strings; }
 
-	const ReferenceDigits_t& reference_value_strings() const { return _reference_value_strings; }
-	ReferenceDigits_t& reference_value_strings() { return _reference_value_strings; }
+	const ReferenceDigits_t& reference_value_strings() const { return _ref_values_str; }
+	ReferenceDigits_t& reference_value_strings() { return _ref_values_str; }
+
+	uint32_t decode()
+	{
+		_determine_reference_digits();
+		return _decode_value();
+	}
 
 private:
+
+	char _string_to_bits(const std::string& str) const
+	{
+		return std::accumulate(str.begin(), str.end(), char{ 0 }, [this](auto&& curr, const auto& next) { return curr | _segment_bits[next - 'a']; });
+	}
+
+	template<size_t LENGTH>
+	static bool _has_length(const std::string& str)
+	{
+		return str.length() == LENGTH;
+	}
+
+	void _determine_reference_digits()
+	{
+		// Find easy digits
+		_ref_digits[1] = _string_to_bits(*std::find_if(_ref_values_str.begin(), _ref_values_str.end(), _has_length<2>));
+		_ref_digits[4] = _string_to_bits(*std::find_if(_ref_values_str.begin(), _ref_values_str.end(), _has_length<4>));
+		_ref_digits[7] = _string_to_bits(*std::find_if(_ref_values_str.begin(), _ref_values_str.end(), _has_length<3>));
+		_ref_digits[8] = _string_to_bits(*std::find_if(_ref_values_str.begin(), _ref_values_str.end(), _has_length<7>));
+
+		auto two_three_five_bits = std::array<char, 3>{};
+		auto it_235 = two_three_five_bits.begin();
+		{
+			for (auto it_ref = _ref_values_str.begin(); it_ref != _ref_values_str.end(); ++it_ref) {
+				if (it_ref->length() == 5) {
+					*it_235++ = _string_to_bits(*it_ref);
+					if (it_235 == two_three_five_bits.end()) {
+						break;
+					}
+				}
+			}
+		}
+
+		auto zero_six_nine_bits = std::array<char, 3>{};
+		{
+			auto it_069 = zero_six_nine_bits.begin();
+			for (auto it_ref = _ref_values_str.begin(); it_ref != _ref_values_str.end(); ++it_ref) {
+				if (it_ref->length() == 6) {
+					*it_069++ = _string_to_bits(*it_ref);
+					if (it_069 == zero_six_nine_bits.end()) {
+						break;
+					}
+				}
+			}
+		}
+
+		// SIX will not be equal to ONE when ANDed with ONE.
+		_ref_digits[6] = *std::find_if(zero_six_nine_bits.begin(), zero_six_nine_bits.end(), [this](auto bits) {
+			return !(_ref_digits[1] == (_ref_digits[1] & bits));
+			});
+
+
+		// NINE will have no non-zero bits if XORd with EIGHT and then ANDed with FOUR (ZERO will have a single non-zero bit in the d position)
+		_ref_digits[9] = *std::find_if(zero_six_nine_bits.begin(), zero_six_nine_bits.end(), [this](auto bits) {
+			if (bits == _ref_digits[6]) {
+				return false;
+			}
+
+			return 0 == ((bits ^ _ref_digits[8]) & _ref_digits[4]);
+			});
+
+		// ZERO is the one in the zero_six_nine set that hasn't been found yet.
+		_ref_digits[0] = *std::find_if(zero_six_nine_bits.begin(), zero_six_nine_bits.end(), [this](auto bits) {
+			return !(bits == (_ref_digits[6] || bits == _ref_digits[9]));
+			});
+
+		// THREE is equal to ONE when ANDed with ONE.
+		_ref_digits[3] = *std::find_if(two_three_five_bits.begin(), two_three_five_bits.end(), [this](const auto& bits) {
+			return _ref_digits[1] == (_ref_digits[1] & bits);
+			});
+
+		// FIVE is equal to NINE when ORd with THREE
+		_ref_digits[5] = *std::find_if(two_three_five_bits.begin(), two_three_five_bits.end(), [this](const auto& bits) {
+			return _ref_digits[9] == (_ref_digits[3] | bits);
+			});
+
+		// TWO is the one in the two_three_five set that hasn't been found yet.
+		_ref_digits[2] = *std::find_if(two_three_five_bits.begin(), two_three_five_bits.end(), [this](auto bits) {
+			return !((bits == _ref_digits[3]) || (bits == _ref_digits[5]));
+			});
+	}
+
+	uint32_t _decode_value() const
+	{
+		auto output_digits_bits = std::array<uint8_t, output_digit_count>{};
+		std::transform(_output_value_strings.begin(), _output_value_strings.end(), output_digits_bits.begin(), [this](const auto& str) {return _string_to_bits(str); });
+
+		auto decoded_digits = std::array<uint8_t, output_digit_count>{};
+		std::transform(output_digits_bits.begin(), output_digits_bits.end(), decoded_digits.begin(), [this](auto bits) {
+			return static_cast<uint8_t>(std::distance(_ref_digits.begin(), std::find(_ref_digits.begin(), _ref_digits.end(), bits)));
+			});
+
+		return 1000 * decoded_digits[0] + 100 * decoded_digits[1] + 10 * decoded_digits[2] + decoded_digits[3];
+	}
+
+	/*
+		 aaaa
+		c    b
+		c    b
+		 dddd
+		f    e
+		f    e
+		 gggg
+	*/
+	static constexpr std::array<char, 7> _segment_bits =
+	{
+		000000001,	// a
+		0b0000010,	// b
+		0b0000100,	// c
+		0b0001000,	// d
+		0b0010000,	// e
+		0b0100000,	// f
+		0b1000000,	// g
+	};
+
 	OutputDigits_t _output_value_strings;
-	ReferenceDigits_t _reference_value_strings;
+	ReferenceDigits_t _ref_values_str;
+
+	std::array<char, reference_digit_count> _ref_digits;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -82,9 +205,13 @@ public:
 			});
 	}
 
-	void determine_reference_digits()
+	uint32_t decode_and_sum()
 	{
-		std::for_each(_data.begin(), _data.end(), _determine_reference_digits_for);
+		return std::accumulate(_data.begin(), _data.end(), uint32_t{ 0 }, [this](auto curr, auto& data) {
+			const auto next = data.decode();
+			Logger::WriteMessage(std::format("Decoded: {}\n", next).c_str());
+			return curr + next;
+			});
 	}
 
 private:
@@ -98,60 +225,6 @@ private:
 	{
 		return s.length() == 2 || s.length() == 3 || s.length() == 4 || s.length() == 7;
 	}
-
-	void _determine_reference_digits_for(const DigitData& data)
-	{
-		// Find easy digits
-		const auto& ref_strings = data.reference_value_strings();
-
-		const auto str_1 = std::find_if(ref_strings.begin(), ref_strings.end(), [](const auto& s) { return s.length() == 2; });
-		const auto str_4 = std::find_if(ref_strings.begin(), ref_strings.end(), [](const auto& s) { return s.length() == 4; });
-		const auto str_7 = std::find_if(ref_strings.begin(), ref_strings.end(), [](const auto& s) { return s.length() == 3; });
-		const auto str_8 = std::find_if(ref_strings.begin(), ref_strings.end(), [](const auto& s) { return s.length() == 7; });
-
-		auto digit_mapping = std::array<char, 10>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-		auto string_to_bits = [](auto&& curr, const auto& next) { return curr & (next - 'a'); };
-
-		digit_mapping[1] = std::accumulate(str_1->begin(), str_1->end(), '\0', string_to_bits);
-		digit_mapping[4] = std::accumulate(str_4->begin(), str_4->end(), '\0', string_to_bits);
-		digit_mapping[7] = std::accumulate(str_7->begin(), str_7->end(), '\0', string_to_bits);
-		digit_mapping[8] = std::accumulate(str_8->begin(), str_8->end(), '\0', string_to_bits);
-
-		auto two_five_three_strings = std::array<std::string, 3>{};
-		for ()
-		two_five_three_strings.erase(std::remove_if(two_five_three_strings.begin(), two_five_three_strings.end(), [](const auto& str) {
-			}), two_five_three_strings.end());
-
-		auto segment_mapping = std::array<char, 7>{ 0, 0, 0, 0, 0, 0, 0 };
-		segment_mapping[0] = digit_mapping[1] ^ digit_mapping[7];
-		segment_mapping[3] = digit_mapping[4] & digit_mapping[2] & digit_mapping[5];
-
-
-	}
-
-	/*
-		 aaaa 
-		c    b
-		c    b
-		 dddd
-		f    e
-		f    e
-		 gggg
-	*/
-	static constexpr std::array<char, 10> _digit_bits =
-	{
-		0b1110111,	// 0
-		0b0010010,	// 1
-		0b0101011,	// 2
-		0b1011011,	// 3
-		0b0011110,	// 4
-		0b1011101,	// 5
-		0b1111101,	// 6
-		0b0010011,	// 7
-		0b1111111,	// 8
-		0b1011111	// 9
-	};
 
 	std::vector<DigitData> _data;
 };

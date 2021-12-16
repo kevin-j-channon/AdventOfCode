@@ -1580,5 +1580,36 @@ public:
 
 		Assert::AreEqual(uint32_t{ 554 }, score);
 	}
+
+	TEST_METHOD(DecodeSingleLine)
+	{
+		constexpr auto data_string =
+			"acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf";
+
+		std::stringstream ss(data_string);
+		const auto score = aoc::DigitData{}.load(ss).decode();
+
+		Assert::AreEqual(uint32_t{ 5353 }, score);
+	}
+
+	TEST_METHOD(DecodeAndSumSampleData)
+	{
+		constexpr auto data_string =
+			"be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe\n"
+			"edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc\n"
+			"fgaebd cg bdaec gdafb agbcfd gdcbef bgcad gfac gcb cdgabef | cg cg fdcagb cbg\n"
+			"fbegcd cbd adcefb dageb afcb bc aefdc ecdab fgdeca fcdbega | efabcd cedba gadfec cb\n"
+			"aecbfdg fbg gf bafeg dbefa fcge gcbea fcaegb dgceab fcbdga | gecf egdcabf bgf bfgea\n"
+			"fgeab ca afcebg bdacfeg cfaedg gcfdb baec bfadeg bafgc acf | gebdcfa ecba ca fadegcb\n"
+			"dbcfg fgd bdegcaf fgec aegbdf ecdfab fbedc dacgb gdcebf gf | cefg dcbef fcge gbcadfe\n"
+			"bdfegc cbegaf gecbf dfcage bdacg ed bedf ced adcbefg gebcd | ed bcgafe cdgba cbgef\n"
+			"egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb\n"
+			"gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce";
+
+		std::stringstream ss(data_string);
+		const auto score = aoc::DigitAnalyser{}.load(ss).decode_and_sum();
+
+		Assert::AreEqual(uint32_t{ 61229 }, score);
+	}
 };
 }

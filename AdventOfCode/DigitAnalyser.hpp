@@ -82,6 +82,11 @@ public:
 			});
 	}
 
+	void determine_reference_digits()
+	{
+		std::for_each(_data.begin(), _data.end(), _determine_reference_digits_for);
+	}
+
 private:
 
 	static uint32_t _recognised_digits_count(const DigitData& digit_data)
@@ -93,6 +98,60 @@ private:
 	{
 		return s.length() == 2 || s.length() == 3 || s.length() == 4 || s.length() == 7;
 	}
+
+	void _determine_reference_digits_for(const DigitData& data)
+	{
+		// Find easy digits
+		const auto& ref_strings = data.reference_value_strings();
+
+		const auto str_1 = std::find_if(ref_strings.begin(), ref_strings.end(), [](const auto& s) { return s.length() == 2; });
+		const auto str_4 = std::find_if(ref_strings.begin(), ref_strings.end(), [](const auto& s) { return s.length() == 4; });
+		const auto str_7 = std::find_if(ref_strings.begin(), ref_strings.end(), [](const auto& s) { return s.length() == 3; });
+		const auto str_8 = std::find_if(ref_strings.begin(), ref_strings.end(), [](const auto& s) { return s.length() == 7; });
+
+		auto digit_mapping = std::array<char, 10>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+		auto string_to_bits = [](auto&& curr, const auto& next) { return curr & (next - 'a'); };
+
+		digit_mapping[1] = std::accumulate(str_1->begin(), str_1->end(), '\0', string_to_bits);
+		digit_mapping[4] = std::accumulate(str_4->begin(), str_4->end(), '\0', string_to_bits);
+		digit_mapping[7] = std::accumulate(str_7->begin(), str_7->end(), '\0', string_to_bits);
+		digit_mapping[8] = std::accumulate(str_8->begin(), str_8->end(), '\0', string_to_bits);
+
+		auto two_five_three_strings = std::array<std::string, 3>{};
+		for ()
+		two_five_three_strings.erase(std::remove_if(two_five_three_strings.begin(), two_five_three_strings.end(), [](const auto& str) {
+			}), two_five_three_strings.end());
+
+		auto segment_mapping = std::array<char, 7>{ 0, 0, 0, 0, 0, 0, 0 };
+		segment_mapping[0] = digit_mapping[1] ^ digit_mapping[7];
+		segment_mapping[3] = digit_mapping[4] & digit_mapping[2] & digit_mapping[5];
+
+
+	}
+
+	/*
+		 aaaa 
+		c    b
+		c    b
+		 dddd
+		f    e
+		f    e
+		 gggg
+	*/
+	static constexpr std::array<char, 10> _digit_bits =
+	{
+		0b1110111,	// 0
+		0b0010010,	// 1
+		0b0101011,	// 2
+		0b1011011,	// 3
+		0b0011110,	// 4
+		0b1011101,	// 5
+		0b1111101,	// 6
+		0b0010011,	// 7
+		0b1111111,	// 8
+		0b1011111	// 9
+	};
 
 	std::vector<DigitData> _data;
 };

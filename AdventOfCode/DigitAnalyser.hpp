@@ -122,7 +122,7 @@ private:
 
 		// ZERO is the one in the zero_six_nine set that hasn't been found yet.
 		_ref_digits[0] = *std::find_if(zero_six_nine_bits.begin(), zero_six_nine_bits.end(), [this](auto bits) {
-			return !(bits == (_ref_digits[6] || bits == _ref_digits[9]));
+			return !((bits == _ref_digits[6]) || (bits == _ref_digits[9]));
 			});
 
 		// THREE is equal to ONE when ANDed with ONE.
@@ -208,9 +208,7 @@ public:
 	uint32_t decode_and_sum()
 	{
 		return std::accumulate(_data.begin(), _data.end(), uint32_t{ 0 }, [this](auto curr, auto& data) {
-			const auto next = data.decode();
-			Logger::WriteMessage(std::format("Decoded: {}\n", next).c_str());
-			return curr + next;
+			return curr + data.decode();
 			});
 	}
 

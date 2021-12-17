@@ -242,6 +242,31 @@ public:
 				Logger::WriteMessage(std::format("\tBest position: {}, cost: {}\n", best_position, cost).c_str());
 			}
 		}
+
+		// Day 8
+		{
+			Logger::WriteMessage("Day 8:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day8_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto score = aoc::DigitAnalyser{}.load(data_file).count_1478();
+
+				Logger::WriteMessage(std::format("\tNumber of 1, 4, 7 & 8 digits: {}\n", score).c_str());
+			}
+
+			// Part 2
+			{
+				std::ifstream data_file(DATA_DIR / "Day8_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto score = aoc::DigitAnalyser{}.load(data_file).decode_and_sum();
+
+				Logger::WriteMessage(std::format("\tTotal score: {}\n", score).c_str());
+			}
+		}
 	}
 };
 }
@@ -1610,6 +1635,16 @@ public:
 		const auto score = aoc::DigitAnalyser{}.load(ss).decode_and_sum();
 
 		Assert::AreEqual(uint32_t{ 61229 }, score);
+	}
+
+	TEST_METHOD(DecodeAndSumFullData)
+	{
+		std::ifstream data_file(DATA_DIR / "Day8_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto score = aoc::DigitAnalyser{}.load(data_file).decode_and_sum();
+
+		Assert::AreEqual(uint32_t{ 990964 }, score);
 	}
 };
 }

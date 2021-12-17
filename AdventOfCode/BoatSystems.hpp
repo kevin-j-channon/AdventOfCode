@@ -212,6 +212,56 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<typename Value_T>
+class HeightMap
+{
+public:
+	HeightMap& load(std::istream& is)
+	{
+		const auto digits = std::string(std::istreambuf_iterator<char>{is}, std::istreambuf_iterator<char>{});
+		const auto rows = std::count(digits.begin(), digits.end(), '\n') + 1;
+		const auto cols = std::distance(digits.begin(), std::find(digits.begin(), digits.end(), '\n'));
+
+		_heights = arma::Mat<uint8_t>(rows, cols);
+
+		auto digit = digits.begin();
+		for (arma::uword r = 0; r < _heights.n_rows; ++r)
+		{
+			for (arma::uword c = 0; c < _heights.n_cols; ++c)
+			{
+				_heights.at(r, c) = static_cast<uint8_t>(*digit++ - '0');
+			}
+
+			// Skip the new-line character.
+			char ignore;
+			is.read(&ignore, 1);
+		}
+
+		return *this;
+	}
+
+	arma::uword rows() const { return _heights.n_rows; }
+	arma::uword cols() const { return _heights.n_cols; }
+
+private:
+	arma::Mat<Value_T> _heights;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
+class FloorHeightAnalyser
+{
+public:
+
+	static std::vector<Point3D<uint8_t>> find_minima(const HeightMap<Value_T>& height_map)
+	{
+		return std::vector<Point3D<uint8_t>>{};
+	}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 class BoatSystems
 {
 public:
@@ -264,9 +314,15 @@ public:
 	}
 
 	template<size_t FORMATIONS>
-	uint32_t detect_vents(std::istream& data_stream) const
+	uint32_t detect_vents(std::istream& data) const
 	{
-		return VentAnalyzer{ data_stream }.score<FORMATIONS>();
+		return VentAnalyzer{ data }.score<FORMATIONS>();
+	}
+
+	uint32_t lava_tube_smoke_risk(std::istream& data) const
+	{
+		const auto height_map = HeightMap<uint8_t>{}.load(data);
+		return static_cast<uint32_t>(FloorHeightAnalyser<uint8_t>::find_minima(height_map).size());
 	}
 };
 

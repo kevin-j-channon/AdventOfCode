@@ -841,6 +841,28 @@ public:
 		.score<aoc::VentAnalyzer::horizontal | aoc::VentAnalyzer::vertical | aoc::VentAnalyzer::diagonal>());
 	}
 };
+
+TEST_CLASS(FloorHeightAnalyserTests)
+{
+public:
+	TEST_METHOD(HeightMapCanBeLoadedFromStream)
+	{
+		constexpr auto data_str =
+			"2199943210\n"
+			"3987894921\n"
+			"9856789892\n"
+			"8767896789\n"
+			"9899965678";
+
+		std::stringstream data(data_str);
+
+		const auto height_map = aoc::HeightMap<uint8_t>{}.load(data);
+
+		Assert::AreEqual(arma::uword{ 5 }, height_map.rows());
+		Assert::AreEqual(arma::uword{ 10 }, height_map.cols());
+	}
+};
+
 }
 
 namespace diagnostic_log

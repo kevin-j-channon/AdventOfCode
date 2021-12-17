@@ -200,6 +200,37 @@ std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
+struct Point3D
+{
+	using Value_t = Value_T;
+	using This_t = Point3D<Value_t>;
+
+	Point3D() : x{ 0 }, y{ 0 }, z{ 0 } {}
+
+	Point3D(Value_t x_, Value_t y_, Value_t z_)
+		: x{ std::move(x_) }
+		, y{ std::move(y_) }
+		, z{ std::move(z_) }
+	{}
+
+	Point3D(const This_t&) = default;
+	This_t& operator=(const This_t&) = default;
+
+	Point3D(This_t&&) = default;
+	This_t& operator=(This_t&&) = default;
+
+	Value_T x;
+	Value_T y;
+	Value_T z;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

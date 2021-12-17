@@ -233,8 +233,7 @@ public:
 			}
 
 			// Skip the new-line character.
-			char ignore;
-			is.read(&ignore, 1);
+			++digits;
 		}
 
 		return *this;

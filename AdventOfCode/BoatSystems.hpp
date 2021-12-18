@@ -222,19 +222,21 @@ public:
 		const auto rows = std::count(digits.begin(), digits.end(), '\n') + 1;
 		const auto cols = std::distance(digits.begin(), std::find(digits.begin(), digits.end(), '\n'));
 
+		if (rows == 0 || cols == 0) {
+			return *this;
+		}
+
 		_heights = arma::Mat<uint8_t>(rows, cols);
 
 		auto digit = digits.begin();
-		for (arma::uword r = 0; r < _heights.n_rows; ++r)
-		{
-			for (arma::uword c = 0; c < _heights.n_cols; ++c)
-			{
-				_heights.at(r, c) = static_cast<uint8_t>(*digit++ - '0');
-			}
-
-			// Skip the new-line character.
-			++digits;
+		for (arma::uword r = 0; r < _heights.n_rows - 1; ++r) {
+			std::transform(digit, std::next(digit, cols), _heights.begin_row(r),
+				[](auto d) { return static_cast<uint8_t>(d - '0'); });
+			std::advance(digit, cols + 1);
 		}
+
+		std::transform(digit, std::next(digit, cols), _heights.begin_row(rows - 1),
+			[](auto d) { return static_cast<uint8_t>(d - '0'); });
 
 		return *this;
 	}
@@ -257,6 +259,8 @@ public:
 	{
 		return std::vector<Point3D<uint8_t>>{};
 	}
+
+private:
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -204,15 +204,17 @@ std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<typename Value_T>
+template<typename XValue_T, typename YValue_T = XValue_T, typename ZValue_T = XValue_T>
 struct Point3D
 {
-	using Value_t = Value_T;
-	using This_t = Point3D<Value_t>;
+	using XValue_t = XValue_T;
+	using YValue_t = YValue_T;
+	using ZValue_t = ZValue_T;
+	using This_t = Point3D<XValue_t, YValue_t, ZValue_t>;
 
 	Point3D() : x{ 0 }, y{ 0 }, z{ 0 } {}
 
-	Point3D(Value_t x_, Value_t y_, Value_t z_)
+	Point3D(XValue_t x_, YValue_t y_, ZValue_t z_)
 		: x{ std::move(x_) }
 		, y{ std::move(y_) }
 		, z{ std::move(z_) }
@@ -234,9 +236,9 @@ struct Point3D
 		return !(*this == other);
 	}
 
-	Value_T x;
-	Value_T y;
-	Value_T z;
+	XValue_t x;
+	YValue_t y;
+	ZValue_t z;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

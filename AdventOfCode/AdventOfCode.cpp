@@ -867,7 +867,7 @@ public:
 		auto minima = aoc::FloorHeightAnalyser<uint8_t>::Minima{}.append({ {1,1,1}, {1,2,3}, {5,5,5} });
 		Assert::AreEqual(std::ptrdiff_t{ 3 }, std::distance(minima.begin(), minima.end()));
 
-		using Point_t = aoc::Point3D<uint8_t>;
+		using Point_t = aoc::FloorHeightAnalyser<uint8_t>::Minima::Point_t;
 
 		const auto expected_1 = { Point_t{1,1,1}, Point_t{1,2,3}, Point_t{5,5,5} };
 		Assert::IsTrue(std::equal(expected_1.begin(), expected_1.end(), minima.begin()));
@@ -877,6 +877,23 @@ public:
 
 		const auto expected_2 = { Point_t{1,1,1}, Point_t{1,2,3}, Point_t{5,5,5}, Point_t{10, 11, 12} };
 		Assert::IsTrue(std::equal(expected_2.begin(), expected_2.end(), minima.begin()));
+	}
+
+	TEST_METHOD(SampleIsCorrect)
+	{
+		constexpr auto data_str =
+			"2199943210\n"
+			"3987894921\n"
+			"9856789892\n"
+			"8767896789\n"
+			"9899965678";
+
+		std::stringstream data(data_str);
+
+		const auto height_map = aoc::HeightMap<uint8_t>{}.load(data);
+
+		const auto minima = aoc::FloorHeightAnalyser<uint8_t>::find_minima(height_map);
+		Assert::AreEqual(size_t{ 5 }, minima.size());
 	}
 };
 

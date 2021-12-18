@@ -255,9 +255,32 @@ class FloorHeightAnalyser
 {
 public:
 
-	static std::vector<Point3D<uint8_t>> find_minima(const HeightMap<Value_T>& height_map)
+	class Minima
 	{
-		return std::vector<Point3D<uint8_t>>{};
+		std::vector<Point3D<Value_T>> _points;
+
+	public:
+
+		using Iterator_t = decltype(_points.begin());
+		using ConstIterator_t = decltype(_points.cbegin());
+
+		Minima& append(std::vector<Point3D<Value_T>>&& new_points)
+		{
+			_points.insert(_points.end(), new_points.begin(), new_points.end());
+
+			return *this;
+		}
+
+		ConstIterator_t begin() const { return _points.cbegin(); }
+		Iterator_t begin() { return _points.begin(); }
+
+		ConstIterator_t end() const { return _points.cend(); }
+		Iterator_t end() { return _points.end(); }
+	};
+
+	static std::vector<Point3D<Value_T>> find_minima(const HeightMap<Value_T>& height_map)
+	{
+		return std::vector<Point3D<Value_T>>{};
 	}
 
 private:

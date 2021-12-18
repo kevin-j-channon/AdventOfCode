@@ -224,6 +224,16 @@ struct Point3D
 	Point3D(This_t&&) = default;
 	This_t& operator=(This_t&&) = default;
 
+	bool operator==(const This_t & other) const
+	{
+		return x == other.x && y == other.y && z == other.z;
+	}
+
+	bool operator!=(const This_t & other) const
+	{
+		return !(*this == other);
+	}
+
 	Value_T x;
 	Value_T y;
 	Value_T z;

@@ -861,6 +861,23 @@ public:
 		Assert::AreEqual(arma::uword{ 5 }, height_map.rows());
 		Assert::AreEqual(arma::uword{ 10 }, height_map.cols());
 	}
+
+	TEST_METHOD(MinimaCanBeAppended)
+	{
+		auto minima = aoc::FloorHeightAnalyser<uint8_t>::Minima{}.append({ {1,1,1}, {1,2,3}, {5,5,5} });
+		Assert::AreEqual(std::ptrdiff_t{ 3 }, std::distance(minima.begin(), minima.end()));
+
+		using Point_t = aoc::Point3D<uint8_t>;
+
+		const auto expected_1 = { Point_t{1,1,1}, Point_t{1,2,3}, Point_t{5,5,5} };
+		Assert::IsTrue(std::equal(expected_1.begin(), expected_1.end(), minima.begin()));
+
+		minima.append({ {10, 11, 12} });
+		Assert::AreEqual(std::ptrdiff_t{ 4 }, std::distance(minima.begin(), minima.end()));
+
+		const auto expected_2 = { Point_t{1,1,1}, Point_t{1,2,3}, Point_t{5,5,5}, Point_t{10, 11, 12} };
+		Assert::IsTrue(std::equal(expected_2.begin(), expected_2.end(), minima.begin()));
+	}
 };
 
 }

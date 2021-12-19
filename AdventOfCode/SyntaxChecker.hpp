@@ -74,7 +74,7 @@ public:
 		default:;
 		}
 
-		throw Exception(std::format("Invalid character: {}", chunk_stack.top()));
+		throw Exception(std::format("Invalid character: {}", *error));
 	}
 };
 

@@ -1771,5 +1771,31 @@ public:
 	{
 		Assert::AreEqual(uint32_t{ 25137 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>>>"s));
 	}
+
+	TEST_METHOD(ScoringSampleInput)
+	{
+		const auto str =
+			"[({(<(())[]>[[{[]{<()<>>\n"
+			"[(()[<>])]({[<{<<[]>>(\n"
+			"{([(<{}[<>[]}>{[]{[(<()>\n"
+			"(((({<>}<{<{<>}{[]{[]{}\n"
+			"[[<[([]))<([[{}[[()]]]\n"
+			"[{[{({}]{}}([{[{{{}}([]\n"
+			"{<[[]]>}<{[{[{[]{()[[[]\n"
+			"[<(<(<(<{}))><([]([]()\n"
+			"<{([([[(<>()){}]>(<<{{\n"
+			"<{([{{}}[<[[[<>{}]]]>[]]";
+
+		std::stringstream ss(str);
+
+		Assert::AreEqual(uint32_t{ 26397 }, aoc::SyntaxChecker::score_lines(ss));
+	}
+	TEST_METHOD(AnalyseFullData)
+	{
+		std::ifstream data_file(DATA_DIR / "Day10_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		Assert::AreEqual(uint32_t{ 374061 }, aoc::SyntaxChecker::score_lines(data_file));
+	}
 };
 }

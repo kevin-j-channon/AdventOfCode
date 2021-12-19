@@ -856,18 +856,18 @@ public:
 
 		std::stringstream data(data_str);
 
-		const auto height_map = aoc::HeightMap<uint8_t>{}.load(data);
+		const auto analyser = aoc::FloorHeightAnalyser<uint8_t, 1>{}.load(data);
 
-		Assert::AreEqual(arma::uword{ 5 }, height_map.rows());
-		Assert::AreEqual(arma::uword{ 10 }, height_map.cols());
+		Assert::AreEqual(arma::uword{ 5 }, analyser.rows());
+		Assert::AreEqual(arma::uword{ 10 }, analyser.cols());
 	}
 
 	TEST_METHOD(MinimaCanBeAppended)
 	{
-		auto minima = aoc::FloorHeightAnalyser<uint8_t>::Minima{}.append({ {1,1,1}, {1,2,3}, {5,5,5} });
+		auto minima = aoc::FloorHeightAnalyser<uint8_t, 1>::Minima{}.append({ {1,1,1}, {1,2,3}, {5,5,5} });
 		Assert::AreEqual(std::ptrdiff_t{ 3 }, std::distance(minima.begin(), minima.end()));
 
-		using Point_t = aoc::FloorHeightAnalyser<uint8_t>::Minima::Point_t;
+		using Point_t = aoc::FloorHeightAnalyser<uint8_t,1>::Minima::Point_t;
 
 		const auto expected_1 = { Point_t{1,1,1}, Point_t{1,2,3}, Point_t{5,5,5} };
 		Assert::IsTrue(std::equal(expected_1.begin(), expected_1.end(), minima.begin()));
@@ -889,11 +889,10 @@ public:
 			"9899965678";
 
 		std::stringstream data(data_str);
+		
+		const auto minima = aoc::FloorHeightAnalyser<uint8_t, 1>{}.load(data).find_minima();
 
-		const auto height_map = aoc::HeightMap<uint8_t>{}.load(data);
-
-		const auto minima = aoc::FloorHeightAnalyser<uint8_t>::find_minima(height_map);
-		Assert::AreEqual(size_t{ 5 }, minima.size());
+		Assert::AreEqual(size_t{ 4 }, minima.size());
 	}
 };
 

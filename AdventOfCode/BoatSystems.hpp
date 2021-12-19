@@ -212,90 +212,13 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<typename Value_T>
-class HeightMap
+template<typename Value_T, arma::uword KERNEL_SIZE>
+class FloorHeightAnalyser
 {
 public:
 
 	using Value_t = Value_T;
 	using Size_t = arma::uword;
-
-	HeightMap& load(std::istream& is)
-	{
-		const auto digits = std::string(std::istreambuf_iterator<char>{is}, std::istreambuf_iterator<char>{});
-		const auto rows = std::count(digits.begin(), digits.end(), '\n') + 1;
-		const auto cols = std::distance(digits.begin(), std::find(digits.begin(), digits.end(), '\n'));
-
-		if (rows == 0 || cols == 0) {
-			return *this;
-		}
-
-		_heights = arma::Mat<uint8_t>(rows, cols);
-
-		auto digit = digits.begin();
-		for (arma::uword r = 0; r < _heights.n_rows - 1; ++r) {
-			std::transform(digit, std::next(digit, cols), _heights.begin_row(r),
-				[](auto d) { return static_cast<uint8_t>(d - '0'); });
-			std::advance(digit, cols + 1);
-		}
-
-		std::transform(digit, std::next(digit, cols), _heights.begin_row(rows - 1),
-			[](auto d) { return static_cast<uint8_t>(d - '0'); });
-
-		return *this;
-	}
-
-	Size_t rows() const { return _heights.n_rows; }
-	Size_t cols() const { return _heights.n_cols; }
-
-	Value_t at(Size_t r, Size_t c) const { return _heights.at(r, c); }
-
-private:
-	arma::Mat<Value_T> _heights;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-template<typename Value_T>
-class FloorHeightAnalyser
-{
-
-	template<size_t MINUS_X, size_t PLUS_X, size_t MINUS_Y, size_t PLUS_Y>
-	struct MinimaKernel
-	{
-		static constexpr auto minus_x = MINUS_X;
-		static constexpr auto plus_x = PLUS_X;
-		static constexpr auto minus_y = MINUS_Y;
-		static constexpr auto plus_y = PLUS_Y;
-	};
-
-	template<size_t SIZE>
-	using BulkKernel = MinimaKernel<SIZE, SIZE, SIZE, SIZE>;
-
-	template<size_t SIZE>
-	using LeftEdgeKernel = MinimaKernel<0, SIZE, SIZE, SIZE>;
-
-	template<size_t SIZE>
-	using RightEdgeKernel = MinimaKernel<SIZE, 0, SIZE, SIZE>;
-
-	template<size_t SIZE>
-	using TopEdgeKernel = MinimaKernel<SIZE, SIZE, 0, SIZE>;
-
-	template<size_t SIZE>
-	using BottomEdgeKernel = MinimaKernel<SIZE, SIZE, SIZE, 0>;
-
-	template<size_t SIZE>
-	using TopRightCornerKernel = MinimaKernel<0, SIZE, 0, SIZE>;
-
-	template<size_t SIZE>
-	using TopLeftCornerKernel = MinimaKernel<SIZE, 0, 0, SIZE>;
-
-	template<size_t SIZE>
-	using BottomRightCornerKernel = MinimaKernel<0, SIZE, SIZE, 0>;
-
-	template<size_t SIZE>
-	using BottomLeftCornerKernel = MinimaKernel<SIZE, 0, SIZE, 0>;
-public:
 
 	class Minima
 	{
@@ -324,7 +247,7 @@ public:
 			return append(std::forward<std::vector<Point_t>>(new_minima._points));
 		}
 
-		Minima& append(HeightMap<Value_T>::Size_t x, HeightMap<Value_T>::Size_t y, Value_T z)
+		Minima& append(Size_t x, Size_t y, Value_t z)
 		{
 			_points.emplace_back(x, y, z);
 
@@ -340,54 +263,44 @@ public:
 		Size_t size() const { return _points.size(); }
 	};
 
-	static Minima find_minima(const HeightMap<Value_T>& height_map)
+	Size_t rows() const { return _height_map.n_rows - 2 * KERNEL_SIZE; }
+	Size_t cols() const { return _height_map.n_cols - 2 * KERNEL_SIZE; }
+
+	FloorHeightAnalyser& load(std::istream& is)
 	{
-		constexpr auto kernel_size = 1;
-		return Minima{}
-			.append(_find_minima_using_kernel<BulkKernel<kernel_size>>(height_map))
-			.append(_find_minima_using_kernel<LeftEdgeKernel<kernel_size>>(height_map))
-			.append(_find_minima_using_kernel<RightEdgeKernel<kernel_size>>(height_map))
-			.append(_find_minima_using_kernel<TopEdgeKernel<kernel_size>>(height_map))
-			.append(_find_minima_using_kernel<BottomEdgeKernel<kernel_size>>(height_map))
-			.append(_find_minima_using_kernel<TopRightCornerKernel<kernel_size>>(height_map))
-			.append(_find_minima_using_kernel<TopLeftCornerKernel<kernel_size>>(height_map))
-			.append(_find_minima_using_kernel<BottomRightCornerKernel<kernel_size>>(height_map))
-			.append(_find_minima_using_kernel<BottomLeftCornerKernel<kernel_size>>(height_map));
+		const auto digits = std::string(std::istreambuf_iterator<char>{is}, std::istreambuf_iterator<char>{});
+		const auto rows = std::count(digits.begin(), digits.end(), '\n') + 1;
+		const auto cols = std::distance(digits.begin(), std::find(digits.begin(), digits.end(), '\n'));
+
+		if (rows == 0 || cols == 0) {
+			return *this;
+		}
+
+		_height_map.resize(rows + 2 * KERNEL_SIZE, cols + 2 * KERNEL_SIZE);
+		_height_map.fill(10);
+
+		auto digit = digits.begin();
+		for (arma::uword r = KERNEL_SIZE; r < _height_map.n_rows - KERNEL_SIZE - 1; ++r) {
+			std::transform(digit, std::next(digit, cols), std::next(_height_map.begin_row(r), KERNEL_SIZE),
+				[](auto d) { return static_cast<uint8_t>(d - '0'); });
+			std::advance(digit, cols + 1);
+		}
+
+		std::transform(digit, std::next(digit, cols), std::next(_height_map.begin_row(rows - 1), KERNEL_SIZE),
+			[](auto d) { return static_cast<uint8_t>(d - '0'); });
+
+		return *this;
 	}
 
-private:
-
-	template<typename Kernel_T>
-	static Minima _find_minima_using_kernel(const HeightMap<Value_T>& height_map)
+	Minima find_minima() const
 	{
 		auto out = Minima{};
 
-		for (auto col = Kernel_T::minus_x; col < height_map.cols() - Kernel_T::plus_x; ++col) {
-			for (auto row = Kernel_T::minus_y; row < height_map.rows() - Kernel_T::plus_y; ++row) {
-				const auto ref_value = height_map.at(row, col);
-				
-				if constexpr (Kernel_T::minus_x) {
-					if (height_map.at(row, col - Kernel_T::minus_x) <= ref_value) {
-						continue;
-					}
-				}
-
-				if constexpr (Kernel_T::plus_x) {
-					if (height_map.at(row, col + Kernel_T::plus_x) <= ref_value) {
-						continue;
-					}
-				}
-
-				if constexpr (Kernel_T::minus_y) {
-					if (height_map.at(row - Kernel_T::minus_y, col) <= ref_value) {
-						continue;
-					}
-				}
-
-				if constexpr (Kernel_T::plus_y) {
-					if (height_map.at(row + Kernel_T::plus_y, col) <= ref_value) {
-						continue;
-					}
+		for (auto col = KERNEL_SIZE; col < _height_map.n_cols - KERNEL_SIZE; ++col) {
+			for (auto row = KERNEL_SIZE; row < _height_map.n_rows - KERNEL_SIZE; ++row) {
+				const auto ref_value = _height_map.at(row, col);
+				if (!_is_minimum(row, col, ref_value)) {
+					continue;
 				}
 
 				out.append(col, row, ref_value);
@@ -396,6 +309,28 @@ private:
 
 		return out;
 	}
+
+private:
+
+	bool _is_minimum(Size_t row, Size_t col, Value_t ref_value) const
+	{
+		if (_height_map.at(row, col - KERNEL_SIZE) <= ref_value) {
+			return false;
+		}
+		if (_height_map.at(row, col + KERNEL_SIZE) <= ref_value) {
+			return false;
+		}
+		if (_height_map.at(row - KERNEL_SIZE, col) <= ref_value) {
+			return false;
+		}
+		if (_height_map.at(row + KERNEL_SIZE, col) <= ref_value) {
+			return false;
+		}
+
+		return true;
+	}
+
+	arma::Mat<Value_t> _height_map;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -459,8 +394,7 @@ public:
 
 	uint32_t lava_tube_smoke_risk(std::istream& data) const
 	{
-		const auto height_map = HeightMap<uint8_t>{}.load(data);
-		return static_cast<uint32_t>(FloorHeightAnalyser<uint8_t>::find_minima(height_map).size());
+		return static_cast<uint32_t>(FloorHeightAnalyser<uint8_t, 1>{}.load(data).find_minima().size());
 	}
 };
 

@@ -66,7 +66,7 @@ public:
 			return 0;
 		}
 
-		switch(chunk_stack.top()) {
+		switch(*error) {
 		case ')': return 3;
 		case ']': return 57;
 		case '}': return 1197;

@@ -1751,5 +1751,25 @@ public:
 	{
 		Assert::AreEqual(uint32_t{ 0 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>}>"s));
 	}
+
+	TEST_METHOD(MismatchRoundBracketScoresCorrectly)
+	{
+		Assert::AreEqual(uint32_t{ 3 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>)}>"s));
+	}
+
+	TEST_METHOD(MismatchSquareBracketScoresCorrectly)
+	{
+		Assert::AreEqual(uint32_t{ 57 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>]>"s));
+	}
+
+	TEST_METHOD(MismatchBraceScoresCorrectly)
+	{
+		Assert::AreEqual(uint32_t{ 1197 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>}}"s));
+	}
+
+	TEST_METHOD(MismatchAngleBracketScoresCorrectly)
+	{
+		Assert::AreEqual(uint32_t{ 25137 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>>>"s));
+	}
 };
 }

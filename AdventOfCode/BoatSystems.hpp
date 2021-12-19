@@ -276,7 +276,7 @@ public:
 			return *this;
 		}
 
-		_height_map.resize(rows + 2 * KERNEL_SIZE, cols + 2 * KERNEL_SIZE);
+		_height_map.resize(rows + (2 * KERNEL_SIZE), cols + (2 * KERNEL_SIZE));
 		_height_map.fill(10);
 
 		auto digit = digits.begin();
@@ -286,7 +286,7 @@ public:
 			std::advance(digit, cols + 1);
 		}
 
-		std::transform(digit, std::next(digit, cols), std::next(_height_map.begin_row(rows - 1), KERNEL_SIZE),
+		std::transform(digit, std::next(digit, cols), std::next(_height_map.begin_row(rows + KERNEL_SIZE - 1), KERNEL_SIZE),
 			[](auto d) { return static_cast<uint8_t>(d - '0'); });
 
 		return *this;
@@ -314,20 +314,12 @@ private:
 
 	bool _is_minimum(Size_t row, Size_t col, Value_t ref_value) const
 	{
-		if (_height_map.at(row, col - KERNEL_SIZE) <= ref_value) {
-			return false;
-		}
-		if (_height_map.at(row, col + KERNEL_SIZE) <= ref_value) {
-			return false;
-		}
-		if (_height_map.at(row - KERNEL_SIZE, col) <= ref_value) {
-			return false;
-		}
-		if (_height_map.at(row + KERNEL_SIZE, col) <= ref_value) {
-			return false;
-		}
+		const auto above = _height_map.at(row - KERNEL_SIZE, col);
+		const auto below = _height_map.at(row + KERNEL_SIZE, col);
+		const auto left  = _height_map.at(row, col - KERNEL_SIZE);
+		const auto right = _height_map.at(row, col + KERNEL_SIZE);
 
-		return true;
+		return (ref_value < above) && (ref_value < below) && (ref_value < left) && ref_value < right;
 	}
 
 	arma::Mat<Value_t> _height_map;
@@ -394,7 +386,10 @@ public:
 
 	uint32_t lava_tube_smoke_risk(std::istream& data) const
 	{
-		return static_cast<uint32_t>(FloorHeightAnalyser<uint8_t, 1>{}.load(data).find_minima().size());
+		const auto minima = FloorHeightAnalyser<uint32_t, 1>{}.load(data).find_minima();
+		return std::accumulate(minima.begin(), minima.end(), uint32_t{ 0 }, [](auto curr, const auto& next) {
+			return curr + next.z + 1;
+			});
 	}
 };
 

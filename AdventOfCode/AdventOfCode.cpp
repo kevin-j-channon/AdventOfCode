@@ -1703,3 +1703,20 @@ public:
 	}
 };
 }
+
+namespace day_9
+{
+TEST_CLASS(TestDay9)
+{
+public:
+	TEST_METHOD(AnalyseFullData)
+	{
+		std::ifstream data_file(DATA_DIR / "Day9_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto risk = aoc::Submarine().boat_systems().lava_tube_smoke_risk(data_file);
+
+		Assert::AreEqual(uint32_t{ 545 }, risk);
+	}
+};
+}

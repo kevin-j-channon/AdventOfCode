@@ -9,6 +9,7 @@
 #include <stack>
 #include <optional>
 #include <utility>
+#include <algorithm>
 
 
 namespace aoc
@@ -47,18 +48,30 @@ public:
 			}
 			case LineType::incomplete: {
 				_incomplete_line_scores.push_back(value);
+				break;
 			}
 			}
 		}
+
+		std::sort(_incomplete_line_scores.begin(), _incomplete_line_scores.end());
 
 		return *this;
 	}
 
 	uint32_t syntax_error_score() const { return _syntax_error_score; }
 
+	uint32_t incomplete_line_score() const
+	{
+		if (_incomplete_line_scores.empty()) {
+			return 0;
+		}
+
+		return _incomplete_line_scores[_incomplete_line_scores.size() / 2];
+	}
+
 	static Score score_line(const std::string& line)
 	{
-		const auto [chunk_stack, error_char] = _parse_line(line);
+		auto [chunk_stack, error_char] = _parse_line(line);
 
 		if (chunk_stack.empty()) {
 			return {LineType::complete, 0};
@@ -114,9 +127,28 @@ private:
 		}
 	}
 
-	static Score _handle_incomplete_line(const std::stack<char>& chunk_stack)
+	static Score _handle_incomplete_line(std::stack<char>& chunk_stack)
 	{
-		return { LineType::incomplete, 0 };
+		auto out = uint32_t{ 0 };
+
+		while (!chunk_stack.empty()) {
+			const auto c = chunk_stack.top();
+
+			out *= 5;
+
+			switch (c) {
+			case ')': out += 1; break;
+			case ']': out += 2; break;
+			case '}': out += 3; break;
+			case '>': out += 4; break;
+			default:
+				throw Exception(std::format("Invalid character: {}", c));
+			}
+
+			chunk_stack.pop();
+		}
+
+		return { LineType::incomplete, out };
 	}
 
 	static Score _handle_syntax_error(char error_char)

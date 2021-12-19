@@ -1772,7 +1772,7 @@ public:
 		Assert::AreEqual(uint32_t{ 25137 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>>>"s).value);
 	}
 
-	TEST_METHOD(ScoringSampleInput)
+	TEST_METHOD(SyntaxScoringSampleInput)
 	{
 		const auto str =
 			"[({(<(())[]>[[{[]{<()<>>\n"
@@ -1790,12 +1790,38 @@ public:
 
 		Assert::AreEqual(uint32_t{ 26397 }, aoc::SyntaxChecker{}.score_lines(ss).syntax_error_score());
 	}
-	TEST_METHOD(AnalyseFullData)
+	TEST_METHOD(AnalyseFullDataForSyntax)
 	{
 		std::ifstream data_file(DATA_DIR / "Day10_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
 		Assert::AreEqual(uint32_t{ 374061 }, aoc::SyntaxChecker{}.score_lines(data_file).syntax_error_score());
+	}
+
+	TEST_METHOD(IncompleteLineScoringSampleInput)
+	{
+		const auto str =
+			"[({(<(())[]>[[{[]{<()<>>\n"
+			"[(()[<>])]({[<{<<[]>>(\n"
+			"{([(<{}[<>[]}>{[]{[(<()>\n"
+			"(((({<>}<{<{<>}{[]{[]{}\n"
+			"[[<[([]))<([[{}[[()]]]\n"
+			"[{[{({}]{}}([{[{{{}}([]\n"
+			"{<[[]]>}<{[{[{[]{()[[[]\n"
+			"[<(<(<(<{}))><([]([]()\n"
+			"<{([([[(<>()){}]>(<<{{\n"
+			"<{([{{}}[<[[[<>{}]]]>[]]";
+
+		std::stringstream ss(str);
+
+		Assert::AreEqual(uint32_t{ 288957 }, aoc::SyntaxChecker{}.score_lines(ss).incomplete_line_score());
+	}
+	TEST_METHOD(AnalyseFullDataForIncompleteLines)
+	{
+		std::ifstream data_file(DATA_DIR / "Day10_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		Assert::AreEqual(uint32_t{ 374061 }, aoc::SyntaxChecker{}.score_lines(data_file).incomplete_line_score());
 	}
 };
 }

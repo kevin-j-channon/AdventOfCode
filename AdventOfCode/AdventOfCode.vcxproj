@@ -172,8 +172,10 @@
     <ClInclude Include="EntertainmentSystems.hpp" />
     <ClInclude Include="Lanternfish.hpp" />
     <ClInclude Include="StringOperations.hpp" />
+    <ClInclude Include="SyntaxChecker.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="Data\Day10_input.txt" />
     <Text Include="Data\Day1_input.txt" />
     <Text Include="Data\Day2_input.txt" />
     <Text Include="Data\Day3_input.txt" />

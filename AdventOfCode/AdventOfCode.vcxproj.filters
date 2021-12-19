@@ -50,6 +50,9 @@
     <ClInclude Include="DigitAnalyser.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SyntaxChecker.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Data\Day1_input.txt">
@@ -77,6 +80,9 @@
       <Filter>Data</Filter>
     </Text>
     <Text Include="Data\Day9_input.txt">
+      <Filter>Data</Filter>
+    </Text>
+    <Text Include="Data\Day10_input.txt">
       <Filter>Data</Filter>
     </Text>
   </ItemGroup>

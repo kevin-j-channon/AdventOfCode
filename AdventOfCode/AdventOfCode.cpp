@@ -8,6 +8,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "Lanternfish.hpp"
 #include "CrabSorter.hpp"
 #include "DigitAnalyser.hpp"
+#include "SyntaxChecker.hpp"
 
 #include <vector>
 #include <cstdint>
@@ -1717,6 +1718,38 @@ public:
 		const auto risk = aoc::Submarine().boat_systems().lava_tube_smoke_risk(data_file);
 
 		Assert::AreEqual(uint32_t{ 545 }, risk);
+	}
+};
+}
+
+namespace day_10
+{
+TEST_CLASS(TestDay10)
+{
+public:
+	TEST_METHOD(SimpleRoundBracketScoresZero)
+	{
+		Assert::AreEqual(uint32_t{ 0 }, aoc::SyntaxChecker::score_line("()"s));
+	}
+
+	TEST_METHOD(SimpleSquareBracketScoresZero)
+	{
+		Assert::AreEqual(uint32_t{ 0 }, aoc::SyntaxChecker::score_line("[]"s));
+	}
+
+	TEST_METHOD(SimpleBracesScoresZero)
+	{
+		Assert::AreEqual(uint32_t{ 0 }, aoc::SyntaxChecker::score_line("{}"s));
+	}
+
+	TEST_METHOD(SimpleAngleBracketScoresZero)
+	{
+		Assert::AreEqual(uint32_t{ 0 }, aoc::SyntaxChecker::score_line("<>"s));
+	}
+
+	TEST_METHOD(MixedBracketsAreHandled)
+	{
+		Assert::AreEqual(uint32_t{ 0 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>}>"s));
 	}
 };
 }

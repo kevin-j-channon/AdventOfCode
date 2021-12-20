@@ -171,6 +171,7 @@
     <ClInclude Include="DigitAnalyser.hpp" />
     <ClInclude Include="EntertainmentSystems.hpp" />
     <ClInclude Include="Lanternfish.hpp" />
+    <ClInclude Include="StaticMap.hpp" />
     <ClInclude Include="StringOperations.hpp" />
     <ClInclude Include="SyntaxChecker.hpp" />
   </ItemGroup>

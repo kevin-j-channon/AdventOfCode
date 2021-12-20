@@ -1813,15 +1813,44 @@ public:
 			"<{([{{}}[<[[[<>{}]]]>[]]";
 
 		std::stringstream ss(str);
+		
+		auto checker = aoc::SyntaxChecker{};
+		const auto score = checker.score_lines(ss).incomplete_line_score();
 
-		Assert::AreEqual(uint32_t{ 288957 }, aoc::SyntaxChecker{}.score_lines(ss).incomplete_line_score());
+		Assert::AreEqual(uint32_t{ 288957 }, checker.incomplete_line_score());
+	}
+
+	TEST_METHOD(IncompleteLineScoresAreCorrectForSampleInput)
+	{
+		const auto str =
+			"[({(<(())[]>[[{[]{<()<>>\n"
+			"[(()[<>])]({[<{<<[]>>(\n"
+			"{([(<{}[<>[]}>{[]{[(<()>\n"
+			"(((({<>}<{<{<>}{[]{[]{}\n"
+			"[[<[([]))<([[{}[[()]]]\n"
+			"[{[{({}]{}}([{[{{{}}([]\n"
+			"{<[[]]>}<{[{[{[]{()[[[]\n"
+			"[<(<(<(<{}))><([]([]()\n"
+			"<{([([[(<>()){}]>(<<{{\n"
+			"<{([{{}}[<[[[<>{}]]]>[]]";
+
+		std::stringstream ss(str);
+
+		const auto scores = aoc::SyntaxChecker{}.score_lines(ss).incomplete_line_scores();
+		const auto expected = { 294, 5566, 288957, 995444, 1480781 };
+
+		Assert::AreEqual(size_t{ 5 }, scores.size());
+
+		Assert::IsTrue(std::equal(expected.begin(), expected.end(), scores.begin()));
 	}
 	TEST_METHOD(AnalyseFullDataForIncompleteLines)
 	{
 		std::ifstream data_file(DATA_DIR / "Day10_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
-		Assert::AreEqual(uint32_t{ 374061 }, aoc::SyntaxChecker{}.score_lines(data_file).incomplete_line_score());
+		auto checker = aoc::SyntaxChecker{};
+		const auto score = checker.score_lines(data_file).incomplete_line_score();
+		Assert::AreEqual(uint32_t{ 374061 }, score);
 	}
 };
 }

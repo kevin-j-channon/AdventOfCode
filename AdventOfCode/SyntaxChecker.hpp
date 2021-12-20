@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.hpp"
+#include "StaticMap.hpp"
 
 #include <istream>
 #include <string>
@@ -17,6 +18,8 @@ namespace aoc
 
 class SyntaxChecker
 {
+	using Stack_t = std::stack<char>;
+
 public:
 
 	enum class LineType
@@ -37,9 +40,14 @@ public:
 		auto line = std::string{};
 
 		_syntax_error_score = uint32_t{ 0 };
+		_incomplete_line_scores.clear();
+
+		auto i = 0;
 
 		while (!is.eof()) {
 			std::getline(is, line);
+
+			Logger::WriteMessage(std::format("{}:\n", i++).c_str());
 			const auto [type, value] = score_line(line);
 			switch(type) {
 			case LineType::syntax_error: {
@@ -69,6 +77,8 @@ public:
 		return _incomplete_line_scores[_incomplete_line_scores.size() / 2];
 	}
 
+	const std::vector<uint32_t>& incomplete_line_scores() const { return _incomplete_line_scores; }
+
 	static Score score_line(const std::string& line)
 	{
 		auto [chunk_stack, error_char] = _parse_line(line);
@@ -77,7 +87,7 @@ public:
 			return {LineType::complete, 0};
 		}
 
-		if (!error_char) {
+		if (std::nullopt == error_char) {
 			return _handle_incomplete_line(chunk_stack);
 		}
 
@@ -86,38 +96,47 @@ public:
 
 private:
 
-	static std::pair<std::stack<char>, std::optional<char>> _parse_line(const std::string& line)
+	struct IsSyntaxError
 	{
-		auto chunk_stack = std::stack<char>{};
-		const auto error = std::find_if(line.begin(), line.end(), [&chunk_stack](auto c) {
+		Stack_t& _chunk_stack;
+
+		bool operator()(Stack_t::value_type c)
+		{
+
 			switch (c) {
 			case '(': {
-				chunk_stack.push(')');
+				_chunk_stack.push(')');
 				return false;
 			}
 			case '[': {
-				chunk_stack.push(']');
+				_chunk_stack.push(']');
 				return false;
 			}
 			case '{': {
-				chunk_stack.push('}');
+				_chunk_stack.push('}');
 				return false;
 			}
 			case '<': {
-				chunk_stack.push('>');
+				_chunk_stack.push('>');
 				return false;
 			}
 
 			default:;
 			}
 
-			if (chunk_stack.top() == c) {
-				chunk_stack.pop();
+			if (_chunk_stack.top() == c) {
+				_chunk_stack.pop();
 				return false;
 			}
 
 			return true;
-			});
+		}
+	};
+
+	static std::pair<std::stack<char>, std::optional<char>> _parse_line(const std::string& line)
+	{
+		auto chunk_stack = std::stack<char>{};
+		const auto error = std::find_if(line.begin(), line.end(), IsSyntaxError{ chunk_stack });
 
 		if (error == line.end()) {
 			return { std::move(chunk_stack), std::nullopt };
@@ -129,24 +148,27 @@ private:
 
 	static Score _handle_incomplete_line(std::stack<char>& chunk_stack)
 	{
-		auto out = uint32_t{ 0 };
-
-		while (!chunk_stack.empty()) {
+		auto completion_string = std::string(chunk_stack.size(), '\0');
+		std::generate(completion_string.begin(), completion_string.end(), [&chunk_stack]() -> Stack_t::value_type {
 			const auto c = chunk_stack.top();
-
-			out *= 5;
-
-			switch (c) {
-			case ')': out += 1; break;
-			case ']': out += 2; break;
-			case '}': out += 3; break;
-			case '>': out += 4; break;
-			default:
-				throw Exception(std::format("Invalid character: {}", c));
-			}
-
 			chunk_stack.pop();
-		}
+			return c;
+			});
+
+		Logger::WriteMessage(std::format("\tCompletion string: {}", completion_string).c_str());
+
+		const auto out = std::accumulate(completion_string.begin(), completion_string.end(), uint32_t{ 0 }, [](auto curr, auto next) {
+			switch (next) {
+				case ')': return (5 * curr) + 1;
+				case ']': return (5 * curr) + 2;
+				case '}': return (5 * curr) + 3;
+				case '>': return (5 * curr) + 4;
+				default:
+					throw Exception(std::format("Invalid character: {}", next));
+			}
+			});
+
+		Logger::WriteMessage(std::format(", score: {}", out).c_str());
 
 		return { LineType::incomplete, out };
 	}

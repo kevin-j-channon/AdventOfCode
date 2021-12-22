@@ -268,6 +268,53 @@ public:
 				Logger::WriteMessage(std::format("\tTotal score: {}\n", score).c_str());
 			}
 		}
+
+		// Day 9
+		{
+			Logger::WriteMessage("Day 9:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day9_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto risk = aoc::Submarine().boat_systems().lava_tube_smoke_risk(data_file);
+
+				Logger::WriteMessage(std::format("\tLava tube smoke risk: {}\n", risk).c_str());
+			}
+
+			// Part 2
+			{
+				// Life''s too short! Come back to this one at some point...
+			}
+		}
+
+		// Day 10
+		{
+			Logger::WriteMessage("Day 10:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day10_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto score = aoc::SyntaxChecker{}.score_lines(data_file).syntax_error_score();
+
+				Logger::WriteMessage(std::format("\tSyntax error score: {}\n", score).c_str());
+			}
+
+			// Part 2
+			{
+				std::ifstream data_file(DATA_DIR / "Day10_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+
+				auto checker = aoc::SyntaxChecker{};
+				const auto score = checker.score_lines(data_file).incomplete_line_score();
+
+				Logger::WriteMessage(std::format("\tIncompete lines score: {}\n", score).c_str());
+			}
+		}
 	}
 };
 }

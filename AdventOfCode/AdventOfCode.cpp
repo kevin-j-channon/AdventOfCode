@@ -1616,7 +1616,7 @@ public:
 		std::stringstream ss(data_string);
 		const auto digit_data = aoc::DigitData{}.load(ss);
 
-		const auto output_vals = digit_data.output_value_strings();
+		const auto& output_vals = digit_data.output_value_strings();
 		Assert::AreEqual(size_t{ 4 }, output_vals.size());
 	}
 
@@ -1628,7 +1628,7 @@ public:
 		std::stringstream ss(data_string);
 		const auto digit_data = aoc::DigitData{}.load(ss);
 
-		const auto ref_vals = digit_data.reference_value_strings();
+		const auto& ref_vals = digit_data.reference_value_strings();
 		Assert::AreEqual(size_t{ 10 }, ref_vals.size());
 	}
 
@@ -1729,47 +1729,47 @@ TEST_CLASS(TestDay10)
 public:
 	TEST_METHOD(SimpleRoundBracketScoresZero)
 	{
-		Assert::AreEqual(uint32_t{ 0 }, aoc::SyntaxChecker::score_line("()"s).value);
+		Assert::AreEqual(uint64_t{ 0 }, aoc::SyntaxChecker::score_line("()"s).value);
 	}
 
 	TEST_METHOD(SimpleSquareBracketScoresZero)
 	{
-		Assert::AreEqual(uint32_t{ 0 }, aoc::SyntaxChecker::score_line("[]"s).value);
+		Assert::AreEqual(uint64_t{ 0 }, aoc::SyntaxChecker::score_line("[]"s).value);
 	}
 
 	TEST_METHOD(SimpleBracesScoresZero)
 	{
-		Assert::AreEqual(uint32_t{ 0 }, aoc::SyntaxChecker::score_line("{}"s).value);
+		Assert::AreEqual(uint64_t{ 0 }, aoc::SyntaxChecker::score_line("{}"s).value);
 	}
 
 	TEST_METHOD(SimpleAngleBracketScoresZero)
 	{
-		Assert::AreEqual(uint32_t{ 0 }, aoc::SyntaxChecker::score_line("<>"s).value);
+		Assert::AreEqual(uint64_t{ 0 }, aoc::SyntaxChecker::score_line("<>"s).value);
 	}
 
 	TEST_METHOD(MixedBracketsAreHandled)
 	{
-		Assert::AreEqual(uint32_t{ 0 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>}>"s).value);
+		Assert::AreEqual(uint64_t{ 0 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>}>"s).value);
 	}
 
 	TEST_METHOD(MismatchRoundBracketScoresCorrectly)
 	{
-		Assert::AreEqual(uint32_t{ 3 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>)}>"s).value);
+		Assert::AreEqual(uint64_t{ 3 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>)}>"s).value);
 	}
 
 	TEST_METHOD(MismatchSquareBracketScoresCorrectly)
 	{
-		Assert::AreEqual(uint32_t{ 57 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>]>"s).value);
+		Assert::AreEqual(uint64_t{ 57 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>]>"s).value);
 	}
 
 	TEST_METHOD(MismatchBraceScoresCorrectly)
 	{
-		Assert::AreEqual(uint32_t{ 1197 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>}}"s).value);
+		Assert::AreEqual(uint64_t{ 1197 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>}}"s).value);
 	}
 
 	TEST_METHOD(MismatchAngleBracketScoresCorrectly)
 	{
-		Assert::AreEqual(uint32_t{ 25137 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>>>"s).value);
+		Assert::AreEqual(uint64_t{ 25137 }, aoc::SyntaxChecker::score_line("<[](){<><<[]>>>>"s).value);
 	}
 
 	TEST_METHOD(SyntaxScoringSampleInput)
@@ -1788,14 +1788,14 @@ public:
 
 		std::stringstream ss(str);
 
-		Assert::AreEqual(uint32_t{ 26397 }, aoc::SyntaxChecker{}.score_lines(ss).syntax_error_score());
+		Assert::AreEqual(uint64_t{ 26397 }, aoc::SyntaxChecker{}.score_lines(ss).syntax_error_score());
 	}
 	TEST_METHOD(AnalyseFullDataForSyntax)
 	{
 		std::ifstream data_file(DATA_DIR / "Day10_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
-		Assert::AreEqual(uint32_t{ 374061 }, aoc::SyntaxChecker{}.score_lines(data_file).syntax_error_score());
+		Assert::AreEqual(uint64_t{ 374061 }, aoc::SyntaxChecker{}.score_lines(data_file).syntax_error_score());
 	}
 
 	TEST_METHOD(IncompleteLineScoringSampleInput)
@@ -1817,7 +1817,7 @@ public:
 		auto checker = aoc::SyntaxChecker{};
 		const auto score = checker.score_lines(ss).incomplete_line_score();
 
-		Assert::AreEqual(uint32_t{ 288957 }, checker.incomplete_line_score());
+		Assert::AreEqual(uint64_t{ 288957 }, checker.incomplete_line_score());
 	}
 
 	TEST_METHOD(IncompleteLineScoresAreCorrectForSampleInput)
@@ -1843,14 +1843,32 @@ public:
 
 		Assert::IsTrue(std::equal(expected.begin(), expected.end(), scores.begin()));
 	}
+
 	TEST_METHOD(AnalyseFullDataForIncompleteLines)
 	{
 		std::ifstream data_file(DATA_DIR / "Day10_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
+		std::ifstream ref_file(DATA_DIR / "Day10_incompleteOpennings_2.txt");
+		Assert::IsTrue(ref_file.is_open());
+
+
+		auto checker = aoc::SyntaxChecker{};
+		const auto score = checker.check_incomplete_lines(data_file, ref_file);
+		Assert::AreEqual(true, score);
+
+		checker.incomplete_line_score();
+	}
+
+	TEST_METHOD(AnalyseFullDataForIncompleteLineScore)
+	{
+		std::ifstream data_file(DATA_DIR / "Day10_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+
 		auto checker = aoc::SyntaxChecker{};
 		const auto score = checker.score_lines(data_file).incomplete_line_score();
-		Assert::AreEqual(uint32_t{ 374061 }, score);
+		Assert::AreEqual(uint64_t{ 2116639949 }, score);
 	}
 };
 }

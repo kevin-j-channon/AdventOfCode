@@ -32,22 +32,22 @@ public:
 	struct Score
 	{
 		LineType type;
-		uint32_t value;
+		uint64_t value;
 	};
 
 	SyntaxChecker& score_lines(std::istream& is)
 	{
 		auto line = std::string{};
 
-		_syntax_error_score = uint32_t{ 0 };
+		_syntax_error_score = uint64_t{ 0 };
 		_incomplete_line_scores.clear();
 
 		auto i = 0;
 
 		while (!is.eof()) {
+			++i;
 			std::getline(is, line);
 
-			Logger::WriteMessage(std::format("{}:\n", i++).c_str());
 			const auto [type, value] = score_line(line);
 			switch(type) {
 			case LineType::syntax_error: {
@@ -66,18 +66,22 @@ public:
 		return *this;
 	}
 
-	uint32_t syntax_error_score() const { return _syntax_error_score; }
+	uint64_t syntax_error_score() const { return _syntax_error_score; }
 
-	uint32_t incomplete_line_score() const
+	uint64_t incomplete_line_score() const
 	{
 		if (_incomplete_line_scores.empty()) {
 			return 0;
 		}
 
+		for (auto i = 0; i < _incomplete_line_scores.size(); ++i) {
+			Logger::WriteMessage(std::format("{}: {}\n", i, _incomplete_line_scores[i]).c_str());
+		}
+
 		return _incomplete_line_scores[_incomplete_line_scores.size() / 2];
 	}
 
-	const std::vector<uint32_t>& incomplete_line_scores() const { return _incomplete_line_scores; }
+	const std::vector<uint64_t>& incomplete_line_scores() const { return _incomplete_line_scores; }
 
 	static Score score_line(const std::string& line)
 	{
@@ -88,10 +92,56 @@ public:
 		}
 
 		if (std::nullopt == error_char) {
-			return _handle_incomplete_line(chunk_stack);
+			return _score_incomplete_line(chunk_stack);
 		}
 
-		return _handle_syntax_error(*error_char);
+		return _score_syntax_error(*error_char);
+	}
+
+	bool check_incomplete_lines(std::istream& data, std::istream& opennings) const
+	{
+		auto incomplete_opennings = std::vector<std::string>{};
+		while (!opennings.eof()) {
+			auto line = std::string{};
+			std::getline(opennings, line);
+			incomplete_opennings.push_back(std::move(line));
+		}
+
+		auto i = uint32_t{ 0 };
+		auto j = uint32_t{ 0 };
+		while (!data.eof()) {
+			auto line = std::string{};
+			std::getline(data, line);
+			
+			++i;
+
+			Logger::WriteMessage(std::format("{}: {}\n", i, line).c_str());
+
+			auto [stack, error] = _parse_line(line);
+			if (!error) {
+				auto completion_string = std::string(stack.size(), '\0');
+				std::generate(completion_string.begin(), completion_string.end(), [&stack]() -> Stack_t::value_type {
+					const auto c = stack.top();
+					stack.pop();
+					return c;
+					});
+
+				auto check_line =incomplete_opennings[j] + completion_string;
+
+				Logger::WriteMessage(std::format("\t{}: {} ({})\n",i , check_line, j + 1).c_str());
+
+				auto [s2, _] = _parse_line(check_line);
+
+				if (!s2.empty()) {
+					Logger::WriteMessage(std::format("\tFailed to match for line {} (openning {})\n", i, j+1).c_str());
+					return false;
+				}
+
+				++j;
+			}
+		}
+
+		return true;
 	}
 
 private:
@@ -146,7 +196,7 @@ private:
 		}
 	}
 
-	static Score _handle_incomplete_line(std::stack<char>& chunk_stack)
+	static Score _score_incomplete_line(std::stack<char>& chunk_stack)
 	{
 		auto completion_string = std::string(chunk_stack.size(), '\0');
 		std::generate(completion_string.begin(), completion_string.end(), [&chunk_stack]() -> Stack_t::value_type {
@@ -155,9 +205,25 @@ private:
 			return c;
 			});
 
-		Logger::WriteMessage(std::format("\tCompletion string: {}", completion_string).c_str());
+		Logger::WriteMessage(std::format("{}\n", completion_string).c_str());
 
-		const auto out = std::accumulate(completion_string.begin(), completion_string.end(), uint32_t{ 0 }, [](auto curr, auto next) {
+		auto out = uint64_t{ 0 };
+		for (auto i = 0; i < completion_string.size(); ++i)
+		{
+			out *= 5;
+
+			switch (completion_string[i]) {
+			case ')': out += 1; break;
+			case ']': out += 2; break;
+			case '}': out += 3; break;
+			case '>': out += 4; break;
+			default:
+				throw Exception(std::format("Invalid character: {}", completion_string[i]));
+			}
+		}
+
+		/*
+		const auto out = std::accumulate(completion_string.begin(), completion_string.end(), uint64_t{ 0 }, [](auto curr, auto next) {
 			switch (next) {
 				case ')': return (5 * curr) + 1;
 				case ']': return (5 * curr) + 2;
@@ -167,13 +233,12 @@ private:
 					throw Exception(std::format("Invalid character: {}", next));
 			}
 			});
-
-		Logger::WriteMessage(std::format(", score: {}", out).c_str());
+		*/
 
 		return { LineType::incomplete, out };
 	}
 
-	static Score _handle_syntax_error(char error_char)
+	static Score _score_syntax_error(char error_char)
 	{
 		switch (error_char) {
 		case ')': return { LineType::syntax_error, 3 };
@@ -186,8 +251,8 @@ private:
 		throw Exception(std::format("Invalid character: {}", error_char));
 	}
 
-	std::vector<uint32_t> _incomplete_line_scores;
-	uint32_t _syntax_error_score{ 0 };
+	std::vector<uint64_t> _incomplete_line_scores;
+	uint64_t _syntax_error_score{ 0 };
 };
 
 }

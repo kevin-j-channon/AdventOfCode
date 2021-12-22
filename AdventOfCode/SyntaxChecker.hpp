@@ -42,10 +42,7 @@ public:
 		_syntax_error_score = uint64_t{ 0 };
 		_incomplete_line_scores.clear();
 
-		auto i = 0;
-
 		while (!is.eof()) {
-			++i;
 			std::getline(is, line);
 
 			const auto [type, value] = score_line(line);
@@ -72,10 +69,6 @@ public:
 	{
 		if (_incomplete_line_scores.empty()) {
 			return 0;
-		}
-
-		for (auto i = 0; i < _incomplete_line_scores.size(); ++i) {
-			Logger::WriteMessage(std::format("{}: {}\n", i, _incomplete_line_scores[i]).c_str());
 		}
 
 		return _incomplete_line_scores[_incomplete_line_scores.size() / 2];
@@ -107,15 +100,11 @@ public:
 			incomplete_opennings.push_back(std::move(line));
 		}
 
-		auto i = uint32_t{ 0 };
-		auto j = uint32_t{ 0 };
+		auto it_openning = incomplete_opennings.begin();
+
 		while (!data.eof()) {
 			auto line = std::string{};
 			std::getline(data, line);
-			
-			++i;
-
-			Logger::WriteMessage(std::format("{}: {}\n", i, line).c_str());
 
 			auto [stack, error] = _parse_line(line);
 			if (!error) {
@@ -126,18 +115,13 @@ public:
 					return c;
 					});
 
-				auto check_line =incomplete_opennings[j] + completion_string;
+				auto check_line = *(it_openning++) + completion_string;
 
-				Logger::WriteMessage(std::format("\t{}: {} ({})\n",i , check_line, j + 1).c_str());
-
-				auto [s2, _] = _parse_line(check_line);
+				const auto [s2, _] = _parse_line(check_line);
 
 				if (!s2.empty()) {
-					Logger::WriteMessage(std::format("\tFailed to match for line {} (openning {})\n", i, j+1).c_str());
 					return false;
 				}
-
-				++j;
 			}
 		}
 
@@ -198,42 +182,22 @@ private:
 
 	static Score _score_incomplete_line(std::stack<char>& chunk_stack)
 	{
-		auto completion_string = std::string(chunk_stack.size(), '\0');
-		std::generate(completion_string.begin(), completion_string.end(), [&chunk_stack]() -> Stack_t::value_type {
-			const auto c = chunk_stack.top();
-			chunk_stack.pop();
-			return c;
-			});
-
-		Logger::WriteMessage(std::format("{}\n", completion_string).c_str());
-
 		auto out = uint64_t{ 0 };
-		for (auto i = 0; i < completion_string.size(); ++i)
-		{
+
+		while (!chunk_stack.empty()) {
 			out *= 5;
 
-			switch (completion_string[i]) {
+			switch (chunk_stack.top()) {
 			case ')': out += 1; break;
 			case ']': out += 2; break;
 			case '}': out += 3; break;
 			case '>': out += 4; break;
 			default:
-				throw Exception(std::format("Invalid character: {}", completion_string[i]));
+				throw Exception(std::format("Invalid character: {}", chunk_stack.top()));
 			}
-		}
 
-		/*
-		const auto out = std::accumulate(completion_string.begin(), completion_string.end(), uint64_t{ 0 }, [](auto curr, auto next) {
-			switch (next) {
-				case ')': return (5 * curr) + 1;
-				case ']': return (5 * curr) + 2;
-				case '}': return (5 * curr) + 3;
-				case '>': return (5 * curr) + 4;
-				default:
-					throw Exception(std::format("Invalid character: {}", next));
-			}
-			});
-		*/
+			chunk_stack.pop();
+		}
 
 		return { LineType::incomplete, out };
 	}

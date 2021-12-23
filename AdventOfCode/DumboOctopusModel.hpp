@@ -7,9 +7,18 @@
 #include <cstdint>
 #include <iterator>
 #include <algorithm>
+#include <sstream>
 
 namespace aoc
 {
+
+void print_grid(const arma::Mat<int>& grid)
+{
+	std::stringstream ss;
+	grid.print(ss);
+	Logger::WriteMessage(std::format("{}\n", ss.str()).c_str());
+}
+
 template<arma::uword GRID_SIZE>
 class DumboOctopusModel
 {
@@ -39,7 +48,7 @@ class DumboOctopusModel
 		for (auto r = 1; r < GRID_SIZE + 1; ++r) {
 			for (auto c = 1; c < GRID_SIZE + 1; ++c) {
 				if (_flash_grid.at(r, c) > flash_threshold) {
-					_flash_grid.at(r, c) = 0;
+					_flash_grid.at(r, c) = std::numeric_limits<int>::min();
 
 					_flash_grid.submat(r - 1, c - 1, r + 1, c + 1) += _flash_mask;
 
@@ -58,19 +67,25 @@ public:
 
 	DumboOctopusModel()
 		: _octopus( GRID_SIZE, GRID_SIZE )
+		, _flash_grid(GRID_SIZE + 2, GRID_SIZE + 2)
 		, _flash_mask(3, 3)
 	{
-		_flash_mask = arma::ones(3, 3);
+		_flash_grid.fill(0);
+
+		_flash_mask.fill(1);
 		_flash_mask.at(1, 1) = 0;
 	}
 
 	DumboOctopusModel(const std::vector<std::vector<int>>& initial_state)
 		: _octopus(GRID_SIZE, GRID_SIZE)
+		, _flash_grid(GRID_SIZE + 2, GRID_SIZE + 2)
 		, _flash_mask(3, 3)
 	{
 		_apply_to_grid([&initial_state](auto r, auto c) {return initial_state[r][c]; });
 
-		_flash_mask = arma::ones(3, 3);
+		_flash_grid.fill(0);
+
+		_flash_mask.fill(1);
 		_flash_mask.at(1, 1) = 0;
 	}
 
@@ -107,9 +122,9 @@ public:
 	{
 		auto flashes = int{ 0 };
 
-		_flash_grid = arma::zeros(GRID_SIZE + 2, GRID_SIZE + 2);
 		_flash_grid.submat(1, 1, GRID_SIZE, GRID_SIZE) = _octopus;
 
+		auto i = 0;
 		while (true) {
 			const auto flashes_this_pass = _single_pass_flash();
 			if (flashes_this_pass == 0) {
@@ -117,6 +132,14 @@ public:
 			}
 
 			flashes += flashes_this_pass;
+		}
+
+		for (auto r = 1; r < GRID_SIZE + 1; ++r) {
+			for (auto c = 1; c < GRID_SIZE + 1; ++c) {
+				if (_flash_grid.at(r, c) < 0) {
+					_flash_grid.at(r, c) = 0;
+				}
+			}
 		}
 
 		_octopus = _flash_grid.submat(1, 1, GRID_SIZE, GRID_SIZE);

@@ -2014,7 +2014,7 @@ public:
 	}
 
 	TEST_METHOD(SingleFlashStepWorks) {
-		const auto grid = std::vector<std::vector<int>>{
+		const auto initial_grid = std::vector<std::vector<int>>{
 			{0, 0, 0, 0, 0},
 			{0, 0, 0, 0, 0},
 			{0, 0, 9, 0, 0},
@@ -2022,9 +2022,188 @@ public:
 			{0, 0, 0, 0, 0},
 		};
 
-		const auto flashes = aoc::DumboOctopusModel<5>(grid).step().flash();
+		auto model = aoc::DumboOctopusModel<5>(initial_grid);
+		const auto flashes = model.step().flash();
 
 		Assert::AreEqual(1, flashes);
+
+		const auto expected_grid = std::vector<std::vector<int>>{
+			{1, 1, 1, 1, 1},
+			{1, 2, 2, 2, 1},
+			{1, 2, 0, 2, 1},
+			{1, 2, 2, 2, 1},
+			{1, 1, 1, 1, 1},
+		};
+
+		const auto& final_grid = model.state();
+
+		for (auto r = 0; r < 5; ++r) {
+			for (auto c = 0; c < 5; ++c) {
+				Assert::AreEqual(expected_grid[r][c], final_grid.at(r, c), std::format(L"Failed to match r = {}, c = {}", r, c).c_str());
+			}
+		}
+	}
+
+	TEST_METHOD(TwoNonInteractingFlashesWork)
+	{
+		const auto initial_grid = std::vector<std::vector<int>>{
+			{0, 0, 0, 0, 0, 0},
+			{0, 9, 0, 0, 0, 0},
+			{0, 0, 0, 0, 0, 0},
+			{0, 0, 0, 0, 0, 0},
+			{0, 0, 0, 0, 9, 0},
+			{0, 0, 0, 0, 0, 0}
+		};
+
+		auto model = aoc::DumboOctopusModel<6>(initial_grid);
+		const auto flashes = model.step().flash();
+
+		Assert::AreEqual(2, flashes);
+
+		const auto expected_grid = std::vector<std::vector<int>>{
+			{2, 2, 2, 1, 1, 1},
+			{2, 0, 2, 1, 1, 1},
+			{2, 2, 2, 1, 1, 1},
+			{1, 1, 1, 2, 2, 2},
+			{1, 1, 1, 2, 0, 2},
+			{1, 1, 1, 2, 2, 2}
+		};
+
+		const auto& final_grid = model.state();
+
+		for (auto r = 0; r < 5; ++r) {
+			for (auto c = 0; c < 5; ++c) {
+				Assert::AreEqual(expected_grid[r][c], final_grid.at(r, c), std::format(L"Failed to match r = {}, c = {}", r, c).c_str());
+			}
+		}
+	}
+
+	TEST_METHOD(CornerFlashesWork)
+	{
+		const auto initial_grid = std::vector<std::vector<int>>{
+			{9, 0, 0, 0, 9},
+			{0, 0, 0, 0, 0},
+			{0, 0, 0, 0, 0},
+			{0, 0, 0, 0, 0},
+			{9, 0, 0, 0, 9}
+		};
+
+		auto model = aoc::DumboOctopusModel<5>(initial_grid);
+		const auto flashes = model.step().flash();
+
+		Assert::AreEqual(4, flashes);
+
+		const auto expected_grid = std::vector<std::vector<int>>{
+			{0, 2, 1, 2, 0},
+			{2, 2, 1, 2, 2},
+			{1, 1, 1, 1, 1},
+			{2, 2, 1, 2, 2},
+			{0, 2, 1, 2, 0}
+		};
+
+		const auto& final_grid = model.state();
+
+		for (auto r = 0; r < 5; ++r) {
+			for (auto c = 0; c < 5; ++c) {
+				Assert::AreEqual(expected_grid[r][c], final_grid.at(r, c), std::format(L"Failed to match r = {}, c = {}", r, c).c_str());
+			}
+		}
+	}
+
+	TEST_METHOD(TwoInteractingFlashesWork)
+	{
+		const auto initial_grid = std::vector<std::vector<int>>{
+			{0, 0, 0, 0, 0},
+			{0, 9, 0, 0, 0},
+			{0, 0, 0, 0, 0},
+			{0, 0, 0, 9, 0},
+			{0, 0, 0, 0, 0}
+		};
+
+		auto model = aoc::DumboOctopusModel<5>(initial_grid);
+		const auto flashes = model.step().flash();
+
+		Assert::AreEqual(2, flashes);
+
+		const auto expected_grid = std::vector<std::vector<int>>{
+			{2, 2, 2, 1, 1},
+			{2, 0, 2, 1, 1},
+			{2, 2, 3, 2, 2},
+			{1, 1, 2, 0, 2},
+			{1, 1, 2, 2, 2}
+		};
+
+		const auto& final_grid = model.state();
+
+		for (auto r = 0; r < 5; ++r) {
+			for (auto c = 0; c < 5; ++c) {
+				Assert::AreEqual(expected_grid[r][c], final_grid.at(r, c), std::format(L"Failed to match r = {}, c = {}", r, c).c_str());
+			}
+		}
+	}
+
+	TEST_METHOD(SecondaryFlashWorks)
+	{
+		const auto initial_grid = std::vector<std::vector<int>>{
+			{0, 0, 0, 0, 0},
+			{0, 9, 8, 0, 0},
+			{0, 0, 0, 0, 0},
+			{0, 0, 0, 0, 0},
+			{0, 0, 0, 0, 0}
+		};
+
+		auto model = aoc::DumboOctopusModel<5>(initial_grid);
+		const auto flashes = model.step().flash();
+
+		Assert::AreEqual(2, flashes);
+
+		const auto expected_grid = std::vector<std::vector<int>>{
+			{2, 3, 3, 2, 1},
+			{2, 0, 0, 2, 1},
+			{2, 3, 3, 2, 1},
+			{1, 1, 1, 1, 1},
+			{1, 1, 1, 1, 1}
+		};
+
+		const auto& final_grid = model.state();
+
+		for (auto r = 0; r < 5; ++r) {
+			for (auto c = 0; c < 5; ++c) {
+				Assert::AreEqual(expected_grid[r][c], final_grid.at(r, c), std::format(L"Failed to match r = {}, c = {}", r, c).c_str());
+			}
+		}
+	}
+
+	TEST_METHOD(LimitOfsecondaryFlashesWorks)
+	{
+		const auto initial_grid = std::vector<std::vector<int>>{
+			{1, 1, 1, 1, 1},
+			{1, 9, 9, 9, 1},
+			{1, 9, 1, 9, 1},
+			{1, 9, 9, 9, 1},
+			{1, 1, 1, 1, 1}
+		};
+
+		auto model = aoc::DumboOctopusModel<5>(initial_grid);
+		const auto flashes = model.step().flash();
+
+		Assert::AreEqual(9, flashes);
+
+		const auto expected_grid = std::vector<std::vector<int>>{
+			{3, 4, 5, 4, 3},
+			{4, 0, 0, 0, 4},
+			{5, 0, 0, 0, 5},
+			{4, 0, 0, 0, 4},
+			{3, 4, 5, 4, 3}
+		};
+
+		const auto& final_grid = model.state();
+
+		for (auto r = 0; r < 5; ++r) {
+			for (auto c = 0; c < 5; ++c) {
+				Assert::AreEqual(expected_grid[r][c], final_grid.at(r, c), std::format(L"Failed to match r = {}, c = {}", r, c).c_str());
+			}
+		}
 	}
 };
 

@@ -1945,7 +1945,7 @@ public:
 
 		const auto model = aoc::DumboOctopusModel<10>{}.load(data);
 
-		const auto expected = std::vector<std::vector<uint32_t>>{
+		const auto expected = std::vector<std::vector<int>>{
 			{5,4,8,3,1,4,3,2,2,3},
 			{2,7,4,5,8,5,4,7,1,1},
 			{5,2,6,4,5,5,6,1,7,3},
@@ -1967,7 +1967,7 @@ public:
 
 	TEST_METHOD(ConstructFromVectorOfValues)
 	{
-		const auto expected = std::vector<std::vector<uint32_t>>{
+		const auto expected = std::vector<std::vector<int>>{
 			{5,4,8,3,1,4,3,2,2,3},
 			{2,7,4,5,8,5,4,7,1,1},
 			{5,2,6,4,5,5,6,1,7,3},
@@ -1991,7 +1991,7 @@ public:
 
 	TEST_METHOD(StepMovesModelToTheExpectedState)
 	{
-		const auto expected = std::vector<std::vector<uint32_t>>{
+		const auto expected = std::vector<std::vector<int>>{
 			{5,4,8,3,1,4,3,2,2,3},
 			{2,7,4,5,8,5,4,7,1,1},
 			{5,2,6,4,5,5,6,1,7,3},
@@ -2011,6 +2011,20 @@ public:
 				Assert::AreEqual(expected[r][c] + 1, state.at(r, c));
 			}
 		}
+	}
+
+	TEST_METHOD(SingleFlashStepWorks) {
+		const auto grid = std::vector<std::vector<int>>{
+			{0, 0, 0, 0, 0},
+			{0, 0, 0, 0, 0},
+			{0, 0, 9, 0, 0},
+			{0, 0, 0, 0, 0},
+			{0, 0, 0, 0, 0},
+		};
+
+		const auto flashes = aoc::DumboOctopusModel<5>(grid).step().flash();
+
+		Assert::AreEqual(1, flashes);
 	}
 };
 

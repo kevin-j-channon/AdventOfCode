@@ -13,11 +13,13 @@ namespace aoc
 template<arma::uword GRID_SIZE>
 class DumboOctopusModel
 {
-	arma::Mat<uint32_t> _octopus;
+	arma::Mat<int> _octopus;
+	arma::Mat<int> _flash_grid;
+	arma::Mat<int> _flash_mask;
 
-	static uint32_t _char_to_digit(char c)
+	static int _char_to_digit(char c)
 	{
-		return static_cast<uint32_t>(c - '0');
+		return static_cast<int>(c - '0');
 	}
 
 	template<typename Fn_T>
@@ -30,16 +32,46 @@ class DumboOctopusModel
 		}
 	}
 
+	int _single_pass_flash()
+	{
+		auto flashes = int{ 0 };
+
+		for (auto r = 1; r < GRID_SIZE + 1; ++r) {
+			for (auto c = 1; c < GRID_SIZE + 1; ++c) {
+				if (_flash_grid.at(r, c) > flash_threshold) {
+					_flash_grid.at(r, c) = 0;
+
+					_flash_grid.submat(r - 1, c - 1, r + 1, c + 1) += _flash_mask;
+
+					++flashes;
+				}
+			}
+		}
+
+		return flashes;
+	}
+
 public:
+
+	static constexpr int flash_threshold = 9;
+	static constexpr int reset_energy_value = 0;
 
 	DumboOctopusModel()
 		: _octopus( GRID_SIZE, GRID_SIZE )
-	{}
+		, _flash_mask(3, 3)
+	{
+		_flash_mask = arma::ones(3, 3);
+		_flash_mask.at(1, 1) = 0;
+	}
 
-	DumboOctopusModel(const std::vector<std::vector<uint32_t>>& initial_state)
+	DumboOctopusModel(const std::vector<std::vector<int>>& initial_state)
 		: _octopus(GRID_SIZE, GRID_SIZE)
+		, _flash_mask(3, 3)
 	{
 		_apply_to_grid([&initial_state](auto r, auto c) {return initial_state[r][c]; });
+
+		_flash_mask = arma::ones(3, 3);
+		_flash_mask.at(1, 1) = 0;
 	}
 
 	DumboOctopusModel(const DumboOctopusModel&) = default;
@@ -48,7 +80,7 @@ public:
 	DumboOctopusModel(DumboOctopusModel&&) = default;
 	DumboOctopusModel& operator=(DumboOctopusModel&&) = default;
 
-	const arma::Mat<uint32_t>& state() const { return _octopus; }
+	const arma::Mat<int>& state() const { return _octopus; }
 
 	DumboOctopusModel& load(std::istream& is)
 	{
@@ -69,6 +101,27 @@ public:
 		_apply_to_grid([this](auto r, auto c) { return _octopus.at(r, c) + 1; });
 
 		return *this;
+	}
+
+	int flash()
+	{
+		auto flashes = int{ 0 };
+
+		_flash_grid = arma::zeros(GRID_SIZE + 2, GRID_SIZE + 2);
+		_flash_grid.submat(1, 1, GRID_SIZE, GRID_SIZE) = _octopus;
+
+		while (true) {
+			const auto flashes_this_pass = _single_pass_flash();
+			if (flashes_this_pass == 0) {
+				break;
+			}
+
+			flashes += flashes_this_pass;
+		}
+
+		_octopus = _flash_grid.submat(1, 1, GRID_SIZE, GRID_SIZE);
+
+		return flashes;
 	}
 };
 }

@@ -48,6 +48,8 @@ public:
 	DumboOctopusModel(DumboOctopusModel&&) = default;
 	DumboOctopusModel& operator=(DumboOctopusModel&&) = default;
 
+	const arma::Mat<uint32_t>& state() const { return _octopus; }
+
 	DumboOctopusModel& load(std::istream& is)
 	{
 		auto digit_matrix = std::vector<std::string>(GRID_SIZE);
@@ -62,6 +64,11 @@ public:
 		return *this;
 	}
 
-	const arma::Mat<uint32_t>& state() const { return _octopus; }
+	DumboOctopusModel& step()
+	{
+		_apply_to_grid([this](auto r, auto c) { return _octopus.at(r, c) + 1; });
+
+		return *this;
+	}
 };
 }

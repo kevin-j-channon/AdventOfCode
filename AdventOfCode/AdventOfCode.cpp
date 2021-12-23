@@ -9,6 +9,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "CrabSorter.hpp"
 #include "DigitAnalyser.hpp"
 #include "SyntaxChecker.hpp"
+#include "DumboOctopusModel.hpp"
 
 #include <vector>
 #include <cstdint>
@@ -1918,4 +1919,75 @@ public:
 		Assert::AreEqual(uint64_t{ 2116639949 }, score);
 	}
 };
+}
+
+namespace day_11
+{
+
+TEST_CLASS(TestDay11)
+{
+public:
+	TEST_METHOD(LoadInitialStateFromStream)
+	{
+		constexpr auto data_str =
+			"5483143223\n"
+			"2745854711\n"
+			"5264556173\n"
+			"6141336146\n"
+			"6357385478\n"
+			"4167524645\n"
+			"2176841721\n"
+			"6882881134\n"
+			"4846848554\n"
+			"5283751526";
+
+		std::stringstream data(data_str);
+
+		const auto model = aoc::DumboOctopusModel<10>{}.load(data);
+
+		const auto expected = std::vector<std::vector<uint32_t>>{
+			{5,4,8,3,1,4,3,2,2,3},
+			{2,7,4,5,8,5,4,7,1,1},
+			{5,2,6,4,5,5,6,1,7,3},
+			{6,1,4,1,3,3,6,1,4,6},
+			{6,3,5,7,3,8,5,4,7,8},
+			{4,1,6,7,5,2,4,6,4,5},
+			{2,1,7,6,8,4,1,7,2,1},
+			{6,8,8,2,8,8,1,1,3,4},
+			{4,8,4,6,8,4,8,5,5,4},
+			{5,2,8,3,7,5,1,5,2,6}
+		};
+
+		for (auto r = 0; r < 10; ++r) {
+			for (auto c = 0; c < 10; ++c) {
+				Assert::AreEqual(expected[r][c], model.state().at(r, c));
+			}
+		}
+	}
+
+	TEST_METHOD(ConstructFromVectorOfValues)
+	{
+		const auto expected = std::vector<std::vector<uint32_t>>{
+			{5,4,8,3,1,4,3,2,2,3},
+			{2,7,4,5,8,5,4,7,1,1},
+			{5,2,6,4,5,5,6,1,7,3},
+			{6,1,4,1,3,3,6,1,4,6},
+			{6,3,5,7,3,8,5,4,7,8},
+			{4,1,6,7,5,2,4,6,4,5},
+			{2,1,7,6,8,4,1,7,2,1},
+			{6,8,8,2,8,8,1,1,3,4},
+			{4,8,4,6,8,4,8,5,5,4},
+			{5,2,8,3,7,5,1,5,2,6}
+		};
+
+		const auto model = aoc::DumboOctopusModel<10>(expected);
+
+		for (auto r = 0; r < 10; ++r) {
+			for (auto c = 0; c < 10; ++c) {
+				Assert::AreEqual(expected[r][c], model.state().at(r, c));
+			}
+		}
+	}
+};
+
 }

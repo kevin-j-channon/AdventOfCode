@@ -2341,6 +2341,39 @@ public:
 
 		Assert::AreEqual(1617, flashes);
 	}
+
+	TEST_METHOD(FirstSynchronisedFlashIsStep195)
+	{
+		constexpr auto grid_size = 10;
+		constexpr auto initial_state = std::array<std::array<int, grid_size>, grid_size>{
+			std::array<int, grid_size>{5, 4, 8, 3, 1, 4, 3, 2, 2, 3},
+			std::array<int, grid_size>{2, 7, 4, 5, 8, 5, 4, 7, 1, 1},
+			std::array<int, grid_size>{5, 2, 6, 4, 5, 5, 6, 1, 7, 3},
+			std::array<int, grid_size>{6, 1, 4, 1, 3, 3, 6, 1, 4, 6},
+			std::array<int, grid_size>{6, 3, 5, 7, 3, 8, 5, 4, 7, 8},
+			std::array<int, grid_size>{4, 1, 6, 7, 5, 2, 4, 6, 4, 5},
+			std::array<int, grid_size>{2, 1, 7, 6, 8, 4, 1, 7, 2, 1},
+			std::array<int, grid_size>{6, 8, 8, 2, 8, 8, 1, 1, 3, 4},
+			std::array<int, grid_size>{4, 8, 4, 6, 8, 4, 8, 5, 5, 4},
+			std::array<int, grid_size>{5, 2, 8, 3, 7, 5, 1, 5, 2, 6}
+		};
+
+		auto model = aoc::DumboOctopusModel<grid_size>{ initial_state };
+
+		const auto first_sync_step = model.find_first_sync_step();
+
+		Assert::AreEqual(195, first_sync_step);
+	}
+
+	TEST_METHOD(FindFirstSyncStepOnFullInput)
+	{
+		std::ifstream data_file(DATA_DIR / "Day11_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto first_sync_step = aoc::DumboOctopusModel<10>{}.load(data_file).find_first_sync_step();
+
+		Assert::AreEqual(258, first_sync_step);
+	}
 };
 
 }

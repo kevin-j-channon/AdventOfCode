@@ -168,5 +168,15 @@ public:
 
 		return flashes;
 	}
+
+	int find_first_sync_step()
+	{
+		auto step = 1;
+		while (GRID_SIZE * GRID_SIZE != increment().flash()) {
+			++step;
+		}
+
+		return step;
+	}
 };
 }

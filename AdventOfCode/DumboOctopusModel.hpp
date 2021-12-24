@@ -104,7 +104,8 @@ public:
 		_flash_mask.at(1, 1) = 0;
 	}
 
-	DumboOctopusModel(const std::vector<std::vector<int>>& initial_state)
+	template<typename Container_T>
+	DumboOctopusModel(const Container_T& initial_state)
 		: _octopus(GRID_SIZE, GRID_SIZE)
 		, _flash_grid(GRID_SIZE + 2, GRID_SIZE + 2)
 		, _flash_mask(3, 3)
@@ -153,6 +154,17 @@ public:
 		_reset_octopus_that_flashed();
 
 		_octopus = _flash_grid.submat(1, 1, GRID_SIZE, GRID_SIZE);
+
+		return flashes;
+	}
+
+	int step(uint32_t number_of_steps)
+	{
+		auto flashes = int{ 0 };
+
+		for (auto _ = uint32_t{ 0 }; _ < number_of_steps; ++_) {
+			flashes += this->increment().flash();
+		}
 
 		return flashes;
 	}

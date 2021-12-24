@@ -1989,7 +1989,7 @@ public:
 		}
 	}
 
-	TEST_METHOD(StepMovesModelToTheExpectedState)
+	TEST_METHOD(IncrementMovesModelToTheExpectedState)
 	{
 		const auto expected = std::vector<std::vector<int>>{
 			{5,4,8,3,1,4,3,2,2,3},
@@ -2204,6 +2204,142 @@ public:
 				Assert::AreEqual(expected_grid[r][c], final_grid.at(r, c), std::format(L"Failed to match r = {}, c = {}", r, c).c_str());
 			}
 		}
+	}
+
+	TEST_METHOD(SteppingTheExampleWorks_2Steps)
+	{
+		constexpr auto grid_size = 10;
+		constexpr auto initial_state = std::array<std::array<int, grid_size>, grid_size>{
+			std::array<int, grid_size>{5,4,8,3,1,4,3,2,2,3},
+			std::array<int, grid_size>{2,7,4,5,8,5,4,7,1,1},
+			std::array<int, grid_size>{5,2,6,4,5,5,6,1,7,3},
+			std::array<int, grid_size>{6,1,4,1,3,3,6,1,4,6},
+			std::array<int, grid_size>{6,3,5,7,3,8,5,4,7,8},
+			std::array<int, grid_size>{4,1,6,7,5,2,4,6,4,5},
+			std::array<int, grid_size>{2,1,7,6,8,4,1,7,2,1},
+			std::array<int, grid_size>{6,8,8,2,8,8,1,1,3,4},
+			std::array<int, grid_size>{4,8,4,6,8,4,8,5,5,4},
+			std::array<int, grid_size>{5,2,8,3,7,5,1,5,2,6}
+		};
+
+		auto model = aoc::DumboOctopusModel<grid_size>{ initial_state };
+
+		const auto flashes = model.step(2);
+
+		Assert::AreEqual(35, flashes);
+
+		constexpr auto expected_state = std::array<std::array<int, grid_size>, grid_size>{
+			std::array<int, grid_size>{8,8,0,7,4,7,6,5,5,5},
+			std::array<int, grid_size>{5,0,8,9,0,8,7,0,5,4},
+			std::array<int, grid_size>{8,5,9,7,8,8,9,6,0,8},
+			std::array<int, grid_size>{8,4,8,5,7,6,9,6,0,0},
+			std::array<int, grid_size>{8,7,0,0,9,0,8,8,0,0},
+			std::array<int, grid_size>{6,6,0,0,0,8,8,9,8,9},
+			std::array<int, grid_size>{6,8,0,0,0,0,5,9,4,3},
+			std::array<int, grid_size>{0,0,0,0,0,0,7,4,5,6},
+			std::array<int, grid_size>{9,0,0,0,0,0,0,8,7,6},
+			std::array<int, grid_size>{8,7,0,0,0,0,6,8,4,8}
+		};
+
+		for (auto r = 0; r < grid_size; ++r) {
+			for (auto c = 0; c < grid_size; ++c) {
+				Assert::AreEqual(expected_state[r][c], model.state().at(r, c), std::format(L"Failed to match r = {}, c = {}", r, c).c_str());
+			}
+		}
+	}
+
+	TEST_METHOD(SteppingTheExampleWorks_10Steps)
+	{
+		constexpr auto grid_size = 10;
+		constexpr auto initial_state = std::array<std::array<int, grid_size>, grid_size>{
+			std::array<int, grid_size>{5,4,8,3,1,4,3,2,2,3},
+			std::array<int, grid_size>{2,7,4,5,8,5,4,7,1,1},
+			std::array<int, grid_size>{5,2,6,4,5,5,6,1,7,3},
+			std::array<int, grid_size>{6,1,4,1,3,3,6,1,4,6},
+			std::array<int, grid_size>{6,3,5,7,3,8,5,4,7,8},
+			std::array<int, grid_size>{4,1,6,7,5,2,4,6,4,5},
+			std::array<int, grid_size>{2,1,7,6,8,4,1,7,2,1},
+			std::array<int, grid_size>{6,8,8,2,8,8,1,1,3,4},
+			std::array<int, grid_size>{4,8,4,6,8,4,8,5,5,4},
+			std::array<int, grid_size>{5,2,8,3,7,5,1,5,2,6}
+		};
+
+		auto model = aoc::DumboOctopusModel<grid_size>{ initial_state };
+
+		const auto flashes = model.step(10);
+
+		Assert::AreEqual(204, flashes);
+
+		constexpr auto expected_state = std::array<std::array<int, grid_size>, grid_size>{
+			std::array<int, grid_size>{0,4,8,1,1,1,2,9,7,6},
+			std::array<int, grid_size>{0,0,3,1,1,1,2,0,0,9},
+			std::array<int, grid_size>{0,0,4,1,1,1,2,5,0,4},
+			std::array<int, grid_size>{0,0,8,1,1,1,1,4,0,6},
+			std::array<int, grid_size>{0,0,9,9,1,1,1,3,0,6},
+			std::array<int, grid_size>{0,0,9,3,5,1,1,2,3,3},
+			std::array<int, grid_size>{0,4,4,2,3,6,1,1,3,0},
+			std::array<int, grid_size>{5,5,3,2,2,5,2,3,5,0},
+			std::array<int, grid_size>{0,5,3,2,2,5,0,6,0,0},
+			std::array<int, grid_size>{0,0,3,2,2,4,0,0,0,0}
+		};
+
+		for (auto r = 0; r < grid_size; ++r) {
+			for (auto c = 0; c < grid_size; ++c) {
+				Assert::AreEqual(expected_state[r][c], model.state().at(r, c), std::format(L"Failed to match r = {}, c = {}", r, c).c_str());
+			}
+		}
+	}
+
+	TEST_METHOD(SteppingTheExampleWorks_100Steps)
+	{
+		constexpr auto grid_size = 10;
+		constexpr auto initial_state = std::array<std::array<int, grid_size>, grid_size>{
+			std::array<int, grid_size>{5,4,8,3,1,4,3,2,2,3},
+			std::array<int, grid_size>{2,7,4,5,8,5,4,7,1,1},
+			std::array<int, grid_size>{5,2,6,4,5,5,6,1,7,3},
+			std::array<int, grid_size>{6,1,4,1,3,3,6,1,4,6},
+			std::array<int, grid_size>{6,3,5,7,3,8,5,4,7,8},
+			std::array<int, grid_size>{4,1,6,7,5,2,4,6,4,5},
+			std::array<int, grid_size>{2,1,7,6,8,4,1,7,2,1},
+			std::array<int, grid_size>{6,8,8,2,8,8,1,1,3,4},
+			std::array<int, grid_size>{4,8,4,6,8,4,8,5,5,4},
+			std::array<int, grid_size>{5,2,8,3,7,5,1,5,2,6}
+		};
+
+		auto model = aoc::DumboOctopusModel<grid_size>{ initial_state };
+
+		const auto flashes = model.step(100);
+
+		Assert::AreEqual(1656, flashes);
+
+		constexpr auto expected_state = std::array<std::array<int, grid_size>, grid_size>{
+			std::array<int, grid_size>{0,3,9,7,6,6,6,8,6,6},
+			std::array<int, grid_size>{0,7,4,9,7,6,6,9,1,8},
+			std::array<int, grid_size>{0,0,5,3,9,7,6,9,3,3},
+			std::array<int, grid_size>{0,0,0,4,2,9,7,8,2,2},
+			std::array<int, grid_size>{0,0,0,4,2,2,9,8,9,2},
+			std::array<int, grid_size>{0,0,5,3,2,2,2,8,7,7},
+			std::array<int, grid_size>{0,5,3,2,2,2,2,9,6,6},
+			std::array<int, grid_size>{9,3,2,2,2,2,8,9,6,6},
+			std::array<int, grid_size>{7,9,2,2,2,8,6,8,6,6},
+			std::array<int, grid_size>{6,7,8,9,9,9,8,7,6,6}
+		};
+
+		for (auto r = 0; r < grid_size; ++r) {
+			for (auto c = 0; c < grid_size; ++c) {
+				Assert::AreEqual(expected_state[r][c], model.state().at(r, c), std::format(L"Failed to match r = {}, c = {}", r, c).c_str());
+			}
+		}
+	}
+
+	TEST_METHOD(FullInputWorks)
+	{
+		std::ifstream data_file(DATA_DIR / "Day11_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto flashes = aoc::DumboOctopusModel<10>{}.load(data_file).step(100);
+
+		Assert::AreEqual(1617, flashes);
 	}
 };
 

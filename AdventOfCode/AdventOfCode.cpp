@@ -2004,7 +2004,7 @@ public:
 			{5,2,8,3,7,5,1,5,2,6}
 		};
 
-		const auto state = aoc::DumboOctopusModel<10>(expected).step().state();
+		const auto state = aoc::DumboOctopusModel<10>(expected).increment().state();
 
 		for (auto r = 0; r < 10; ++r) {
 			for (auto c = 0; c < 10; ++c) {
@@ -2023,7 +2023,7 @@ public:
 		};
 
 		auto model = aoc::DumboOctopusModel<5>(initial_grid);
-		const auto flashes = model.step().flash();
+		const auto flashes = model.increment().flash();
 
 		Assert::AreEqual(1, flashes);
 
@@ -2056,7 +2056,7 @@ public:
 		};
 
 		auto model = aoc::DumboOctopusModel<6>(initial_grid);
-		const auto flashes = model.step().flash();
+		const auto flashes = model.increment().flash();
 
 		Assert::AreEqual(2, flashes);
 
@@ -2089,7 +2089,7 @@ public:
 		};
 
 		auto model = aoc::DumboOctopusModel<5>(initial_grid);
-		const auto flashes = model.step().flash();
+		const auto flashes = model.increment().flash();
 
 		Assert::AreEqual(4, flashes);
 
@@ -2121,7 +2121,7 @@ public:
 		};
 
 		auto model = aoc::DumboOctopusModel<5>(initial_grid);
-		const auto flashes = model.step().flash();
+		const auto flashes = model.increment().flash();
 
 		Assert::AreEqual(2, flashes);
 
@@ -2153,7 +2153,7 @@ public:
 		};
 
 		auto model = aoc::DumboOctopusModel<5>(initial_grid);
-		const auto flashes = model.step().flash();
+		const auto flashes = model.increment().flash();
 
 		Assert::AreEqual(2, flashes);
 
@@ -2185,7 +2185,7 @@ public:
 		};
 
 		auto model = aoc::DumboOctopusModel<5>(initial_grid);
-		const auto flashes = model.step().flash();
+		const auto flashes = model.increment().flash();
 
 		Assert::AreEqual(9, flashes);
 

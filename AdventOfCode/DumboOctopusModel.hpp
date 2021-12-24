@@ -139,7 +139,7 @@ public:
 		return *this;
 	}
 
-	DumboOctopusModel& step()
+	DumboOctopusModel& increment()
 	{
 		_apply_to_grid([this](auto r, auto c) { return _octopus.at(r, c) + 1; });
 

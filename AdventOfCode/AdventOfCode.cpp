@@ -316,6 +316,31 @@ public:
 				Logger::WriteMessage(std::format("\tIncompete lines score: {}\n", score).c_str());
 			}
 		}
+
+		// Day 11
+		{
+			Logger::WriteMessage("Day 11:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day11_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto flashes = aoc::DumboOctopusModel<10>{}.load(data_file).step(100);
+
+				Logger::WriteMessage(std::format("\tFlashes after 100 steps: {}\n", flashes).c_str());
+			}
+
+			// Part 2
+			{
+				std::ifstream data_file(DATA_DIR / "Day11_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto first_sync_step = aoc::DumboOctopusModel<10>{}.load(data_file).find_first_sync_step();
+
+				Logger::WriteMessage(std::format("\tFirst synchronised flash at step: {}\n", first_sync_step).c_str());
+			}
+		}
 	}
 };
 }

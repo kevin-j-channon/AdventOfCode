@@ -60,6 +60,34 @@ class DumboOctopusModel
 		return flashes;
 	}
 
+	int _process_all_flashes()
+	{
+		auto flashes = int{ 0 };
+		_flash_grid.submat(1, 1, GRID_SIZE, GRID_SIZE) = _octopus;
+
+		while (true) {
+			const auto flashes_this_pass = _single_pass_flash();
+			if (flashes_this_pass == 0) {
+				break;
+			}
+
+			flashes += flashes_this_pass;
+		}
+
+		return flashes;
+	}
+
+	void _reset_octopus_that_flashed()
+	{
+		for (auto r = 1; r < GRID_SIZE + 1; ++r) {
+			for (auto c = 1; c < GRID_SIZE + 1; ++c) {
+				if (_flash_grid.at(r, c) < 0) {
+					_flash_grid.at(r, c) = reset_energy_value;
+				}
+			}
+		}
+	}
+
 public:
 
 	static constexpr int flash_threshold = 9;
@@ -120,27 +148,9 @@ public:
 
 	int flash()
 	{
-		auto flashes = int{ 0 };
+		const auto flashes = _process_all_flashes();
 
-		_flash_grid.submat(1, 1, GRID_SIZE, GRID_SIZE) = _octopus;
-
-		auto i = 0;
-		while (true) {
-			const auto flashes_this_pass = _single_pass_flash();
-			if (flashes_this_pass == 0) {
-				break;
-			}
-
-			flashes += flashes_this_pass;
-		}
-
-		for (auto r = 1; r < GRID_SIZE + 1; ++r) {
-			for (auto c = 1; c < GRID_SIZE + 1; ++c) {
-				if (_flash_grid.at(r, c) < 0) {
-					_flash_grid.at(r, c) = 0;
-				}
-			}
-		}
+		_reset_octopus_that_flashed();
 
 		_octopus = _flash_grid.submat(1, 1, GRID_SIZE, GRID_SIZE);
 

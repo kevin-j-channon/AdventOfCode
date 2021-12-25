@@ -94,6 +94,9 @@
     <Text Include="Data\Day11_input.txt">
       <Filter>Data</Filter>
     </Text>
+    <Text Include="Data\Day12_input.txt">
+      <Filter>Data</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

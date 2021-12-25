@@ -2402,3 +2402,16 @@ public:
 };
 
 }
+
+namespace day_12
+{
+TEST_CLASS(TestDay12)
+{
+public:
+
+	TEST_METHOD(A)
+	{
+
+	}
+};
+}

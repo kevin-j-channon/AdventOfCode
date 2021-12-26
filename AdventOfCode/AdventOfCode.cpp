@@ -2410,11 +2410,16 @@ TEST_CLASS(TestDay12)
 {
 public:
 
-	TEST_METHOD(LoadCaveNavigtorFromStream)
+	TEST_METHOD(CaveBuilderCanBuildStartingTunnels)
 	{
-		std::stringstream data("start-end");
+		auto cave_map = aoc::CaveMap_t{};
+		auto builder = aoc::CaveMapBuilder{ cave_map };
+		
+		auto tunnels = std::vector<aoc::Tunnel_t>{ {"start", "a"}, {"a", "end"} };
 
-		const auto nav = aoc::CaveNavigator{}.load(data);
+		builder.handle_terminal_cave<aoc::TerminalCaveType::start>(tunnels.begin(), std::next(tunnels.begin()));
+
+		Assert::AreEqual(aoc::Cave_t{ "start" }, cave_map["start"]);
 	}
 };
 }

@@ -2568,5 +2568,61 @@ public:
 
 		Assert::AreEqual(size_t{ 10 }, boost::num_edges(cave_map.graph()));
 	}
+
+	TEST_METHOD(TerminalCaveTypeIsCorrect)
+	{
+		Assert::IsTrue(aoc::TerminalCaveType::start == aoc::TerminalCaveType::to_type(aoc::Tunnel_t{"start", "a"}));
+		Assert::IsTrue(aoc::TerminalCaveType::start == aoc::TerminalCaveType::to_type(aoc::Tunnel_t{ "a", "start" }));
+
+		Assert::IsTrue(aoc::TerminalCaveType::end == aoc::TerminalCaveType::to_type(aoc::Tunnel_t{ "end", "a" }));
+		Assert::IsTrue(aoc::TerminalCaveType::end == aoc::TerminalCaveType::to_type(aoc::Tunnel_t{ "a", "end" }));
+
+		Assert::IsTrue((aoc::TerminalCaveType::end | aoc::TerminalCaveType::start) == aoc::TerminalCaveType::to_type(aoc::Tunnel_t{ "start", "end" }));
+		Assert::IsTrue((aoc::TerminalCaveType::end | aoc::TerminalCaveType::start) == aoc::TerminalCaveType::to_type(aoc::Tunnel_t{ "end", "start" }));
+
+		Assert::IsTrue(aoc::TerminalCaveType::none == aoc::TerminalCaveType::to_type(aoc::Tunnel_t{ "b", "a" }));
+		Assert::IsTrue(aoc::TerminalCaveType::none == aoc::TerminalCaveType::to_type(aoc::Tunnel_t{ "a", "b" }));
+	}
+
+	TEST_METHOD(PartitioningTunnelsWorks)
+	{
+		auto tunnels = std::vector<aoc::Tunnel_t>{
+			{"pf", "pk"},
+			{"ZQ", "iz"},
+			{"iz", "NY"},
+			{"ZQ", "end"},
+			{"pf", "gx"},
+			{"pk", "ZQ"},
+			{"ZQ", "dc"},
+			{"NY", "start"},
+			{"NY", "pf"},
+			{"NY", "gx"},
+			{"ag", "ZQ"},
+			{"pf", "start"},
+			{"start", "gx"},
+			{"BN", "ag"},
+			{"iz", "pf"},
+			{"ag", "FD"},
+			{"pk", "NY"},
+			{"gx", "pk"},
+			{"end", "BN"},
+			{"ag", "pf"},
+			{"iz", "pk"},
+			{"pk", "ag"},
+			{"iz", "end"},
+			{"iz", "BN"}
+		};
+
+		const auto partitions = aoc::CaveMapBuilder::partition_tunnels(tunnels);
+
+		Assert::IsTrue(tunnels.begin() == partitions.starts.begin());
+		Assert::IsTrue(std::next(tunnels.begin(), 3) == partitions.starts.end());
+
+		Assert::IsTrue(std::next(tunnels.begin(), 3) == partitions.ends.begin());
+		Assert::IsTrue(std::next(tunnels.begin(), 6) == partitions.ends.end());
+
+		Assert::IsTrue(std::next(tunnels.begin(), 6) == partitions.others.begin());
+		Assert::IsTrue(tunnels.end() == partitions.others.end());
+	}
 };
 }

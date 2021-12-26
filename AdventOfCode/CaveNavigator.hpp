@@ -11,6 +11,7 @@
 #include <utility>
 #include <algorithm>
 #include <vector>
+#include <ranges>
 
 namespace aoc
 {
@@ -25,20 +26,42 @@ struct TerminalCaveType
 {
 	enum Type
 	{
-		start,
-		end
+		none = 0b0,
+		start = 0b1,
+		end = 0b10,
 	};
 
 	template<size_t type_T>
-	static constexpr const char* type() {
+	static constexpr const char* name() {
 		static_assert(false, "Invalid terminal cave type");
 	}
 
 	template<>
-	static constexpr const char* type<start>() { return "start"; }
+	static constexpr const char* name<start>() { return "start"; }
 
 	template<>
-	static constexpr const char* type<end>() { return "end"; }
+	static constexpr const char* name<end>() { return "end"; }
+
+	static int to_type(Tunnel_t tunnel)
+	{
+		if (tunnel.first == TerminalCaveType::name<TerminalCaveType::start>()
+			|| tunnel.second == TerminalCaveType::name<TerminalCaveType::start>()) {
+
+			if (tunnel.first == TerminalCaveType::name<TerminalCaveType::end>()
+				|| tunnel.second == TerminalCaveType::name<TerminalCaveType::end>()) {
+				return start | end;
+			}
+			
+			return start;
+		}
+
+		if (tunnel.first == TerminalCaveType::name<TerminalCaveType::end>()
+			|| tunnel.second == TerminalCaveType::name<TerminalCaveType::end>()) {
+			return end;
+		}
+
+		return none;
+	}
 };
 
 class CaveMapBuilder
@@ -47,6 +70,16 @@ class CaveMapBuilder
 	CaveMap_t& _cave_map;
 public:
 
+	template<typename TunnelIter_T>
+	struct TunnelConnectionPartition
+	{
+		using Range_t = std::ranges::subrange<TunnelIter_T>;
+
+		Range_t starts;
+		Range_t ends;
+		Range_t others;
+	};
+
 	CaveMapBuilder(CaveMap_t& cave_map)
 		: _cave_map{cave_map}
 	{}
@@ -54,11 +87,11 @@ public:
 	template<size_t TYPE, typename TunnelIter_T>
 	CaveMapBuilder& handle_terminal_cave(TunnelIter_T begin, TunnelIter_T end)
 	{
-		const auto terminal_vertex = _cave_map.insert_vertex(TerminalCaveType::type<TYPE>());
-		_cave_map[TerminalCaveType::type<TYPE>()] = TerminalCaveType::type<TYPE>();
+		const auto terminal_vertex = _cave_map.insert_vertex(TerminalCaveType::name<TYPE>());
+		_cave_map[TerminalCaveType::name<TYPE>()] = TerminalCaveType::name<TYPE>();
 
 		std::for_each(begin, end, [&](const auto& tunnel) {
-			const auto name = tunnel.first == TerminalCaveType::type<TYPE>() ? tunnel.second : tunnel.first;
+			const auto name = tunnel.first == TerminalCaveType::name<TYPE>() ? tunnel.second : tunnel.first;
 			const auto non_terminal_vertex = _cave_map.insert_vertex(name);
 			_cave_map[name] = name;
 
@@ -90,6 +123,23 @@ public:
 			});
 
 		return *this;
+	}
+
+	template<typename TunnelContainer_T>
+	static TunnelConnectionPartition<typename TunnelContainer_T::iterator> partition_tunnels(TunnelContainer_T& tunnels)
+	{
+		const auto end_of_starts = std::partition(tunnels.begin(), tunnels.end(), [](const auto& t) {
+			return 0 != (TerminalCaveType::to_type(t) & TerminalCaveType::start);
+			});
+
+		const auto end_of_ends = std::partition(end_of_starts, tunnels.end(), [](const auto& t) {
+			return 0 != (TerminalCaveType::to_type(t) & TerminalCaveType::end);
+			});
+
+		return { 
+			{tunnels.begin(), end_of_starts},
+			{end_of_starts, end_of_ends},
+			{end_of_ends, tunnels.end()} };
 	}
 };
 

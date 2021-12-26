@@ -2618,11 +2618,23 @@ public:
 		Assert::IsTrue(tunnels.begin() == partitions.starts.begin());
 		Assert::IsTrue(std::next(tunnels.begin(), 3) == partitions.starts.end());
 
+		for (const auto& t : partitions.starts) {
+			Assert::IsTrue(aoc::TerminalCaveType::start == aoc::TerminalCaveType::to_type(t));
+		}
+
 		Assert::IsTrue(std::next(tunnels.begin(), 3) == partitions.ends.begin());
 		Assert::IsTrue(std::next(tunnels.begin(), 6) == partitions.ends.end());
 
+		for (const auto& t : partitions.ends) {
+			Assert::IsTrue(aoc::TerminalCaveType::end == aoc::TerminalCaveType::to_type(t));
+		}
+
 		Assert::IsTrue(std::next(tunnels.begin(), 6) == partitions.others.begin());
 		Assert::IsTrue(tunnels.end() == partitions.others.end());
+
+		for (const auto& t : partitions.others) {
+			Assert::IsTrue(aoc::TerminalCaveType::none == aoc::TerminalCaveType::to_type(t));
+		}
 	}
 };
 }

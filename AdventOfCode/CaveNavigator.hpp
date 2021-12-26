@@ -88,6 +88,8 @@ public:
 			boost::add_edge(cave_1.first, cave_2.first, 1, _cave_map);
 			boost::add_edge(cave_2.first, cave_2.first, 1, _cave_map);
 			});
+
+		return *this;
 	}
 };
 

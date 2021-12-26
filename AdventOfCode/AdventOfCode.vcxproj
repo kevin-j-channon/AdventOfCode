@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClInclude Include="AdventOfCode.hpp" />
     <ClInclude Include="BoatSystems.hpp" />
+    <ClInclude Include="CaveNavigator.hpp" />
     <ClInclude Include="Common.hpp" />
     <ClInclude Include="CrabSorter.hpp" />
     <ClInclude Include="DiagnosticLog.hpp" />

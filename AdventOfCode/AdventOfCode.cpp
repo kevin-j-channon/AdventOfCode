@@ -10,6 +10,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "DigitAnalyser.hpp"
 #include "SyntaxChecker.hpp"
 #include "DumboOctopusModel.hpp"
+#include "CaveNavigator.hpp"
 
 #include <vector>
 #include <cstdint>
@@ -2409,9 +2410,11 @@ TEST_CLASS(TestDay12)
 {
 public:
 
-	TEST_METHOD(A)
+	TEST_METHOD(LoadCaveNavigtorFromStream)
 	{
+		std::stringstream data("start-end");
 
+		const auto nav = aoc::CaveNavigator{}.load(data);
 	}
 };
 }

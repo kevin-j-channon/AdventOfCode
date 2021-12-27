@@ -148,9 +148,32 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class CavePaths : public std::ranges::view_interface<CavePaths>
+{
+public:
+	CavePaths()
+		: _cave_map{ nullptr }
+	{}
+
+	CavePaths(const CaveMap_t& cave_map)
+		: _cave_map{ &cave_map }
+	{}
+
+	auto begin() const { return _paths.begin(); }
+	auto end() const { return _paths.end(); }
+
+private:
+	const CaveMap_t* _cave_map;
+	std::vector< std::string > _paths;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 class CaveNavigator
 {
 public:
+
+	const CaveMap_t& cave_map() const { return _cave_system; }
 
 	CaveNavigator& load(std::istream& is)
 	{
@@ -166,7 +189,10 @@ public:
 		return *this;
 	}
 
-	const CaveMap_t& cave_map() const { return _cave_system; }
+	CavePaths paths()
+	{
+		return CavePaths{_cave_system};
+	}
 
 private:
 

@@ -10,7 +10,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "DigitAnalyser.hpp"
 #include "SyntaxChecker.hpp"
 #include "DumboOctopusModel.hpp"
-#include "CaveNavigator.hpp"
 
 using namespace std::string_literals;
 using namespace std::chrono_literals;

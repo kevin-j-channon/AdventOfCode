@@ -272,5 +272,24 @@ public:
 
 		Assert::AreEqual(size_t{ 10 }, boost::num_edges(cave_map.graph()));
 	}
+
+	TEST_METHOD(FindAllPathsWorksForTrivialCaveSystem)
+	{
+		constexpr auto data_str =
+			"start-a\n"
+			"start-b\n"
+			"a-end\n"
+			"b-end"
+			;
+
+		std::stringstream data(data_str);
+
+		const auto paths = aoc::CaveNavigator{}.load(data).paths();
+
+		const auto expected = { "start,a,end"s, "start,b,end"s };
+
+		Assert::AreEqual(__int64(expected.size()), paths.size());
+		Assert::IsTrue(std::equal(expected.begin(), expected.end(), paths.begin()));
+	}
 };
 }

@@ -2636,5 +2636,31 @@ public:
 			Assert::IsTrue(aoc::TerminalCaveType::none == aoc::TerminalCaveType::to_type(t));
 		}
 	}
+
+	TEST_METHOD(CavesCanBeLoadedFromStream)
+	{
+		constexpr auto data_str =
+			"start-A\n"
+			"start-b\n"
+			"A-c\n"
+			"A-b\n"
+			"b-d\n"
+			"A-end\n"
+			"b-end"
+			;
+
+		std::stringstream data(data_str);
+
+		const auto cave_map = aoc::CaveNavigator{}.load(data).cave_map();
+
+		Assert::AreEqual(aoc::Cave_t{ "start" }, cave_map["start"]);
+		Assert::AreEqual(aoc::Cave_t{ "A" }, cave_map["A"]);
+		Assert::AreEqual(aoc::Cave_t{ "b" }, cave_map["b"]);
+		Assert::AreEqual(aoc::Cave_t{ "c" }, cave_map["c"]);
+		Assert::AreEqual(aoc::Cave_t{ "d" }, cave_map["d"]);
+		Assert::AreEqual(aoc::Cave_t{ "end" }, cave_map["end"]);
+
+		Assert::AreEqual(size_t{ 10 }, boost::num_edges(cave_map.graph()));
+	}
 };
 }

@@ -12,7 +12,7 @@
 namespace aoc
 {
 
-void print_grid(const arma::Mat<int>& grid)
+inline void print_grid(const arma::Mat<int>& grid)
 {
 	std::stringstream ss;
 	grid.print(ss);

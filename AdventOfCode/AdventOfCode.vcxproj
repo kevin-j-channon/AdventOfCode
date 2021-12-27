@@ -161,8 +161,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AdventOfCode.cpp" />
+    <ClCompile Include="TestCaveNavigator.cpp" />
     <ClCompile Include="TestEntertainment.cpp" />
     <ClCompile Include="TestFunctionalAreascpp.cpp" />
+    <ClCompile Include="TestModelling.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AdventOfCode.hpp" />

@@ -161,6 +161,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AdventOfCode.cpp" />
+    <ClCompile Include="TestEntertainment.cpp" />
     <ClCompile Include="TestFunctionalAreascpp.cpp" />
   </ItemGroup>
   <ItemGroup>

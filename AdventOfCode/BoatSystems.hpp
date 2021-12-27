@@ -402,7 +402,7 @@ namespace std
 
 ///////////////////////////////////////////////////////////////////////////////
 
-istream& operator>>(istream& is, aoc::Direction& direction)
+inline istream& operator>>(istream& is, aoc::Direction& direction)
 {
 	auto cmd = std::string{};
 

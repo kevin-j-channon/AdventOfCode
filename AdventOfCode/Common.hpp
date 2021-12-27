@@ -253,7 +253,7 @@ namespace std
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
-istream& operator>>(std::istream& is, aoc::Vec2d<Value_T>& vec) try
+inline istream& operator>>(std::istream& is, aoc::Vec2d<Value_T>& vec) try
 {
 	if (is.eof())
 		return is;
@@ -286,7 +286,7 @@ catch (std::out_of_range&)
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
-istream& operator>>(istream& is, aoc::Line2d<Value_T>& line) try
+inline istream& operator>>(istream& is, aoc::Line2d<Value_T>& line) try
 {
 	line = aoc::Line2d<Value_T>{{0, 0}, {0, 0}};
 

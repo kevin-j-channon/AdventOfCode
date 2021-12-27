@@ -70,43 +70,43 @@ std::basic_string<Char_T> strip(const std::basic_string<Char_T>& str)
 }
 
 template<typename Value_T>
-auto string_to(const std::string& str) -> Value_T
+inline auto string_to(const std::string& str) -> Value_T
 {
     static_assert(false, "Unimplemented string conversion");
 }
 
 template<>
-auto string_to(const std::string& str) -> int
+inline auto string_to(const std::string& str) -> int
 {
     return std::stoi(str);
 }
 
 template<>
-auto string_to(const std::string& str) -> long
+inline auto string_to(const std::string& str) -> long
 {
     return std::stol(str);
 }
 
 template<>
-auto string_to(const std::string& str) -> unsigned int
+inline auto string_to(const std::string& str) -> unsigned int
 {
     return std::stoul(str);
 }
 
 template<>
-auto string_to(const std::string& str) -> unsigned long
+inline auto string_to(const std::string& str) -> unsigned long
 {
     return std::stoul(str);
 }
 
 template<>
-auto string_to(const std::string& str) -> long long
+inline auto string_to(const std::string& str) -> long long
 {
     return std::stoll(str);
 }
 
 template<>
-auto string_to(const std::string& str) -> unsigned long long
+inline auto string_to(const std::string& str) -> unsigned long long
 {
     return std::stoull(str);
 }

@@ -159,7 +159,7 @@ namespace std
 
 ///////////////////////////////////////////////////////////////////////////////
 
-istream & operator>>(istream & is, aoc::DiagnosticLog::Entry_t & entry)
+inline istream & operator>>(istream & is, aoc::DiagnosticLog::Entry_t & entry)
 {
 	entry = aoc::DiagnosticLog::Entry_t{};
 

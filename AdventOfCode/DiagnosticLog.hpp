@@ -4,14 +4,6 @@
 
 #include "Common.hpp"
 
-#include <cstdint>
-#include <vector>
-#include <array>
-#include <istream>
-#include <numeric>
-#include <algorithm>
-#include <format>
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace aoc

@@ -8,13 +8,6 @@
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/labeled_graph.hpp>
 
-#include <istream>
-#include <string>
-#include <utility>
-#include <algorithm>
-#include <vector>
-#include <ranges>
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace aoc

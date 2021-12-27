@@ -6,10 +6,6 @@
 #include "BoatSystems.hpp"
 #include "EntertainmentSystems.hpp"
 
-#include <numeric>
-#include <array>
-#include <algorithm>
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace aoc

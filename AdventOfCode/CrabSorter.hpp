@@ -5,11 +5,6 @@
 #include "Common.hpp"
 #include "StringOperations.hpp"
 
-#include <cstdint>
-#include <vector>
-#include <istream>
-#include <numeric>
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace aoc

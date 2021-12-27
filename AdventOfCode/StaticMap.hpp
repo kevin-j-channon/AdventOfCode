@@ -1,12 +1,6 @@
 #pragma once
 
 
-#include <array>
-#include <utility>
-#include <algorithm>
-#include <stdexcept>
-
-
 template<typename Key_T, typename Value_T, size_t ITEM_COUNT>
 class StaticMap
 {

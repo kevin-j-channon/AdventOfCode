@@ -4,14 +4,6 @@
 
 #include "StringOperations.hpp"
 
-#include <armadillo>
-
-#include <istream>
-#include <string>
-#include <vector>
-#include <cstdint>
-#include <optional>
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace aoc

@@ -1,11 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <cctype>
-#include <cwctype>
-#include <algorithm>
-
 enum class SplitBehaviour
 {
     none,

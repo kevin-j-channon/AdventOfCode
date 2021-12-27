@@ -5,13 +5,6 @@
 #include "Common.hpp"
 #include "DiagnosticLog.hpp"
 
-#include <algorithm>
-#include <vector>
-#include <format>
-#include <istream>
-#include <map>
-#include <bitset>
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace aoc

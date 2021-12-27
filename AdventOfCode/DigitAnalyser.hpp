@@ -5,13 +5,6 @@
 #include "Common.hpp"
 #include "StringOperations.hpp"
 
-#include <istream>
-#include <array>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <iterator>
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace aoc

@@ -6,16 +6,6 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "BoatSystems.hpp"
 #include "AdventOfCode.hpp"
 
-#include <vector>
-#include <cstdint>
-#include <fstream>
-#include <iterator>
-#include <format>
-#include <string>
-#include <filesystem>
-#include <algorithm>
-#include <chrono>
-
 using namespace std::string_literals;
 using namespace std::chrono_literals;
 

@@ -1,14 +1,5 @@
 #pragma once
 
-#include <armadillo>
-
-#include <istream>
-#include <string>
-#include <cstdint>
-#include <iterator>
-#include <algorithm>
-#include <sstream>
-
 namespace aoc
 {
 

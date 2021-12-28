@@ -21,6 +21,18 @@ using Tunnel_t = std::pair<Cave_t, Cave_t>;
 using EdgeWeightProperty_t = boost::property<boost::edge_weight_t, int>;
 using CaveMap_t = boost::labeled_graph<boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, Cave_t, EdgeWeightProperty_t>, std::string>;
 
+using Route_t = std::vector<Cave_t>;
+
+///////////////////////////////////////////////////////////////////////////////
+
+namespace route
+{
+inline std::string as_string(const Route_t& route)
+{
+	return join(route, ',');
+}
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 struct TerminalCaveType
@@ -151,20 +163,110 @@ public:
 class CavePaths : public std::ranges::view_interface<CavePaths>
 {
 public:
-	CavePaths()
-		: _cave_map{ nullptr }
-	{}
-
-	CavePaths(const CaveMap_t& cave_map)
-		: _cave_map{ &cave_map }
-	{}
 
 	auto begin() const { return _paths.begin(); }
 	auto end() const { return _paths.end(); }
 
+	void add_path(std::string path)
+	{
+		_paths.push_back(std::move(path));
+	}
+
 private:
-	const CaveMap_t* _cave_map;
 	std::vector< std::string > _paths;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class RouteIterator
+{
+public:
+
+	RouteIterator(const CaveMap_t& caves)
+		: _caves{ caves }
+	{
+		_find_next_route();
+	}
+
+	Route_t operator*() const
+	{
+		auto route = Route_t(_current_route.size());
+
+		std::transform(_current_route.begin(), _current_route.end(), route.begin(), [](const auto& breadcrumb) {
+			return breadcrumb.first;
+			});
+
+		return route;
+	}
+
+private:
+	using Breadcrumb_t = std::vector<std::pair<Cave_t, int>>;
+
+	const CaveMap_t& _caves;
+	std::set<Cave_t> _not_revisitable;
+	Breadcrumb_t _current_route;
+
+	enum class RouteStatus
+	{
+		exploring,
+		dead_end,
+		found_end
+	};
+
+	static bool _is_singly_visitable(const Cave_t& cave)
+	{
+		if (cave == "start" || cave == "end") {
+			return true;
+		}
+
+		return std::all_of(cave.begin(), cave.end(), [](auto c) { return std::islower(c); });
+	}
+
+	void _find_next_route()
+	{
+		auto found_end = _recurse_through_tunnels(Cave_t{ "start" });
+	}
+
+	RouteStatus _recurse_through_tunnels(const Cave_t& cave)
+	{
+		_current_route.emplace_back(cave, 0);
+
+		if (cave == "end") {
+			return RouteStatus::found_end;
+		}
+
+		if (_is_singly_visitable(cave)) {
+			_not_revisitable.insert(cave);
+		}
+
+		auto [edge, edges_end] = boost::out_edges(_caves.vertex(cave), _caves);
+
+		// Move to the next unexplored tunnel from this cave.
+		std::advance(edge, _current_route.back().second);
+
+		for (; edge != edges_end; ++edge) {
+
+			const auto& next_cave = _caves.graph()[boost::target(*edge, _caves)];
+
+			if (_not_revisitable.contains(next_cave)) {
+				continue;
+			}
+
+			const auto status = _recurse_through_tunnels(next_cave);
+			if (status == RouteStatus::found_end) {
+				// We found the end, get out and let the caller know (it could be ourself).
+				return status;
+			}
+
+			// Explore the next tunnel now.
+			_current_route.back().second += 1;
+		}
+
+		// We explored all the tunnels from this cave and didn't find the end. This cave was en route to a dead-end; remove
+		// from the stack and let the caller know.
+		_current_route.pop_back();
+		return RouteStatus::dead_end;
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -191,7 +293,7 @@ public:
 
 	CavePaths paths()
 	{
-		return CavePaths{_cave_system};
+		return CavePaths{};
 	}
 
 private:

@@ -243,6 +243,34 @@ public:
 	}
 };
 
+TEST_CLASS(TestRouteIterator)
+{
+public:
+	TEST_METHOD(FirstRouteIsFoundOnConstruction)
+	{
+		auto tunnels = std::vector<aoc::Tunnel_t>{
+			{"start", "A"},
+			{"start", "b"},
+			{"A", "c"},
+			{"A", "b"},
+			{"b", "d"},
+			{"A", "end"},
+			{"b", "end"}
+		};
+
+		auto cave_map = aoc::CaveMap_t{};
+
+		aoc::CaveMapBuilder{ cave_map }
+			.handle_terminal_cave<aoc::TerminalCaveType::start>(tunnels.begin(), std::next(tunnels.begin(), 2))
+			.handle_terminal_cave<aoc::TerminalCaveType::end>(std::next(tunnels.begin(), 5), tunnels.end())
+			.add_non_terminal_tunnels(std::next(tunnels.begin(), 2), std::next(tunnels.begin(), 5));
+
+		const auto routes = aoc::RouteIterator{ cave_map };
+
+		Assert::AreEqual("start,A,end"s, aoc::route::as_string(*routes));
+	}
+};
+
 TEST_CLASS(TestCaveNavigator)
 {
 public:
@@ -273,6 +301,7 @@ public:
 		Assert::AreEqual(size_t{ 10 }, boost::num_edges(cave_map.graph()));
 	}
 
+	/*
 	TEST_METHOD(FindAllPathsWorksForTrivialCaveSystem)
 	{
 		constexpr auto data_str =
@@ -291,5 +320,6 @@ public:
 		Assert::AreEqual(__int64(expected.size()), paths.size());
 		Assert::IsTrue(std::equal(expected.begin(), expected.end(), paths.begin()));
 	}
+	*/
 };
 }

@@ -204,6 +204,9 @@ public:
 		: _caves{ caves }
 	{
 		Logger::WriteMessage("\nFinding initial route\n");
+		_current_route.emplace_back("start", 0);
+		Logger::WriteMessage(std::format("Adding 'start' (vertex {}) to route with current tunnel {}\n", _caves.vertex("start"), 0).c_str());
+
 		_recurse_through_tunnels(Cave_t{ "start" });
 	}
 
@@ -223,6 +226,8 @@ public:
 		Logger::WriteMessage("\noperator++\n");
 		_rewind_to_next_unexplored_tunnel();
 		_explore_next_unexplored_tunnel();
+
+		Logger::WriteMessage(std::format("Incremented to route: {}\n", route::as_string(this->operator*())).c_str());
 
 		return *this;
 	}
@@ -250,16 +255,8 @@ private:
 		return std::all_of(cave.begin(), cave.end(), [](auto c) { return std::islower(c); });
 	}
 
-	void _find_next_route()
-	{
-		_recurse_through_tunnels(Cave_t{ "start" });
-	}
-
 	RouteStatus _recurse_through_tunnels(const Cave_t& cave)
 	{
-		_current_route.emplace_back(cave, 0);
-		Logger::WriteMessage(std::format("Adding '{}' (vertex {}) to route with current tunnel {}\n", cave, _caves.vertex(cave), 0).c_str());
-
 		if (cave == "end") {
 			Logger::WriteMessage("This was the end cave\n");
 			return RouteStatus::found_end;
@@ -279,8 +276,8 @@ private:
 		}
 
 		// Move to the next unexplored tunnel from this cave.
+		Logger::WriteMessage(std::format("Advancing to explore tunnel {} from this cave\n", _current_route.back().second).c_str());
 		std::advance(edge, _current_route.back().second);
-		Logger::WriteMessage(std::format("Advanced to explore tunnel {} from this cave\n", _current_route.back().second).c_str());
 
 		for (; edge != edges_end; ++edge) {
 
@@ -296,6 +293,10 @@ private:
 			}
 
 			Logger::WriteMessage(std::format("Recursing into {}\n", next_cave).c_str());
+
+			_current_route.emplace_back(next_cave, 0);
+			Logger::WriteMessage(std::format("Adding '{}' (vertex {}) to route with current tunnel {}\n", cave, _caves.vertex(next_cave), 0).c_str());
+
 			const auto status = _recurse_through_tunnels(next_cave);
 			if (status == RouteStatus::found_end) {
 				// We found the end, get out and let the caller know (it could be ourself).
@@ -321,7 +322,9 @@ private:
 			_not_revisitable.erase(non_revisitable_cave);
 		}
 
+		Logger::WriteMessage(std::format("Popping ({},{}) from route. ", _current_route.back().first, _current_route.back().second).c_str());
 		_current_route.pop_back();
+		Logger::WriteMessage(std::format("Top route is now ({},{}) from route. ", _current_route.back().first, _current_route.back().second).c_str());
 	}
 
 	void _rewind_to_next_unexplored_tunnel()
@@ -344,13 +347,17 @@ private:
 
 	void _explore_next_unexplored_tunnel()
 	{
-		const auto current_cave = _current_route.back().first;
+		auto& [current_cave, unexplored_tunnel] = _current_route.back();
 		Logger::WriteMessage(std::format("Exploring unexplored tunnel {} from cave {}\n", _current_route.back().second, current_cave).c_str());
 		auto [edge, _] = boost::out_edges(_caves.vertex(current_cave), _caves);
 		std::advance(edge, _current_route.back().second);
 
 		const auto& next_cave = _caves.graph()[boost::target(*edge, _caves)];
 
+		++unexplored_tunnel;
+		Logger::WriteMessage(std::format("Incrementing to tunnel {} as the next unexplored tunnel for cave {}\n", _current_route.back().second, _current_route.back().first).c_str());
+
+		_current_route.emplace_back(next_cave, 0);
 		_recurse_through_tunnels(next_cave);
 	}
 };

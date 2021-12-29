@@ -293,6 +293,45 @@ public:
 
 		Assert::AreEqual("start,A,c,A,end"s, aoc::route::as_string(*(++routes)));
 	}
+
+	TEST_METHOD(SamplePathsCanAllBeIterated)
+	{
+		auto tunnels = std::vector<aoc::Tunnel_t>{
+			{"start", "A"},
+			{"start", "b"},
+			{"A", "c"},
+			{"A", "b"},
+			{"b", "d"},
+			{"A", "end"},
+			{"b", "end"}
+		};
+
+		auto cave_map = aoc::CaveMap_t{};
+
+		aoc::CaveMapBuilder{ cave_map }
+			.handle_terminal_cave<aoc::TerminalCaveType::start>(tunnels.begin(), std::next(tunnels.begin(), 2))
+			.handle_terminal_cave<aoc::TerminalCaveType::end>(std::next(tunnels.begin(), 5), tunnels.end())
+			.add_non_terminal_tunnels(std::next(tunnels.begin(), 2), std::next(tunnels.begin(), 5));
+
+		auto route = aoc::RouteIterator{ cave_map };
+
+		const auto expected_routes = std::array<std::string, 10>{
+			"start,A,end",
+			"start,A,c,A,end",
+			"start,A,c,A,b,A,end",
+			"start,A,c,A,b,end",
+			"start,A,b,A,end",
+			"start,A,b,end",
+			"start,A,b,A,c,A,end",
+			"start,b,A,c,A,end",
+			"start,b,A,end",
+			"start,b,end"
+		};
+
+		for (auto expected = expected_routes.begin(); expected != expected_routes.end(); ++expected, ++route) {
+			Assert::AreEqual(*expected, aoc::route::as_string(*route));
+		}
+	}
 };
 
 TEST_CLASS(TestCaveNavigator)

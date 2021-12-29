@@ -291,7 +291,7 @@ public:
 
 		auto routes = aoc::RouteIterator{ cave_map };
 
-		Assert::AreEqual("start,A,end"s, aoc::route::as_string(*(++routes)));
+		Assert::AreEqual("start,A,c,A,end"s, aoc::route::as_string(*(++routes)));
 	}
 };
 

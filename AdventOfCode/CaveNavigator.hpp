@@ -103,15 +103,18 @@ public:
 	CaveMapBuilder& handle_terminal_cave(TunnelIter_T begin, TunnelIter_T end)
 	{
 		const auto terminal_vertex = _cave_map.insert_vertex(TerminalCaveType::name<TYPE>());
-		if (terminal_vertex.second)
+		if (terminal_vertex.second) {
 			_cave_map[TerminalCaveType::name<TYPE>()] = TerminalCaveType::name<TYPE>();
-
-		Logger::WriteMessage(std::format("Added vertex {}\n", TerminalCaveType::name<TYPE>()).c_str());
+			Logger::WriteMessage(std::format("Added cave '{}' (vertex {})\n", TerminalCaveType::name<TYPE>(), _cave_map.vertex(TerminalCaveType::name<TYPE>())).c_str());
+		}
 
 		std::for_each(begin, end, [&](const auto& tunnel) {
 			const auto name = tunnel.first == TerminalCaveType::name<TYPE>() ? tunnel.second : tunnel.first;
 			const auto non_terminal_vertex = _cave_map.insert_vertex(name);
-			_cave_map[name] = name;
+			if (non_terminal_vertex.second) {
+				_cave_map[name] = name;
+				Logger::WriteMessage(std::format("Added cave '{}' (vertex {})\n", name, _cave_map.vertex(name)).c_str());
+			}
 
 			if constexpr (TYPE == TerminalCaveType::start) {
 				// If we're adding "start" caves, then the edges are directed out of the terminal (start) vertex.
@@ -137,18 +140,18 @@ public:
 			const auto cave_1 = _cave_map.insert_vertex(tunnel.first);
 			_cave_map[tunnel.first] = tunnel.first;
 			if (cave_1.second)
-				Logger::WriteMessage(std::format("Added vertex {}\n", tunnel.first).c_str());
+				Logger::WriteMessage(std::format("Added cave '{}' (vertex {})\n", tunnel.first, _cave_map.vertex(tunnel.first)).c_str());
 
 			const auto cave_2 = _cave_map.insert_vertex(tunnel.second);
 			_cave_map[tunnel.second] = tunnel.second;
 			if (cave_2.second)
-				Logger::WriteMessage(std::format("Added vertex {}\n", tunnel.second).c_str());
+				Logger::WriteMessage(std::format("Added cave '{}' (vertex {})\n", tunnel.second, _cave_map.vertex(tunnel.second)).c_str());
 
 			// We want to be able to go into and out of non-terminal caves.
 			boost::add_edge(cave_1.first, cave_2.first, 1, _cave_map);
 			Logger::WriteMessage(std::format("Added edge {} -> {}\n", _cave_map.graph()[cave_1.first], _cave_map.graph()[cave_2.first]).c_str());
 
-			boost::add_edge(cave_2.first, cave_2.first, 1, _cave_map);
+			boost::add_edge(cave_2.first, cave_1.first, 1, _cave_map);
 			Logger::WriteMessage(std::format("Added edge {} -> {}\n", _cave_map.graph()[cave_2.first], _cave_map.graph()[cave_1.first]).c_str());
 			});
 
@@ -200,6 +203,7 @@ public:
 	RouteIterator(const CaveMap_t& caves)
 		: _caves{ caves }
 	{
+		Logger::WriteMessage("\nFinding initial route\n");
 		_recurse_through_tunnels(Cave_t{ "start" });
 	}
 
@@ -216,6 +220,7 @@ public:
 
 	RouteIterator& operator++()
 	{
+		Logger::WriteMessage("\noperator++\n");
 		_rewind_to_next_unexplored_tunnel();
 		_explore_next_unexplored_tunnel();
 
@@ -253,33 +258,48 @@ private:
 	RouteStatus _recurse_through_tunnels(const Cave_t& cave)
 	{
 		_current_route.emplace_back(cave, 0);
+		Logger::WriteMessage(std::format("Adding '{}' (vertex {}) to route with current tunnel {}\n", cave, _caves.vertex(cave), 0).c_str());
 
 		if (cave == "end") {
+			Logger::WriteMessage("This was the end cave\n");
 			return RouteStatus::found_end;
 		}
 
 		if (_is_singly_visitable(cave)) {
+			Logger::WriteMessage("This cave is not revisitable\n");
 			_not_revisitable.insert(cave);
 		}
 
 		auto [edge, edges_end] = boost::out_edges(_caves.vertex(cave), _caves);
 
+		auto i = int{ 0 };
+		Logger::WriteMessage(std::format("Cave '{}' has out edges:\n", cave).c_str());
+		for (auto e2 = edge; e2 != edges_end; ++e2, ++i) {
+			Logger::WriteMessage(std::format("\tEdge {}: {} -> {}\n", i, boost::source(*e2, _caves), boost::target(*e2, _caves)).c_str());
+		}
+
 		// Move to the next unexplored tunnel from this cave.
 		std::advance(edge, _current_route.back().second);
+		Logger::WriteMessage(std::format("Advanced to explore tunnel {} from this cave\n", _current_route.back().second).c_str());
 
 		for (; edge != edges_end; ++edge) {
 
 			const auto& next_cave = _caves.graph()[boost::target(*edge, _caves)];
+			Logger::WriteMessage(std::format("The next cave to explore is '{}' (vertex {}), via tunnel {}\n", next_cave, boost::target(*edge, _caves), _current_route.back().second).c_str());
 
 			_current_route.back().second += 1;
+			Logger::WriteMessage(std::format("Next time we visit {} we'll be looking at tunnel {}\n", _current_route.back().first, _current_route.back().second).c_str());
 
 			if (_not_revisitable.contains(next_cave)) {
+				Logger::WriteMessage("Wait! That cave isn't revisitable. Moving on\n");
 				continue;
 			}
 
+			Logger::WriteMessage(std::format("Recursing into {}\n", next_cave).c_str());
 			const auto status = _recurse_through_tunnels(next_cave);
 			if (status == RouteStatus::found_end) {
 				// We found the end, get out and let the caller know (it could be ourself).
+				Logger::WriteMessage("Found the end. Getting out\n");
 				return status;
 			}
 
@@ -288,33 +308,44 @@ private:
 
 		// We explored all the tunnels from this cave and didn't find the end. This cave was en route to a dead-end; remove
 		// from the stack and let the caller know.
-		_current_route.pop_back();
+		Logger::WriteMessage(std::format("Turns out that {} leads to a dead-end. Removing it from the route and trying something else\n", _current_route.back().first).c_str());
+		_pop_route();
 		return RouteStatus::dead_end;
 	}
 
-	void _rewind_to_next_unexplored_tunnel()
+	void _pop_route()
 	{
+		Logger::WriteMessage("Popping route\n");
 		auto non_revisitable_cave = _not_revisitable.find(_current_route.back().first);
 		if (_not_revisitable.end() != non_revisitable_cave) {
 			_not_revisitable.erase(non_revisitable_cave);
 		}
 
 		_current_route.pop_back();
+	}
+
+	void _rewind_to_next_unexplored_tunnel()
+	{
+		Logger::WriteMessage("Rewinding to next un-explored tunnel\n");
+		_pop_route();
 
 		const auto [edges_begin, edges_end] = boost::out_edges(_caves.vertex(_current_route.back().first), _caves);
 		const auto num_out_edges = std::distance(edges_begin, edges_end);
 
 		if (_current_route.back().second < num_out_edges) {
+			Logger::WriteMessage(std::format("Cave {} still has unexplored tunnel {}\n", _current_route.back().first, _current_route.back().second).c_str());
 			return;
 		}
 
 		// Recurse down the stack of caves
+		Logger::WriteMessage("Recursing to previous cave\n");
 		_rewind_to_next_unexplored_tunnel();
 	}
 
 	void _explore_next_unexplored_tunnel()
 	{
 		const auto current_cave = _current_route.back().first;
+		Logger::WriteMessage(std::format("Exploring unexplored tunnel {} from cave {}\n", _current_route.back().second, current_cave).c_str());
 		auto [edge, _] = boost::out_edges(_caves.vertex(current_cave), _caves);
 		std::advance(edge, _current_route.back().second);
 

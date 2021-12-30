@@ -318,14 +318,15 @@ public:
 		const auto expected_routes = std::array<std::string, 10>{
 			"start,A,end",
 			"start,A,c,A,end",
-			"start,A,c,A,b,A,end",
 			"start,A,c,A,b,end",
-			"start,A,b,A,end",
+			"start,A,c,A,b,A,end",
 			"start,A,b,end",
+			"start,A,b,A,end",
 			"start,A,b,A,c,A,end",
-			"start,b,A,c,A,end",
+			"start,b,end",
 			"start,b,A,end",
-			"start,b,end"
+			"start,b,A,c,A,end",
+
 		};
 
 		for (auto expected = expected_routes.begin(); expected != expected_routes.end(); ++expected, ++route) {

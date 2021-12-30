@@ -26,6 +26,13 @@ struct Exception : public std::runtime_error
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct OutOfRangeException : public Exception, public std::out_of_range
+{
+	OutOfRangeException(const std::string& msg) : Exception{ msg }, std::out_of_range(msg) {}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 template<typename Value_T>
 struct Vec2d
 {

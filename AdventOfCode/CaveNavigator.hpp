@@ -198,6 +198,13 @@ private:
 
 class RouteIterator
 {
+	enum class RouteStatus
+	{
+		exploring,
+		dead_end,
+		found_end
+	};
+
 public:
 
 	RouteIterator(const CaveMap_t& caves)
@@ -212,6 +219,10 @@ public:
 
 	Route_t operator*() const
 	{
+		if (_current_route.empty()) {
+			throw OutOfRangeException("Route iterator is at end");
+		}
+
 		auto route = Route_t(_current_route.size());
 
 		std::transform(_current_route.begin(), _current_route.end(), route.begin(), [](const auto& breadcrumb) {
@@ -224,8 +235,31 @@ public:
 	RouteIterator& operator++()
 	{
 		Logger::WriteMessage("\noperator++\n");
-		_rewind_to_next_unexplored_tunnel();
-		_explore_next_unexplored_tunnel();
+
+		while (true) {
+			_rewind_to_next_unexplored_tunnel();
+
+			if (_current_route.empty()) {
+				return *this;
+			}
+
+			switch (_explore_next_unexplored_tunnel()) {
+			case RouteStatus::exploring: {
+				throw Exception("Exploring next unexplored tunnel failed to reach a conclusion");
+			}
+			case RouteStatus::dead_end: {
+				Logger::WriteMessage("operator++ found a dead-end. Looking at previous cave\n");
+				continue;
+			}
+			case RouteStatus::found_end: {
+				Logger::WriteMessage("operator++ found the end cave. Getting out\n");
+				return *this;
+			}
+			default: {
+				throw Exception("Unhandled result of exploring next tunnel");
+			}
+			}
+		}
 
 		Logger::WriteMessage(std::format("Incremented to route: {}\n", route::as_string(this->operator*())).c_str());
 
@@ -239,13 +273,6 @@ private:
 	std::set<Cave_t> _not_revisitable;
 	Breadcrumb_t _current_route;
 
-	enum class RouteStatus
-	{
-		exploring,
-		dead_end,
-		found_end
-	};
-
 	static bool _is_singly_visitable(const Cave_t& cave)
 	{
 		if (cave == "start" || cave == "end") {
@@ -255,8 +282,19 @@ private:
 		return std::all_of(cave.begin(), cave.end(), [](auto c) { return std::islower(c); });
 	}
 
+	void _debug_print_breadcrumbs() const
+	{
+		Logger::WriteMessage("Current state of breadcrumbs:\n");
+		for (const auto& bc : _current_route) {
+			Logger::WriteMessage(std::format("\t{}, {}\n", bc.first, bc.second).c_str());
+		}
+	}
+
 	RouteStatus _recurse_through_tunnels(const Cave_t& cave)
 	{
+		Logger::WriteMessage("Recursing through tunnels\n");
+		_debug_print_breadcrumbs();
+
 		if (cave == "end") {
 			Logger::WriteMessage("This was the end cave\n");
 			return RouteStatus::found_end;
@@ -295,7 +333,7 @@ private:
 			Logger::WriteMessage(std::format("Recursing into {}\n", next_cave).c_str());
 
 			_current_route.emplace_back(next_cave, 0);
-			Logger::WriteMessage(std::format("Adding '{}' (vertex {}) to route with current tunnel {}\n", cave, _caves.vertex(next_cave), 0).c_str());
+			Logger::WriteMessage(std::format("Adding '{}' (vertex {}) to route with current tunnel {}\n", next_cave, _caves.vertex(next_cave), 0).c_str());
 
 			const auto status = _recurse_through_tunnels(next_cave);
 			if (status == RouteStatus::found_end) {
@@ -322,9 +360,15 @@ private:
 			_not_revisitable.erase(non_revisitable_cave);
 		}
 
-		Logger::WriteMessage(std::format("Popping ({},{}) from route. ", _current_route.back().first, _current_route.back().second).c_str());
+		_debug_print_breadcrumbs();
+
 		_current_route.pop_back();
-		Logger::WriteMessage(std::format("Top route is now ({},{}) from route. ", _current_route.back().first, _current_route.back().second).c_str());
+		if (!_current_route.empty()) {
+			Logger::WriteMessage(std::format("Top route is now ({},{})\n", _current_route.back().first, _current_route.back().second).c_str());
+		}
+		else {
+			Logger::WriteMessage("No routes left\n");
+		}
 	}
 
 	void _rewind_to_next_unexplored_tunnel()
@@ -345,20 +389,44 @@ private:
 		_rewind_to_next_unexplored_tunnel();
 	}
 
-	void _explore_next_unexplored_tunnel()
+	RouteStatus _explore_next_unexplored_tunnel()
 	{
 		auto& [current_cave, unexplored_tunnel] = _current_route.back();
 		Logger::WriteMessage(std::format("Exploring unexplored tunnel {} from cave {}\n", _current_route.back().second, current_cave).c_str());
-		auto [edge, _] = boost::out_edges(_caves.vertex(current_cave), _caves);
+
+		_debug_print_breadcrumbs();
+
+		auto [edge, edges_end] = boost::out_edges(_caves.vertex(current_cave), _caves);
+
+		auto i = int{ 0 };
+		Logger::WriteMessage(std::format("Cave '{}' has out edges:\n", current_cave).c_str());
+		for (auto e2 = edge; e2 != edges_end; ++e2, ++i) {
+			Logger::WriteMessage(std::format("\tEdge {}: {} -> {}\n", i, boost::source(*e2, _caves), boost::target(*e2, _caves)).c_str());
+		}
+
 		std::advance(edge, _current_route.back().second);
 
-		const auto& next_cave = _caves.graph()[boost::target(*edge, _caves)];
-
+		auto next_cave = _caves.graph()[boost::target(*edge, _caves)];
 		++unexplored_tunnel;
-		Logger::WriteMessage(std::format("Incrementing to tunnel {} as the next unexplored tunnel for cave {}\n", _current_route.back().second, _current_route.back().first).c_str());
+		Logger::WriteMessage(std::format("Incrementing to tunnel {} (goes to cave {}) as the next unexplored tunnel for cave {}\n", _current_route.back().second, next_cave, _current_route.back().first).c_str());
+
+		while (_not_revisitable.contains(next_cave)) {
+			if (++edge == edges_end) {
+				Logger::WriteMessage("Failed to find any visitable caves. This is a dead-end\n");
+				return RouteStatus::dead_end;
+			}
+
+			Logger::WriteMessage(std::format("Cave '{}' is not revisitable, checking next tunnel\n", next_cave).c_str());
+
+			next_cave = _caves.graph()[boost::target(*edge, _caves)];
+			++unexplored_tunnel;
+			Logger::WriteMessage(std::format("Incrementing to tunnel {} (goes to cave {}) as the next unexplored tunnel for cave {}\n", _current_route.back().second, next_cave, _current_route.back().first).c_str());
+		}
+
+
 
 		_current_route.emplace_back(next_cave, 0);
-		_recurse_through_tunnels(next_cave);
+		return _recurse_through_tunnels(next_cave);
 	}
 };
 

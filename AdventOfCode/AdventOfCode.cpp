@@ -10,6 +10,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "DigitAnalyser.hpp"
 #include "SyntaxChecker.hpp"
 #include "DumboOctopusModel.hpp"
+#include "CaveNavigator.hpp"
 
 using namespace std::string_literals;
 using namespace std::chrono_literals;
@@ -316,6 +317,23 @@ public:
 				const auto first_sync_step = aoc::DumboOctopusModel<10>{}.load(data_file).find_first_sync_step();
 
 				Logger::WriteMessage(std::format("\tFirst synchronised flash at step: {}\n", first_sync_step).c_str());
+			}
+		}
+
+		// Day 12
+		{
+			Logger::WriteMessage("Day 12:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day12_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				auto caves = aoc::CaveLoader::load(data_file);
+				auto routes = aoc::CaveRoutes{ caves };
+				auto route_count = std::accumulate(routes.begin(), routes.end(), uint32_t{ 0 }, [](auto curr, auto _) { return ++curr; });
+
+				Logger::WriteMessage(std::format("\tNumber of routes: {}\n", route_count).c_str());
 			}
 		}
 	}

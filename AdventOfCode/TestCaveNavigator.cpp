@@ -440,6 +440,41 @@ public:
 			Assert::AreEqual(*expected, aoc::route::as_string(*route));
 		}
 	}
+
+	TEST_METHOD(FindAllCavesForExample)
+	{
+		constexpr auto data_str =
+			"start-A\n"
+			"start-b\n"
+			"A-c\n"
+			"A-b\n"
+			"b-d\n"
+			"A-end\n"
+			"b-end"
+			;
+
+		std::stringstream data(data_str);
+		auto caves = aoc::CaveLoader::load(data);
+		auto routes = aoc::CaveRoutes{ caves };
+
+		const auto expected_routes = std::array<std::string, 10>{
+			"start,A,end",
+			"start,A,b,end",
+			"start,A,b,A,end",
+			"start,A,b,A,c,A,end",
+			"start,A,c,A,end",
+			"start,A,c,A,b,end",
+			"start,A,c,A,b,A,end",
+			"start,b,end",
+			"start,b,A,end",
+			"start,b,A,c,A,end"
+		};
+
+		auto expected = expected_routes.begin();
+		for (auto route = routes.begin(); route != routes.end(); ++expected, ++route) {
+			Assert::AreEqual(*expected, aoc::route::as_string(*route));
+		}
+	}
 	
 };
 }

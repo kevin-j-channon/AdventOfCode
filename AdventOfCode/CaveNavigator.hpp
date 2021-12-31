@@ -287,8 +287,7 @@ private:
 
 		for (; edge != edges_end; ++edge) {
 
-			const auto& next_cave = _caves->graph()[boost::target(*edge, *_caves)];
-			_current_route.back().second += 1;
+			const auto next_cave = _advance_into_cave(edge);
 
 			if (_not_revisitable.contains(next_cave)) {
 				continue;

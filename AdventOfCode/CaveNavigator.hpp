@@ -392,44 +392,38 @@ class CaveRoutes : public std::ranges::view_interface<CaveRoutes>
 {
 public:
 
-	CaveRoutes(RouteIterator begin, RouteIterator end)
-		: _begin{ begin }
-		, _end{ end }
+	CaveRoutes(const CaveMap_t& caves)
+		: _caves{ caves }
 	{}
 
-	auto begin() const { return _begin; }
-	auto end() const { return _end; }
+	auto begin() const { return RouteIterator{ _caves }; }
+	auto begin() { return RouteIterator{_caves}; }
+	auto end() const { return RouteIterator{}; }
+	auto end() { return RouteIterator{}; }
 
 private:
-	RouteIterator _begin;
-	RouteIterator _end;
+	const CaveMap_t& _caves;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class CaveNavigator
+class CaveLoader
 {
 public:
 
-	const CaveMap_t& cave_map() const { return _cave_system; }
-
-	CaveNavigator& load(std::istream& is)
+	static CaveMap_t load(std::istream& is)
 	{
 		auto tunnels = _load_tunnels(is);
 
 		const auto partitions = CaveMapBuilder::partition_tunnels(tunnels);
 
-		CaveMapBuilder{ _cave_system }
+		auto caves = CaveMap_t{};
+		CaveMapBuilder{ caves }
 			.handle_terminal_cave<TerminalCaveType::start>(partitions.starts.begin(), partitions.starts.end())
 			.handle_terminal_cave<TerminalCaveType::end>(partitions.ends.begin(), partitions.ends.end())
 			.add_non_terminal_tunnels(partitions.others.begin(), partitions.others.end());
 
-		return *this;
-	}
-
-	CaveRoutes routes()
-	{
-		return CaveRoutes{ RouteIterator{_cave_system}, RouteIterator{} };
+		return caves;
 	}
 
 private:
@@ -470,8 +464,6 @@ private:
 
 		return { caves[0], caves[1] };
 	}
-
-	CaveMap_t _cave_system;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

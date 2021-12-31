@@ -408,7 +408,7 @@ public:
 
 		std::stringstream data(data_str);
 
-		const auto cave_map = aoc::CaveNavigator{}.load(data).cave_map();
+		const auto cave_map = aoc::CaveLoader{}.load(data);
 
 		Assert::AreEqual(aoc::Cave_t{ "start" }, cave_map["start"]);
 		Assert::AreEqual(aoc::Cave_t{ "A" }, cave_map["A"]);
@@ -431,8 +431,8 @@ public:
 			;
 
 		std::stringstream data(data_str);
-
-		const auto routes = aoc::CaveNavigator{}.load(data).routes();
+		auto caves = aoc::CaveLoader{}.load(data);
+		auto routes = aoc::CaveRoutes{ caves };
 
 		const auto expected_routes = { "start,a,end"s, "start,b,end"s };
 		auto expected = expected_routes.begin();

@@ -198,7 +198,6 @@ public:
 	explicit RouteIterator(const CaveMap_t& caves)
 		: _caves{ &caves }
 	{
-		_current_route.emplace_back("start", 0);
 		_recurse_through_tunnels(Cave_t{ "start" });
 	}
 
@@ -268,6 +267,8 @@ private:
 
 	RouteStatus _recurse_through_tunnels(const Cave_t& cave)
 	{
+		_current_route.emplace_back(cave, 0);
+
 		if (!_caves) {
 			return RouteStatus::invalid;
 		}
@@ -282,10 +283,8 @@ private:
 
 		auto [edge, edges_end] = boost::out_edges(_caves->vertex(cave), *_caves);
 
-		// Move to the next unexplored tunnel from this cave.
-		std::advance(edge, _current_route.back().second);
-
-		for (; edge != edges_end; ++edge) {
+		auto status = RouteStatus::exploring;
+		for (; edge != edges_end && status != RouteStatus::found_end; ++edge) {
 
 			const auto next_cave = _advance_into_cave(edge);
 
@@ -293,21 +292,18 @@ private:
 				continue;
 			}
 
-			_current_route.emplace_back(next_cave, 0);
-
-			const auto status = _recurse_through_tunnels(next_cave);
-			if (status == RouteStatus::found_end) {
-				// We found the end, get out and let the caller know (it could be ourself).
-				return status;
-			}
-
-			// Explore the next tunnel now.
+			status = _recurse_through_tunnels(next_cave);
 		}
 
-		// We explored all the tunnels from this cave and didn't find the end. This cave was en route to a dead-end; remove
-		// from the stack and let the caller know.
-		_pop_route();
-		return RouteStatus::dead_end;
+		if (status == RouteStatus::found_end) {
+			return status;
+		}
+		else {
+			// We explored all the tunnels from this cave and didn't find the end. This cave was en route to a dead-end; remove
+			// from the stack and let the caller know.
+			_pop_route();
+			return RouteStatus::dead_end;
+		}
 	}
 
 	void _pop_route()
@@ -367,7 +363,6 @@ private:
 			next_cave = _advance_into_cave(edge);
 		}
 
-		_current_route.emplace_back(next_cave, 0);
 		return _recurse_through_tunnels(next_cave);
 	}
 

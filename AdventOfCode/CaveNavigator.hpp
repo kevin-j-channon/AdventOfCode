@@ -195,6 +195,10 @@ class RouteIterator
 
 public:
 
+	RouteIterator()
+		: _caves{ nullptr }
+	{}
+
 	explicit RouteIterator(const CaveMap_t& caves)
 		: _caves{ &caves }
 	{

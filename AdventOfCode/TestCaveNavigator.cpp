@@ -333,6 +333,12 @@ public:
 			Assert::AreEqual(*expected, aoc::route::as_string(*route));
 		}
 	}
+
+	TEST_METHOD(DefaultConstructRouteIteratorThrowsIfDereferenced)
+	{
+		const auto it = aoc::RouteIterator{};
+		Assert::ExpectException<aoc::OutOfRangeException>([&]() { *it; });
+	}
 };
 
 TEST_CLASS(TestCaveNavigator)

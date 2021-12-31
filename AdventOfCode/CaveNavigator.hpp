@@ -281,10 +281,10 @@ private:
 			_not_revisitable.insert(cave);
 		}
 
-		auto [edge, edges_end] = boost::out_edges(_caves->vertex(cave), *_caves);
-
 		auto status = RouteStatus::exploring;
-		for (; edge != edges_end && status != RouteStatus::found_end; ++edge) {
+		for (auto [edge, edges_end] = boost::out_edges(_caves->vertex(cave), *_caves);
+			 edge != edges_end && status != RouteStatus::found_end;
+			 ++edge) {
 
 			const auto next_cave = _advance_into_cave(edge);
 
@@ -323,14 +323,14 @@ private:
 	void _rewind_to_next_unexplored_tunnel()
 	{
 		_pop_route();
+
 		if (_current_route.empty()) {
 			return;
 		}
 
 		const auto [edges_begin, edges_end] = boost::out_edges(_caves->vertex(_current_route.back().first), *_caves);
-		const auto num_out_edges = std::distance(edges_begin, edges_end);
 
-		if (_current_route.back().second < num_out_edges) {
+		if (_current_route.back().second < std::distance(edges_begin, edges_end)) {
 			return;
 		}
 

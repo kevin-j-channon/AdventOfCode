@@ -339,6 +339,39 @@ public:
 		const auto it = aoc::RouteIterator{};
 		Assert::ExpectException<aoc::OutOfRangeException>([&]() { *it; });
 	}
+
+	TEST_METHOD(RouteIteratorsCompareEqual)
+	{
+		auto cave_map = aoc::CaveMap_t{};
+
+		auto tunnels = std::vector<aoc::Tunnel_t>{ {"a", "start"}, {"a", "end"} };
+
+		aoc::CaveMapBuilder{ cave_map }
+			.handle_terminal_cave<aoc::TerminalCaveType::start>(tunnels.begin(), std::next(tunnels.begin()))
+			.handle_terminal_cave<aoc::TerminalCaveType::end>(std::next(tunnels.begin()), tunnels.end());
+
+		const auto it_1 = aoc::RouteIterator{ cave_map };
+		const auto it_2 = aoc::RouteIterator{ cave_map };
+
+		Assert::IsTrue(it_1 == it_2);
+	}
+
+	TEST_METHOD(RouteIteratorsCompareNotEqual)
+	{
+		auto cave_map = aoc::CaveMap_t{};
+
+		auto tunnels = std::vector<aoc::Tunnel_t>{ {"a", "start"}, {"start", "b"}, {"b", "end"}, {"a", "end"}};
+
+		aoc::CaveMapBuilder{ cave_map }
+			.handle_terminal_cave<aoc::TerminalCaveType::start>(tunnels.begin(), std::next(tunnels.begin()))
+			.handle_terminal_cave<aoc::TerminalCaveType::end>(std::next(tunnels.begin()), tunnels.end());
+
+		auto it_1 = aoc::RouteIterator{ cave_map };
+		auto it_2 = aoc::RouteIterator{ cave_map };
+
+		Assert::IsTrue(++it_1 != it_2);
+		Assert::IsTrue(it_1 == ++it_2);
+	}
 };
 
 TEST_CLASS(TestCaveNavigator)

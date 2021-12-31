@@ -205,7 +205,7 @@ public:
 		_recurse_through_tunnels(Cave_t{ "start" });
 	}
 
-	bool operator==(const RouteIterator& other)
+	bool operator==(const RouteIterator& other) const
 	{
 		return _current_route == other._current_route;
 	}

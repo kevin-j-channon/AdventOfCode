@@ -357,8 +357,7 @@ private:
 			return RouteStatus::dead_end;
 		}
 
-		auto next_cave = _caves->graph()[boost::target(*edge, *_caves)];
-		_current_route.back().second += 1;
+		auto next_cave = _advance_into_cave(edge);
 
 		while (_not_revisitable.contains(next_cave)) {
 			if (++edge == edges_end) {
@@ -366,8 +365,7 @@ private:
 				return RouteStatus::dead_end;
 			}
 
-			next_cave = _caves->graph()[boost::target(*edge, *_caves)];
-			_current_route.back().second += 1;
+			next_cave = _advance_into_cave(edge);
 		}
 
 		_current_route.emplace_back(next_cave, 0);
@@ -392,6 +390,14 @@ private:
 		std::advance(edge, _current_route.back().second);
 
 		return { edge, edges_end };
+	}
+
+	Cave_t _advance_into_cave(const CaveMap_t::out_edge_iterator& edge)
+	{
+		const auto out = _caves->graph()[boost::target(*edge, *_caves)];
+		_current_route.back().second += 1;
+
+		return out;
 	}
 };
 

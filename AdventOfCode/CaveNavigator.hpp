@@ -284,12 +284,29 @@ private:
 	}
 
 	void _debug_print_breadcrumbs() const
+#ifdef _DEBUG
 	{
 		Logger::WriteMessage("Current state of breadcrumbs:\n");
 		for (const auto& bc : _current_route) {
 			Logger::WriteMessage(std::format("\t{}, {}\n", bc.first, bc.second).c_str());
 		}
 	}
+#else
+	{}
+#endif
+
+	void _debug_print_edges(const Cave_t& cave) const
+#ifdef _DEBUG
+	{
+		auto i = int{ 0 };
+		Logger::WriteMessage(std::format("Cave '{}' has out edges:\n", cave).c_str());
+		for (auto [edge, edges_end] = boost::out_edges(_caves.vertex(cave), _caves); edge != edges_end; ++edge, ++i) {
+			Logger::WriteMessage(std::format("\tEdge {}: {} -> {}\n", i, boost::source(*edge, _caves), boost::target(*edge, _caves)).c_str());
+		}
+	}
+#else
+	{}
+#endif
 
 	RouteStatus _recurse_through_tunnels(const Cave_t& cave)
 	{
@@ -307,12 +324,7 @@ private:
 		}
 
 		auto [edge, edges_end] = boost::out_edges(_caves.vertex(cave), _caves);
-
-		auto i = int{ 0 };
-		Logger::WriteMessage(std::format("Cave '{}' has out edges:\n", cave).c_str());
-		for (auto e2 = edge; e2 != edges_end; ++e2, ++i) {
-			Logger::WriteMessage(std::format("\tEdge {}: {} -> {}\n", i, boost::source(*e2, _caves), boost::target(*e2, _caves)).c_str());
-		}
+		_debug_print_edges(cave);
 
 		// Move to the next unexplored tunnel from this cave.
 		Logger::WriteMessage(std::format("Advancing to explore tunnel {} from this cave\n", _current_route.back().second).c_str());

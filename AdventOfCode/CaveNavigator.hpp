@@ -165,24 +165,6 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class CavePaths : public std::ranges::view_interface<CavePaths>
-{
-public:
-
-	auto begin() const { return _paths.begin(); }
-	auto end() const { return _paths.end(); }
-
-	void add_path(std::string path)
-	{
-		_paths.push_back(std::move(path));
-	}
-
-private:
-	std::vector< std::string > _paths;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
 class RouteIterator
 {
 	enum class RouteStatus
@@ -204,6 +186,11 @@ public:
 	{
 		_recurse_through_tunnels(Cave_t{ "start" });
 	}
+
+	RouteIterator(const RouteIterator&) = default;
+	RouteIterator& operator=(const RouteIterator&) = default;
+	RouteIterator(RouteIterator&&) = default;
+	RouteIterator& operator=(RouteIterator&&) = default;
 
 	bool operator==(const RouteIterator& other) const
 	{
@@ -401,6 +388,25 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class CaveRoutes : public std::ranges::view_interface<CaveRoutes>
+{
+public:
+
+	CaveRoutes(RouteIterator begin, RouteIterator end)
+		: _begin{ begin }
+		, _end{ end }
+	{}
+
+	auto begin() const { return _begin; }
+	auto end() const { return _end; }
+
+private:
+	RouteIterator _begin;
+	RouteIterator _end;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 class CaveNavigator
 {
 public:
@@ -421,9 +427,9 @@ public:
 		return *this;
 	}
 
-	CavePaths paths()
+	CaveRoutes routes()
 	{
-		return CavePaths{};
+		return CaveRoutes{ RouteIterator{_cave_system}, RouteIterator{} };
 	}
 
 private:

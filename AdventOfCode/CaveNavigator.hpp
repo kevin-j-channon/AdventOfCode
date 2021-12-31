@@ -352,20 +352,10 @@ private:
 			return RouteStatus::dead_end;
 		}
 
-		auto [edge, edges_end] = boost::out_edges(_caves->vertex(_current_route.back().first), *_caves);
-		auto num_out_edges = std::distance(edge, edges_end);
-
-		while (_current_route.back().second >= num_out_edges) {
-			_pop_route();
-			if (_current_route.empty()) {
-				return RouteStatus::dead_end;
-			}
-
-			std::tie(edge, edges_end) = boost::out_edges(_caves->vertex(_current_route.back().first), *_caves);
-			num_out_edges = std::distance(edge, edges_end);
+		auto [edge, edges_end] = _find_next_unexplored_tunnel();
+		if (edge == edges_end) {
+			return RouteStatus::dead_end;
 		}
-
-		std::advance(edge, _current_route.back().second);
 
 		auto next_cave = _caves->graph()[boost::target(*edge, *_caves)];
 		_current_route.back().second += 1;
@@ -382,6 +372,26 @@ private:
 
 		_current_route.emplace_back(next_cave, 0);
 		return _recurse_through_tunnels(next_cave);
+	}
+
+	std::pair<CaveMap_t::out_edge_iterator, CaveMap_t::out_edge_iterator> _find_next_unexplored_tunnel()
+	{
+		auto [edge, edges_end] = boost::out_edges(_caves->vertex(_current_route.back().first), *_caves);
+
+		while (_current_route.back().second >= std::distance(edge, edges_end)) {
+			
+			_pop_route();
+
+			if (_current_route.empty()) {
+				return { edges_end, edges_end };
+			}
+
+			std::tie(edge, edges_end) = boost::out_edges(_caves->vertex(_current_route.back().first), *_caves);
+		}
+
+		std::advance(edge, _current_route.back().second);
+
+		return { edge, edges_end };
 	}
 };
 

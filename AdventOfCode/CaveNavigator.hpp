@@ -240,14 +240,7 @@ public:
 		return *this;
 	}
 
-private:
-	using Breadcrumb_t = std::vector<std::pair<Cave_t, int>>;
-
-	const CaveMap_t* _caves{ nullptr };
-	std::set<Cave_t> _not_revisitable;
-	Breadcrumb_t _current_route;
-
-	static bool _is_singly_visitable(const Cave_t& cave)
+	static bool is_singly_visitable(const Cave_t& cave)
 	{
 		if (cave == "start" || cave == "end") {
 			return true;
@@ -256,6 +249,15 @@ private:
 		return std::all_of(cave.begin(), cave.end(), [](auto c) { return std::islower(c); });
 	}
 
+
+private:
+	using Breadcrumb_t = std::vector<std::pair<Cave_t, int>>;
+
+	const CaveMap_t* _caves{ nullptr };
+	std::set<Cave_t> _not_revisitable;
+	Breadcrumb_t _current_route;
+
+	
 	RouteStatus _recurse_through_tunnels(const Cave_t& cave)
 	{
 		_current_route.emplace_back(cave, 0);
@@ -268,7 +270,7 @@ private:
 			return RouteStatus::found_end;
 		}
 
-		if (_is_singly_visitable(cave)) {
+		if (is_singly_visitable(cave)) {
 			_not_revisitable.insert(cave);
 		}
 
@@ -464,6 +466,90 @@ private:
 
 		return { caves[0], caves[1] };
 	}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class CaveRevisitor
+{
+public:
+	CaveRevisitor(const CaveMap_t& caves)
+		: _caves{ caves }
+	{}
+
+	std::vector<Route_t> routes() const
+	{
+		auto all_routes = std::vector<Route_t>{};
+		std::copy(RouteIterator{ _caves }, RouteIterator{}, std::back_inserter(all_routes));
+
+		for (const auto& cave : find_doubly_visitable_caves()) {
+			auto routes_to_add = _find_routes_with_doubly_visitable_cave(cave);
+			all_routes.insert(all_routes.end(), routes_to_add.begin(), routes_to_add.end());
+		}
+
+		return _make_routes_unique(std::move(all_routes));
+	}
+
+	std::vector<Cave_t> find_doubly_visitable_caves() const
+	{
+		auto [v, v_end] = boost::vertices(_caves);
+		auto doubly_visitable_caves = std::ranges::subrange(v, v_end)
+			| std::views::transform([this](auto vertex) { return _caves.graph()[vertex]; })
+			| std::views::filter([this](const auto& cave) { return RouteIterator::is_singly_visitable(cave); })
+			| std::views::filter([this](const auto& cave) {return cave != "start" && cave != "end"; });
+
+		return std::vector<Cave_t>(doubly_visitable_caves.begin(), doubly_visitable_caves.end());
+	}
+private:
+
+	std::vector<Route_t> _find_routes_with_doubly_visitable_cave(const Cave_t& cave) const
+	{
+		const auto amended_caves = _modify_caves_to_doubly_visit(cave);
+		auto routes = std::vector<Route_t>{};
+		std::copy(RouteIterator{ amended_caves }, RouteIterator{}, std::back_inserter(routes));
+		return _convert_cave_names_to_standard_names(routes);
+	}
+
+	static std::vector<Route_t> _convert_cave_names_to_standard_names(std::vector<Route_t> routes)
+	{
+		std::transform(routes.begin(), routes.end(), routes.begin(), [](auto r) {
+			std::transform(r.begin(), r.end(), r.begin(), [](auto cave) {
+				return cave.erase(std::remove(cave.begin(), cave.end(), '_'), cave.end());
+				});
+
+			return r;
+			});
+
+		return routes;
+	}
+
+	CaveMap_t _modify_caves_to_doubly_visit(const Cave_t& doubly_visitable_cave) const
+	{
+		auto out = _caves;
+
+		const auto cave_dual = Cave_t{ doubly_visitable_cave + "_" };
+		auto dual_vertex = out.insert_vertex(cave_dual).first;
+
+		for (auto [edge, edges_end] = boost::out_edges(out.vertex(doubly_visitable_cave), out); edge != edges_end; ++edge) {
+			boost::add_edge(dual_vertex, boost::target(*edge, out), 1, out);
+		}
+
+		for (auto [edge, edges_end] = boost::in_edges(out.vertex(doubly_visitable_cave), out); edge != edges_end; ++edge) {
+			boost::add_edge(boost::target(*edge, out), dual_vertex, 1, out);
+		}
+
+		return out;
+	}
+
+	static std::vector<Route_t> _make_routes_unique(std::vector<Route_t> routes)
+	{
+		std::ranges::sort(routes);
+		routes.erase(std::unique(routes.begin(), routes.end()), routes.end());
+
+		return routes;
+	}
+
+	const CaveMap_t& _caves;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -528,4 +528,67 @@ public:
 		Assert::AreEqual(uint32_t{ 226 }, route_count);
 	}
 };
+
+TEST_CLASS(TestCaveRevisitor)
+{
+public:
+
+	TEST_METHOD(DoublyVisitableCavesAreFound)
+	{
+		auto tunnels = std::vector<aoc::Tunnel_t>{
+			{"start", "A"},
+			{"start", "b"},
+			{"A", "c"},
+			{"A", "b"},
+			{"b", "d"},
+			{"A", "end"},
+			{"b", "end"}
+		};
+
+		auto caves = aoc::CaveMap_t{};
+
+		aoc::CaveMapBuilder{ caves }
+			.handle_terminal_cave<aoc::TerminalCaveType::start>(tunnels.begin(), std::next(tunnels.begin(), 2))
+			.handle_terminal_cave<aoc::TerminalCaveType::end>(std::next(tunnels.begin(), 5), tunnels.end())
+			.add_non_terminal_tunnels(std::next(tunnels.begin(), 2), std::next(tunnels.begin(), 5));
+
+		auto doubly_visitable_caves = aoc::CaveRevisitor{ caves }.find_doubly_visitable_caves();
+		std::ranges::sort(doubly_visitable_caves);
+		Assert::AreEqual(size_t{ 3 }, doubly_visitable_caves.size());
+		
+		auto expected_caves = { "b", "c", "d" };
+		Assert::IsTrue(std::ranges::equal(expected_caves, doubly_visitable_caves));
+	}
+
+	TEST_METHOD(WorksForSimplestExample)
+	{
+		auto tunnels = std::vector<aoc::Tunnel_t>{
+				{"start", "A"},
+				{"A", "b"},
+				{"A", "end"}
+		};
+
+		auto caves = aoc::CaveMap_t{};
+
+		aoc::CaveMapBuilder{ caves }
+			.handle_terminal_cave<aoc::TerminalCaveType::start>(tunnels.begin(), std::next(tunnels.begin()))
+			.handle_terminal_cave<aoc::TerminalCaveType::end>(std::next(tunnels.begin(), 2), tunnels.end())
+			.add_non_terminal_tunnels(std::next(tunnels.begin()), std::next(tunnels.begin(), 2));
+
+		auto routes = aoc::CaveRevisitor{ caves }.routes();
+
+		const auto expected_routes = {
+			"start,A,end"s,
+			"start,A,b,A,end"s,
+			"start,A,b,A,b,A,end"s
+		};
+
+		Assert::AreEqual(expected_routes.size(), routes.size());
+
+		auto expected = expected_routes.begin();
+		for (auto route = routes.begin(); route != routes.end(); ++route, ++expected) {
+			Assert::AreEqual(*expected, aoc::route::as_string(*route));
+		}
+	}
+};
 }

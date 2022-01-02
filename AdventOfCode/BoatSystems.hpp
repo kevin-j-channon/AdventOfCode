@@ -12,7 +12,7 @@ namespace aoc
 
 ///////////////////////////////////////////////////////////////////////////////
 
-using Direction = Vec2d<int>;
+using Direction = Point2D<int>;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -112,7 +112,7 @@ struct LogProcessor
 class VentAnalyzer
 {
 	using Line_t = Line2d<uint32_t>;
-	using Point_t = Vec2d<Line_t::Value_t>;
+	using Point_t = Point2D<Line_t::Value_t>;
 public:
 	enum Formation
 	{

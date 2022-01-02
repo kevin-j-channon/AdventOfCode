@@ -34,22 +34,22 @@ struct OutOfRangeException : public Exception, public std::out_of_range
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
-struct Vec2d
+struct Point2D
 {
 	using Value_t = Value_T;
-	using This_t = Vec2d<Value_t>;
+	using This_t = Point2D<Value_t>;
 
-	Vec2d() : x{ 0 }, y{ 0 } {}
+	Point2D() : x{ 0 }, y{ 0 } {}
 
-	Vec2d(Value_t x_, Value_t y_)
+	Point2D(Value_t x_, Value_t y_)
 		: x{ std::move(x_) }
 		, y{ std::move(y_) }
 	{}
 
-	Vec2d(const This_t&) = default;
+	Point2D(const This_t&) = default;
 	This_t& operator=(const This_t&) = default;
 
-	Vec2d(This_t&&) = default;
+	Point2D(This_t&&) = default;
 	This_t& operator=(This_t&&) = default;
 
 	bool operator==(const This_t& other) const
@@ -81,7 +81,7 @@ struct Vec2d
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
-Vec2d<Value_T> operator+(const Vec2d<Value_T>& v1, const Vec2d<Value_T>& v2)
+Point2D<Value_T> operator+(const Point2D<Value_T>& v1, const Point2D<Value_T>& v2)
 {
 	return { v1.x + v2.x, v1.y + v2.y };
 }
@@ -103,7 +103,7 @@ struct Line2d
 
 	Line2d() {}
 
-	Line2d(Vec2d<Value_t> start_, Vec2d<Value_t> finish_)
+	Line2d(Point2D<Value_t> start_, Point2D<Value_t> finish_)
 		: start{std::move(start_)}
 		, finish{std::move(finish_)}
 	{}
@@ -114,8 +114,8 @@ struct Line2d
 	Line2d(This_t&&) = default;
 	This_t& operator=(This_t&&) = default;
 
-	Vec2d<Value_T> start;
-	Vec2d<Value_T> finish;
+	Point2D<Value_T> start;
+	Point2D<Value_T> finish;
 
 	This_t& from(std::istream& is)
 	{
@@ -152,19 +152,19 @@ bool is_diagonal(const Line2d<Value_T>& line)
 ///////////////////////////////////////////////////////////////////////////////
 
 template<size_t ORIENTATION, typename Value_T>
-std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
+std::vector<Point2D<Value_T>> rasterize(const Line2d<Value_T>& line)
 {
-	auto out = std::vector<Vec2d<Value_T>>{};
+	auto out = std::vector<Point2D<Value_T>>{};
 	
 	if constexpr (static_cast<bool>(ORIENTATION & Line2d<Value_T>::horizontal)) {
 		if (is_vertical(line)) {
 			const auto y_min = std::min(line.start.y, line.finish.y);
 			const auto y_max = std::max(line.start.y, line.finish.y);
 
-			auto out = std::vector<Vec2d<Value_T>>{ y_max - y_min + 1 };
+			auto out = std::vector<Point2D<Value_T>>{ y_max - y_min + 1 };
 
 			for (auto y = y_min; y <= y_max; ++y) {
-				out[y - y_min] = Vec2d<Value_T>{ line.start.x, y };
+				out[y - y_min] = Point2D<Value_T>{ line.start.x, y };
 			}
 
 			return out;
@@ -176,10 +176,10 @@ std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
 			const auto x_min = std::min(line.start.x, line.finish.x);
 			const auto x_max = std::max(line.start.x, line.finish.x);
 
-			auto out = std::vector<Vec2d<Value_T>>{x_max - x_min + 1};
+			auto out = std::vector<Point2D<Value_T>>{x_max - x_min + 1};
 
 			for (auto x = x_min; x <= x_max; ++x) {
-				out[x - x_min] = Vec2d<Value_T>{ x, line.start.y };
+				out[x - x_min] = Point2D<Value_T>{ x, line.start.y };
 			}
 
 			return out;
@@ -191,7 +191,7 @@ std::vector<Vec2d<Value_T>> rasterize(const Line2d<Value_T>& line)
 			const auto [lower, upper] = line.start.x < line.finish.x ? std::make_pair(line.start, line.finish) : std::make_pair(line.finish, line.start);
 			const auto y_increment = lower.y < upper.y ? 1 : -1;
 
-			auto out = std::vector<Vec2d<Value_T>>{ upper.x - lower.x + 1 };
+			auto out = std::vector<Point2D<Value_T>>{ upper.x - lower.x + 1 };
 
 			for (auto point = lower; point.x <= upper.x; ++point.x, point.y += y_increment)
 			{
@@ -260,7 +260,7 @@ namespace std
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
-inline istream& operator>>(std::istream& is, aoc::Vec2d<Value_T>& vec) try
+inline istream& operator>>(std::istream& is, aoc::Point2D<Value_T>& vec) try
 {
 	if (is.eof())
 		return is;
@@ -271,7 +271,7 @@ inline istream& operator>>(std::istream& is, aoc::Vec2d<Value_T>& vec) try
 	auto x_and_y_str = split(str, ',');
 	if (x_and_y_str.size() != 2) {
 		is.setstate(std::ios::failbit);
-		throw aoc::Exception("Failed to read Vec2d");
+		throw aoc::Exception("Failed to read Point2D");
 	}
 
 	vec.x = string_to<Value_T>(x_and_y_str[0]);

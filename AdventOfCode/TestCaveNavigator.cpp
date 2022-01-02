@@ -578,9 +578,9 @@ public:
 		auto routes = aoc::CaveRevisitor{ caves }.routes();
 
 		const auto expected_routes = {
-			"start,A,end"s,
+			"start,A,b,A,b,A,end"s,
 			"start,A,b,A,end"s,
-			"start,A,b,A,b,A,end"s
+			"start,A,end"s
 		};
 
 		Assert::AreEqual(expected_routes.size(), routes.size());

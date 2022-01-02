@@ -27,14 +27,14 @@ const auto DATA_DIR = std::filesystem::path(R"(..\..\AdventOfCode\Data)"s);
 
 namespace common
 {
-TEST_CLASS(Vec2d)
+TEST_CLASS(Point2D)
 {
 public:
 
 	TEST_METHOD(CanBeAdded)
 	{
-		const auto v1 = aoc::Vec2d<int>{ 1, 2 };
-		const auto v2 = aoc::Vec2d<int>{ 3, 4 };
+		const auto v1 = aoc::Point2D<int>{ 1, 2 };
+		const auto v2 = aoc::Point2D<int>{ 3, 4 };
 
 		const auto v3 = v1 + v2;
 
@@ -45,7 +45,7 @@ public:
 	TEST_METHOD(StreamExtractionWorksForValidStream)
 	{
 		std::stringstream ss("1,2");
-		auto v = aoc::Vec2d<uint32_t>{};
+		auto v = aoc::Point2D<uint32_t>{};
 
 		ss >> v;
 
@@ -56,7 +56,7 @@ public:
 	TEST_METHOD(StreamExtractionFailsIfMalformed)
 	{
 		std::stringstream ss("09");
-		auto v = aoc::Vec2d<uint32_t>{};
+		auto v = aoc::Point2D<uint32_t>{};
 
 		Assert::ExpectException<aoc::Exception>([&]() { ss >> v; });
 
@@ -66,7 +66,7 @@ public:
 	TEST_METHOD(StreamExtractionFailsIfThereAreNonnumericElements)
 	{
 		std::stringstream ss("0,X");
-		auto v = aoc::Vec2d<uint32_t>{};
+		auto v = aoc::Point2D<uint32_t>{};
 
 		Assert::ExpectException<aoc::Exception>([&]() { ss >> v; });
 
@@ -221,7 +221,7 @@ public:
 		using Line_t = aoc::Line2d<uint32_t>;
 		const auto points = aoc::rasterize<Line_t::horizontal | Line_t::vertical>(Line_t{ {1, 1}, { 1, 5 } });
 
-		const auto expected_points = std::vector<aoc::Vec2d<uint32_t>>{ {1,1}, {1,2}, {1,3}, {1,4}, {1,5} };
+		const auto expected_points = std::vector<aoc::Point2D<uint32_t>>{ {1,1}, {1,2}, {1,3}, {1,4}, {1,5} };
 
 		Assert::IsTrue(std::equal(expected_points.begin(), expected_points.end(), points.begin()));
 	}
@@ -230,7 +230,7 @@ public:
 		using Line_t = aoc::Line2d<uint32_t>;
 		const auto points = aoc::rasterize<Line_t::horizontal | Line_t::vertical>(Line_t{ {1, 1}, { 5, 1 } });
 
-		const auto expected_points = std::vector<aoc::Vec2d<uint32_t>>{ {1,1}, {2,1}, {3,1}, {4,1}, {5,1} };
+		const auto expected_points = std::vector<aoc::Point2D<uint32_t>>{ {1,1}, {2,1}, {3,1}, {4,1}, {5,1} };
 
 		Assert::IsTrue(std::equal(expected_points.begin(), expected_points.end(), points.begin()));
 	}
@@ -248,7 +248,7 @@ public:
 		using Line_t = aoc::Line2d<uint32_t>;
 		const auto points = aoc::rasterize<Line_t::horizontal | Line_t::vertical>(Line_t{ {1, 5}, { 1, 1 } });
 
-		const auto expected_points = std::vector<aoc::Vec2d<uint32_t>>{ {1,1}, {1,2}, {1,3}, {1,4}, {1,5} };
+		const auto expected_points = std::vector<aoc::Point2D<uint32_t>>{ {1,1}, {1,2}, {1,3}, {1,4}, {1,5} };
 
 		Assert::IsTrue(std::equal(expected_points.begin(), expected_points.end(), points.begin()));
 	}
@@ -258,7 +258,7 @@ public:
 		using Line_t = aoc::Line2d<uint32_t>;
 		const auto points = aoc::rasterize<Line_t::horizontal | Line_t::vertical>(Line_t{ {5, 1}, { 1, 1 } });
 
-		const auto expected_points = std::vector<aoc::Vec2d<uint32_t>>{ {1,1}, {2,1}, {3,1}, {4,1}, {5,1} };
+		const auto expected_points = std::vector<aoc::Point2D<uint32_t>>{ {1,1}, {2,1}, {3,1}, {4,1}, {5,1} };
 
 		Assert::IsTrue(std::equal(expected_points.begin(), expected_points.end(), points.begin()));
 	}

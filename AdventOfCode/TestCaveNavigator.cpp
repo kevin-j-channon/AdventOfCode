@@ -626,5 +626,81 @@ public:
 			Assert::AreEqual(*expected, aoc::route::as_string(*route));
 		}
 	}
+
+	TEST_METHOD(SmallExample)
+	{
+
+		auto tunnels = std::vector<aoc::Tunnel_t>{
+			{"start", "A"},
+			{"start", "b"},
+			{"A", "c"},
+			{"A", "b"},
+			{"b", "d"},
+			{"A", "end"},
+			{"b", "end"}
+		};
+
+		auto caves = aoc::CaveMap_t{};
+
+		aoc::CaveMapBuilder{ caves }
+			.handle_terminal_cave<aoc::TerminalCaveType::start>(tunnels.begin(), std::next(tunnels.begin(), 2))
+			.handle_terminal_cave<aoc::TerminalCaveType::end>(std::next(tunnels.begin(), 5), tunnels.end())
+			.add_non_terminal_tunnels(std::next(tunnels.begin(), 2), std::next(tunnels.begin(), 5));
+
+		auto route_count = aoc::CaveRevisitor{ caves }.routes().size();
+		Assert::AreEqual(size_t{ 36 }, route_count);
+	}
+
+	TEST_METHOD(LargeExample)
+	{
+		constexpr auto data_str =
+			"dc-end\n"
+			"HN-start\n"
+			"start-kj\n"
+			"dc-start\n"
+			"dc-HN\n"
+			"LN-dc\n"
+			"HN-end\n"
+			"kj-sa\n"
+			"kj-HN\n"
+			"kj-dc"
+			;
+
+		std::stringstream data(data_str);
+		auto caves = aoc::CaveLoader::load(data);
+		auto route_count = aoc::CaveRevisitor{ caves }.routes().size();
+
+		Assert::AreEqual(size_t{ 103 }, route_count);
+	}
+
+	TEST_METHOD(LargestExample)
+	{
+		constexpr auto data_str =
+			"fs-end\n"
+			"he-DX\n"
+			"fs-he\n"
+			"start-DX\n"
+			"pj-DX\n"
+			"end-zg\n"
+			"zg-sl\n"
+			"zg-pj\n"
+			"pj-he\n"
+			"RW-he\n"
+			"fs-DX\n"
+			"pj-RW\n"
+			"zg-RW\n"
+			"start-pj\n"
+			"he-WI\n"
+			"zg-he\n"
+			"pj-fs\n"
+			"start-RW"
+			;
+
+		std::stringstream data(data_str);
+		auto caves = aoc::CaveLoader::load(data);
+		auto route_count = aoc::CaveRevisitor{ caves }.routes().size();
+
+		Assert::AreEqual(size_t{ 3509 }, route_count);
+	}
 };
 }

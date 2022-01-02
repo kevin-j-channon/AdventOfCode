@@ -335,6 +335,18 @@ public:
 
 				Logger::WriteMessage(std::format("\tNumber of routes: {}\n", route_count).c_str());
 			}
+
+			// Part 2
+			{
+				std::ifstream data_file(DATA_DIR / "Day12_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				auto caves = aoc::CaveLoader::load(data_file);
+				auto routes = aoc::CaveRoutes{ caves };
+				auto route_count = aoc::CaveRevisitor{ caves }.routes().size();
+
+				Logger::WriteMessage(std::format("\tNumber of routes with single double-visits: {}\n", route_count).c_str());
+			}
 		}
 	}
 };

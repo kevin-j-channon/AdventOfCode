@@ -485,25 +485,19 @@ public:
 
 	std::vector<Route_t> routes() const
 	{
-		auto all_routes = std::vector<Route_t>{};
+		auto all_routes = std::set<Route_t>{};
 
 		// Should be a std::copy, but that doesn't work with the RouteIterator, for some reason :(
 		for (auto route = RouteIterator{ _caves }; route != RouteIterator{}; ++route) {
-			all_routes.push_back(*route);
+			all_routes.insert(*route);
 		}
 
 		for (const auto& cave : find_doubly_visitable_caves()) {
-			Logger::WriteMessage(std::format("Processing doubly-visitable cave {}\n", cave).c_str());
 			auto routes_to_add = _find_routes_with_doubly_visitable_cave(cave);
-			all_routes.insert(all_routes.end(), routes_to_add.begin(), routes_to_add.end());
-
-			Logger::WriteMessage("Discovered routes:\n");
-			for (const auto& r : all_routes) {
-				Logger::WriteMessage(std::format("\t{}\n", route::as_string(r)).c_str());
-			}
+			all_routes.insert(routes_to_add.begin(), routes_to_add.end());
 		}
 
-		return _make_routes_unique(std::move(all_routes));
+		return std::vector<Route_t>(all_routes.begin(), all_routes.end());
 	}
 
 	std::vector<Cave_t> find_doubly_visitable_caves() const
@@ -549,39 +543,23 @@ private:
 	CaveMap_t _modify_caves_to_doubly_visit(const Cave_t& cave) const
 	{
 		CaveMap_t out = _caves;
-
-		Logger::WriteMessage("Copied caves graph with the following edges\n");
-		for (auto [edge, edges_end] = boost::edges(out); edge != edges_end; ++edge) {
-			Logger::WriteMessage(std::format("\t{} -> {}\n", out.graph()[boost::source(*edge, out)], out.graph()[boost::target(*edge, out)]).c_str());
-		}
-
+		
 		const auto cave_dual = Cave_t{ cave + "_" };
 		auto [dual_vertex, inserted] = out.insert_vertex(cave_dual);
 		out[cave_dual] = cave_dual;
-		Logger::WriteMessage(std::format("Added dual cave {} (vertex {})? {}\n", cave_dual, dual_vertex, inserted).c_str());
 
 		const auto vertex = out.vertex(cave);
-		Logger::WriteMessage(std::format("Original vertex: {}\n", vertex).c_str());
 
 		for (auto [edge, edges_end] = boost::edges(_caves); edge != edges_end; ++edge) {
 			const auto source = boost::source(*edge, _caves);
 			const auto target = boost::target(*edge, _caves);
 
-			Logger::WriteMessage(std::format("Processing edge {} ({}) -> {} ({})\n", _caves.graph()[source], source, _caves.graph()[target], target).c_str());
-
 			if (source == vertex) {
 				boost::add_edge(dual_vertex, out.vertex(_caves.graph()[target]), 1, out);
-				Logger::WriteMessage(std::format("Added edge {} -> {} to dual graph\n", out.graph()[dual_vertex], out.graph()[out.vertex(_caves.graph()[target])]).c_str());
 			}
 			else if (target == vertex) {
 				boost::add_edge(out.vertex(_caves.graph()[source]), dual_vertex, 1, out);
-				Logger::WriteMessage(std::format("Added edge {} -> {} to dual graph\n", out.graph()[out.vertex(_caves.graph()[source])], out.graph()[dual_vertex]).c_str());
 			}
-		}
-
-		Logger::WriteMessage("Updated graph with new cave:\n");
-		for (auto [edge, edges_end] = boost::edges(out); edge != edges_end; ++edge) {
-			Logger::WriteMessage(std::format("\t{} -> {}\n", out.graph()[boost::source(*edge, out)], out.graph()[boost::target(*edge, out)]).c_str());
 		}
 
 		return out;

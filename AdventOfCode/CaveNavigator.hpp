@@ -496,6 +496,11 @@ public:
 			Logger::WriteMessage(std::format("Processing doubly-visitable cave {}\n", cave).c_str());
 			auto routes_to_add = _find_routes_with_doubly_visitable_cave(cave);
 			all_routes.insert(all_routes.end(), routes_to_add.begin(), routes_to_add.end());
+
+			Logger::WriteMessage("Discovered routes:\n");
+			for (const auto& r : all_routes) {
+				Logger::WriteMessage(std::format("\t{}\n", route::as_string(r)).c_str());
+			}
 		}
 
 		return _make_routes_unique(std::move(all_routes));
@@ -562,7 +567,7 @@ private:
 			const auto source = boost::source(*edge, _caves);
 			const auto target = boost::target(*edge, _caves);
 
-			Logger::WriteMessage(std::format("Processing edge {} -> {}\n", _caves.graph()[source], _caves.graph()[target]).c_str());
+			Logger::WriteMessage(std::format("Processing edge {} ({}) -> {} ({})\n", _caves.graph()[source], source, _caves.graph()[target], target).c_str());
 
 			if (source == vertex) {
 				boost::add_edge(dual_vertex, out.vertex(_caves.graph()[target]), 1, out);

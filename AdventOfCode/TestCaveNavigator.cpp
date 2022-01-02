@@ -590,5 +590,41 @@ public:
 			Assert::AreEqual(*expected, aoc::route::as_string(*route));
 		}
 	}
+
+	TEST_METHOD(TwoDoublyVisitableCavesWorks)
+	{
+		auto tunnels = std::vector<aoc::Tunnel_t>{
+				{"start", "a"},
+				{"start", "b"},
+				{"a", "b"},
+				{"a", "end"},
+				{"b", "end"}
+		};
+
+		auto caves = aoc::CaveMap_t{};
+
+		aoc::CaveMapBuilder{ caves }
+			.handle_terminal_cave<aoc::TerminalCaveType::start>(tunnels.begin(), std::next(tunnels.begin(), 2))
+			.handle_terminal_cave<aoc::TerminalCaveType::end>(std::next(tunnels.begin(), 3), tunnels.end())
+			.add_non_terminal_tunnels(std::next(tunnels.begin(), 2), std::next(tunnels.begin(), 3));
+
+		auto routes = aoc::CaveRevisitor{ caves }.routes();
+
+		const auto expected_routes = {
+			"start,a,b,a,end"s,
+			"start,a,b,end"s,
+			"start,a,end"s,
+			"start,b,a,b,end"s,
+			"start,b,a,end"s,
+			"start,b,end"s
+		};
+
+		Assert::AreEqual(expected_routes.size(), routes.size());
+
+		auto expected = expected_routes.begin();
+		for (auto route = routes.begin(); route != routes.end(); ++route, ++expected) {
+			Assert::AreEqual(*expected, aoc::route::as_string(*route));
+		}
+	}
 };
 }

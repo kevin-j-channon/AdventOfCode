@@ -18,7 +18,9 @@ public:
 	{
 		std::stringstream ss("6,10");
 
-		auto paper = aoc::Paper{}.load(ss);
+		const auto mark_count = aoc::Paper{}.load(ss).mmark_count();
+
+		Assert::AreEqual(size_t{ 1 }, mark_count);
 	}
 };
 }

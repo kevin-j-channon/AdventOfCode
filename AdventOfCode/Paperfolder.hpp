@@ -13,13 +13,13 @@ namespace aoc
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class PaperFolder;
+class FoldSequence;
 
 class Paper
 {
 public:
 
-	friend class PaperFolder;
+	friend class FoldSequence;
 
 	using Point_t = Point2D<size_t>;
 	using Marks_t = std::map<Point_t, size_t>;
@@ -46,7 +46,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class PaperFolder
+class FoldSequence : public std::ranges::view_interface<FoldSequence>
 {
 	enum { x, y };
 
@@ -61,11 +61,7 @@ class PaperFolder
 
 public:
 
-	PaperFolder(Paper& paper)
-		: _paper{ paper }
-	{}
-
-	PaperFolder& load(std::istream& is)
+	FoldSequence& load(std::istream& is)
 	{
 		auto line = std::string{};
 		while (std::getline(is, line)) {
@@ -74,26 +70,24 @@ public:
 			}
 
 			auto fold = _load_fold(line);
+			_folds.push_back(std::move(fold));
 		}
 
 		return *this;
 	}
 
-	PaperFolder& fold_x(size_t x_fold)
-	{
-		return *this;
-	}
+	auto begin() const { return _folds.cbegin(); }
+	auto begin() { return _folds.begin(); }
+	auto end() const { return _folds.cend(); }
+	auto end() { return _folds.end(); }
 
-	PaperFolder& fold_y(size_t y_fold)
-	{
-		return *this;
-	}
+	auto size() const { return _folds.size(); }
 
 private:
 
 	FoldInfo _load_fold(const std::string& str)
 	{
-		const auto fold_details = _get_fold_details_from_string(str;)
+		const auto fold_details = _get_fold_details_from_string(str);
 
 		switch (fold_details[0][0] ) {
 		case 'x': return FoldInfo_<x>{ string_to<size_t>(fold_details[1]) };
@@ -118,7 +112,7 @@ private:
 		return fold_details;
 	}
 
-	Paper& _paper;
+	std::vector<FoldInfo> _folds;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

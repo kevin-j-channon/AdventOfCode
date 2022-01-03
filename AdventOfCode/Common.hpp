@@ -74,6 +74,36 @@ struct Point2D
 		return false;
 	}
 
+	Point2D& load(std::istream& is) try
+	{
+		if (is.eof())
+			return *this;
+
+		auto str = std::string{};
+		is >> str;
+
+		auto x_and_y_str = split(str, ',');
+		if (x_and_y_str.size() != 2) {
+			is.setstate(std::ios::failbit);
+			throw aoc::Exception("Failed to read Point2D");
+		}
+
+		this->x = string_to<Value_T>(x_and_y_str[0]);
+		this->y = string_to<Value_T>(x_and_y_str[1]);
+
+		return *this;
+	}
+	catch (std::invalid_argument&)
+	{
+		is.setstate(std::ios::failbit);
+		throw aoc::Exception("Failed to extract Point2D from stream");
+	}
+	catch (std::out_of_range&)
+	{
+		is.setstate(std::ios::failbit);
+		throw aoc::Exception("Failed to extract Point2D from stream");
+	}
+
 	Value_T x;
 	Value_T y;
 };
@@ -260,34 +290,10 @@ namespace std
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
-inline istream& operator>>(std::istream& is, aoc::Point2D<Value_T>& vec) try
+inline istream& operator>>(std::istream& is, aoc::Point2D<Value_T>& p)
 {
-	if (is.eof())
-		return is;
-
-	auto str = std::string{};
-	is >> str;
-
-	auto x_and_y_str = split(str, ',');
-	if (x_and_y_str.size() != 2) {
-		is.setstate(std::ios::failbit);
-		throw aoc::Exception("Failed to read Point2D");
-	}
-
-	vec.x = string_to<Value_T>(x_and_y_str[0]);
-	vec.y = string_to<Value_T>(x_and_y_str[1]);
-
+	p.load(is);
 	return is;
-}
-catch (std::invalid_argument&)
-{
-	is.setstate(std::ios::failbit);
-	throw aoc::Exception("Failed to extract Line2d from stream");
-}
-catch (std::out_of_range&)
-{
-	is.setstate(std::ios::failbit);
-	throw aoc::Exception("Failed to extract Line2d from stream");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

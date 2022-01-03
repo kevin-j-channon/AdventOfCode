@@ -1,9 +1,17 @@
 #pragma once
 
+///////////////////////////////////////////////////////////////////////////////
+
 #include "Common.hpp"
+
+#include <variant>
+
+///////////////////////////////////////////////////////////////////////////////
 
 namespace aoc
 {
+
+///////////////////////////////////////////////////////////////////////////////
 
 class PaperFolder;
 
@@ -36,5 +44,85 @@ private:
 	Marks_t _marks;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
+class PaperFolder
+{
+	enum { x, y };
+
+	template<int DIRECTION>
+	struct FoldInfo_
+	{
+		static constexpr int direction = DIRECTION;
+		size_t value;
+	};
+
+	using FoldInfo = std::variant<FoldInfo_<x>, FoldInfo_<y>>;
+
+public:
+
+	PaperFolder(Paper& paper)
+		: _paper{ paper }
+	{}
+
+	PaperFolder& load(std::istream& is)
+	{
+		auto line = std::string{};
+		while (std::getline(is, line)) {
+			if (line.empty()) {
+				continue;
+			}
+
+			auto fold = _load_fold(line);
+		}
+
+		return *this;
+	}
+
+	PaperFolder& fold_x(size_t x_fold)
+	{
+		return *this;
+	}
+
+	PaperFolder& fold_y(size_t y_fold)
+	{
+		return *this;
+	}
+
+private:
+
+	FoldInfo _load_fold(const std::string& str)
+	{
+		const auto fold_details = _get_fold_details_from_string(str;)
+
+		switch (fold_details[0][0] ) {
+		case 'x': return FoldInfo_<x>{ string_to<size_t>(fold_details[1]) };
+		case 'y': return FoldInfo_<y>{ string_to<size_t>(fold_details[1]) };
+		default:;
+		}
+
+		throw Exception("Invalid fold direction");
+	}
+
+	std::vector<std::string> _get_fold_details_from_string(const std::string& str)
+	{
+		if (str.empty()) {
+			throw Exception("Failed to load fold from string");
+		}
+
+		const auto fold_details = split(split(str, ' ').back(), '=', SplitBehaviour::drop_empty);
+		if (fold_details.size() != 2) {
+			throw Exception("Invalid fold specification in string");
+		}
+
+		return fold_details;
+	}
+
+	Paper& _paper;
+};
+
+///////////////////////////////////////////////////////////////////////////////
 
 }
+
+///////////////////////////////////////////////////////////////////////////////

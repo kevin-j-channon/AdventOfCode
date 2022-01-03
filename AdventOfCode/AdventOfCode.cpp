@@ -338,6 +338,7 @@ public:
 
 			// Part 2
 			{
+#ifndef _DEBUG
 				std::ifstream data_file(DATA_DIR / "Day12_input.txt");
 				Assert::IsTrue(data_file.is_open());
 
@@ -346,6 +347,9 @@ public:
 				auto route_count = aoc::CaveRevisitor{ caves }.routes().size();
 
 				Logger::WriteMessage(std::format("\tNumber of routes with single double-visits: {}\n", route_count).c_str());
+#else
+				Logger::WriteMessage("\tDay 12 part 2 is prohibitively slow in DEBUG. Run in RELEASE to run this example\n");
+#endif
 			}
 		}
 	}

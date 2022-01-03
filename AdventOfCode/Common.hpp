@@ -82,9 +82,30 @@ struct Point2D
 		auto str = std::string{};
 		is >> str;
 
+		from_string(str);
+
+		return *this;
+	}
+	catch (const Exception&)
+	{
+		is.setstate(std::ios::failbit);
+		throw;
+	}
+	catch (const std::invalid_argument&)
+	{
+		is.setstate(std::ios::failbit);
+		throw aoc::Exception("Failed to extract Point2D from stream");
+	}
+	catch (const std::out_of_range&)
+	{
+		is.setstate(std::ios::failbit);
+		throw aoc::Exception("Failed to extract Point2D from stream");
+	}
+
+	Point2D& from_string(const std::string& str)
+	{
 		auto x_and_y_str = split(str, ',');
 		if (x_and_y_str.size() != 2) {
-			is.setstate(std::ios::failbit);
 			throw aoc::Exception("Failed to read Point2D");
 		}
 
@@ -92,16 +113,6 @@ struct Point2D
 		this->y = string_to<Value_T>(x_and_y_str[1]);
 
 		return *this;
-	}
-	catch (std::invalid_argument&)
-	{
-		is.setstate(std::ios::failbit);
-		throw aoc::Exception("Failed to extract Point2D from stream");
-	}
-	catch (std::out_of_range&)
-	{
-		is.setstate(std::ios::failbit);
-		throw aoc::Exception("Failed to extract Point2D from stream");
 	}
 
 	Value_T x;

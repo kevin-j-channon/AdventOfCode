@@ -13,9 +13,7 @@ public:
 	Paper& load(std::istream& is)
 	{
 		while (!is.eof()) {
-			auto m = Point_t{};
-			is >> m;
-			_marks[m]++;
+			_marks[Point_t{}.load(is)]++;
 		}
 
 		return *this;

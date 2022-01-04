@@ -38,6 +38,11 @@ public:
 	friend class FoldSequence;
 
 	using Point_t = Point2D<size_t>;
+	using Iter_t = std::set<Point_t>::iterator;
+
+	// These are here so that std::inserter works with Paper.
+	using value_type = Point_t;	
+	using iterator = Iter_t;
 
 	Paper& load(std::istream& is)
 	{
@@ -58,6 +63,15 @@ public:
 	bool read(const Point_t& point) const { return _marks.contains(point); }
 
 	size_t mark_count() const { return _marks.size(); }
+
+	auto begin() const { return _marks.cbegin(); }
+	auto begin() { return _marks.begin(); }
+	auto end() const { return _marks.cend(); }
+	auto end() { return _marks.end(); }
+
+	auto insert(Iter_t hint, Point_t point) {
+		return _marks.insert(hint, std::move(point));
+	}
 
 private:
 	std::set<Point_t> _marks;
@@ -138,6 +152,15 @@ class PaperFolder
 
 		Paper operator()(const Fold<fold_direction::x>& fold)
 		{
+			auto marks_to_move = std::vector<Paper::Point_t>{};
+			std::remove_copy_if(_paper.begin(), _paper.end(), std::back_inserter(marks_to_move), [&fold](auto mark) {
+				return mark.x > fold.value;
+				});
+
+			std::transform(marks_to_move.begin(), marks_to_move.end(), std::inserter(_paper, _paper.end()), [&fold](auto mark) -> Paper::Point_t {
+				return { 2 * fold.value - mark.x, mark.y };
+				});
+
 			return std::move(_paper);
 		}
 

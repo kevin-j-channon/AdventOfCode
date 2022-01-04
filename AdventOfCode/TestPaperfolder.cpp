@@ -80,6 +80,24 @@ public:
 		Assert::AreEqual(true, paper.read({ 1, 2 }));
 		Assert::AreEqual(true, paper.read({ 5, 6 }));
 	}
+
+	TEST_METHOD(StdInserterInsertsMarksIntoPaper)
+	{
+		const auto marks = {
+			aoc::Paper::Point_t{1, 2},
+			aoc::Paper::Point_t{3, 4},
+			aoc::Paper::Point_t{9, 10}
+		};
+
+		auto paper = aoc::Paper{};
+
+		std::copy(marks.begin(), marks.end(), std::inserter(paper, paper.end()));
+
+		Assert::AreEqual(size_t{ 3 }, paper.mark_count());
+		Assert::AreEqual(true, paper.read({ 1, 2 }));
+		Assert::AreEqual(true, paper.read({ 3, 4 }));
+		Assert::AreEqual(true, paper.read({ 9, 10 }));
+	}
 };
 
 TEST_CLASS(TestFoldSequence)
@@ -109,7 +127,7 @@ public:
 		std::stringstream fold_data("fold along x=4");
 		auto folds = aoc::FoldSequence{}.load(fold_data);
 
-		paper = aoc::PaperFolder{ std::move(paper) }.apply(folds);
+		//paper = aoc::PaperFolder{ std::move(paper) }.apply(folds);
 	}
 };
 }

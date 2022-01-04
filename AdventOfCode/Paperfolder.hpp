@@ -53,22 +53,11 @@ public:
 		return *this;
 	}
 
-	void mark(Point_t point)
-	{
-		_marks.insert(std::move(point));
-	}
+	void mark(Point_t point) { _marks.insert(std::move(point)); }
+	void erase(const Point_t& point) { _marks.erase(point); }
+	bool read(const Point_t& point) const { return _marks.contains(point); }
 
-	void erase(const Point_t& point)
-	{
-		_marks.erase(point);
-	}
-
-	bool read(const Point_t& point)
-	{
-		return _marks.contains(point);
-	}
-
-	size_t mmark_count() const { return _marks.size(); }
+	size_t mark_count() const { return _marks.size(); }
 
 private:
 	std::set<Point_t> _marks;

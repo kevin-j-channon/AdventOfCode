@@ -18,7 +18,7 @@ public:
 	{
 		std::stringstream ss("6,10");
 
-		const auto mark_count = aoc::Paper{}.load(ss).mmark_count();
+		const auto mark_count = aoc::Paper{}.load(ss).mark_count();
 
 		Assert::AreEqual(size_t{ 1 }, mark_count);
 	}
@@ -48,11 +48,43 @@ public:
 
 		std::stringstream data(data_str);
 
-		const auto mark_count = aoc::Paper{}.load(data).mmark_count();
+		const auto mark_count = aoc::Paper{}.load(data).mark_count();
 
 		Assert::AreEqual(size_t{ 18 }, mark_count);
 	}
 
+	TEST_METHOD(PaperContainsNoMarksOnConstruction)
+	{
+		const auto paper = aoc::Paper{};
+
+		Assert::AreEqual(size_t{ 0 }, paper.mark_count());
+		Assert::AreEqual(false, paper.read({ 1, 2 }));
+	}
+
+	TEST_METHOD(MarkCheckEraseCheck)
+	{
+		auto paper = aoc::Paper{};
+
+		paper.mark({ 1, 2 });
+		paper.mark({ 3, 4 });
+		paper.mark({ 5, 6 });
+
+		Assert::AreEqual(size_t{ 3 }, paper.mark_count());
+		Assert::AreEqual(true, paper.read({ 1, 2 }));
+		Assert::AreEqual(true, paper.read({ 3, 4 }));
+		Assert::AreEqual(true, paper.read({ 5, 6 }));
+
+		paper.erase({ 3, 4 });
+
+		Assert::AreEqual(size_t{ 2 }, paper.mark_count());
+		Assert::AreEqual(true, paper.read({ 1, 2 }));
+		Assert::AreEqual(true, paper.read({ 5, 6 }));
+	}
+};
+
+TEST_CLASS(TestFoldSequence)
+{
+public:
 	TEST_METHOD(LoadFolderFromStream)
 	{
 		constexpr auto data_str =
@@ -64,7 +96,11 @@ public:
 		auto folds = aoc::FoldSequence{}.load(data);
 		Assert::AreEqual(size_t{ 2 }, folds.size());
 	}
-	
+};
+
+TEST_CLASS(TestPaperFolder)
+{
+public:
 	TEST_METHOD(PaperFolderWorksForSingleFold)
 	{
 		std::stringstream paper_data("6,10");

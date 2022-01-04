@@ -55,7 +55,6 @@ public:
 
 	TEST_METHOD(LoadFolderFromStream)
 	{
-
 		constexpr auto data_str =
 			"fold along y=7\n"
 			"fold along x=5";
@@ -64,6 +63,17 @@ public:
 
 		auto folds = aoc::FoldSequence{}.load(data);
 		Assert::AreEqual(size_t{ 2 }, folds.size());
+	}
+	
+	TEST_METHOD(PaperFolderWorksForSingleFold)
+	{
+		std::stringstream paper_data("6,10");
+		auto paper = aoc::Paper{}.load(paper_data);
+
+		std::stringstream fold_data("fold along x=4");
+		auto folds = aoc::FoldSequence{}.load(fold_data);
+
+		paper = aoc::PaperFolder{ std::move(paper) }.apply(folds);
 	}
 };
 }

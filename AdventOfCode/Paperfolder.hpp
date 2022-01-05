@@ -39,6 +39,7 @@ public:
 
 	using Point_t = Point2D<size_t>;
 	using Iter_t = std::set<Point_t>::iterator;
+	using Matrix_t = arma::Mat<int>;
 
 	// These are here so that std::inserter works with Paper.
 	using value_type = Point_t;	
@@ -79,6 +80,11 @@ public:
 
 	auto insert(Iter_t hint, Point_t point) {
 		return _marks.insert(hint, std::move(point));
+	}
+
+	Matrix_t as_matrix() const
+	{
+		return Matrix_t{};
 	}
 
 private:

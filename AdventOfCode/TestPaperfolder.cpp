@@ -98,6 +98,17 @@ public:
 		Assert::AreEqual(true, paper.read({ 3, 4 }));
 		Assert::AreEqual(true, paper.read({ 9, 10 }));
 	}
+
+	TEST_METHOD(AsMatrix)
+	{
+		auto paper = aoc::Paper{};
+
+		paper.mark({ 1, 2 });
+		paper.mark({ 3, 4 });
+		paper.mark({ 5, 6 });
+
+		const auto mat = paper.as_matrix();
+	}
 };
 
 TEST_CLASS(TestFoldSequence)

@@ -977,6 +977,33 @@ namespace day_12
 TEST_CLASS(TestDay12)
 {
 public:
+	TEST_METHOD(Part1)
+	{
+		std::ifstream data_file(DATA_DIR / "Day12_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		auto caves = aoc::CaveLoader::load(data_file);
+		auto routes = aoc::CaveRoutes{ caves };
+		auto route_count = std::accumulate(routes.begin(), routes.end(), uint32_t{ 0 }, [](auto curr, auto _) { return ++curr; });
+
+		Assert::AreEqual(uint32_t{ 5212 }, route_count);
+	}
+
+	TEST_METHOD(Part2)
+	{
+	#ifndef _DEBUG
+		std::ifstream data_file(DATA_DIR / "Day12_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		auto caves = aoc::CaveLoader::load(data_file);
+		auto routes = aoc::CaveRoutes{ caves };
+		auto route_count = aoc::CaveRevisitor{ caves }.routes().size();
+
+		Assert::AreEqual(size_t{ 134862 }, route_count);
+	#else
+		Logger::WriteMessage("\tDay 12 part 2 is prohibitively slow in DEBUG. Run in RELEASE to run this example\n");
+	#endif
+	}
 };
 }
 

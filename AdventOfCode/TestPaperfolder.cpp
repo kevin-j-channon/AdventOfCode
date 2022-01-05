@@ -119,15 +119,18 @@ public:
 TEST_CLASS(TestPaperFolder)
 {
 public:
-	TEST_METHOD(PaperFolderWorksForSingleFold)
+	TEST_METHOD(PaperFolderWorksForSingleXFold)
 	{
 		std::stringstream paper_data("6,10");
-		auto paper = aoc::Paper{}.load(paper_data);
+		auto paper = std::move(aoc::Paper{}.load(paper_data));
 
 		std::stringstream fold_data("fold along x=4");
 		auto folds = aoc::FoldSequence{}.load(fold_data);
 
-		//paper = aoc::PaperFolder{ std::move(paper) }.apply(folds);
+		paper = aoc::PaperFolder{std::move(paper)}.apply(folds);
+
+		Assert::AreEqual(size_t{ 1 }, paper.mark_count());
+		Assert::IsTrue(paper.read({ 2, 10 }));
 	}
 };
 }

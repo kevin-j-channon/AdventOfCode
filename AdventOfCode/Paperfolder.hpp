@@ -44,6 +44,14 @@ public:
 	using value_type = Point_t;	
 	using iterator = Iter_t;
 
+	Paper() {}
+
+	Paper(const Paper&) = delete;
+	Paper& operator=(const Paper&) = delete;
+
+	Paper(Paper&&) = default;
+	Paper& operator=(Paper&&) = default;
+
 	Paper& load(std::istream& is)
 	{
 		auto line = std::string{};
@@ -153,9 +161,11 @@ class PaperFolder
 		Paper operator()(const Fold<fold_direction::x>& fold)
 		{
 			auto marks_to_move = std::vector<Paper::Point_t>{};
-			std::remove_copy_if(_paper.begin(), _paper.end(), std::back_inserter(marks_to_move), [&fold](auto mark) {
+			std::copy_if(_paper.begin(), _paper.end(), std::back_inserter(marks_to_move), [&fold](auto mark) {
 				return mark.x > fold.value;
 				});
+
+			std::for_each(marks_to_move.begin(), marks_to_move.end(), [this](const auto& mark) {_paper.erase(mark); });
 
 			std::transform(marks_to_move.begin(), marks_to_move.end(), std::inserter(_paper, _paper.end()), [&fold](auto mark) -> Paper::Point_t {
 				return { 2 * fold.value - mark.x, mark.y };
@@ -178,7 +188,7 @@ public:
 		: _paper{ std::move(paper) }
 	{}
 
-	Paper&& apply(const FoldSequence& folds)
+	Paper apply(const FoldSequence& folds)
 	{
 		return std::accumulate(folds.begin(), folds.end(), std::move(_paper), [this](auto curr, auto fold) -> Paper {
 			return std::visit(FolderImpl{std::move(curr)}, fold);

@@ -11,6 +11,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "SyntaxChecker.hpp"
 #include "DumboOctopusModel.hpp"
 #include "CaveNavigator.hpp"
+#include "PaperFolder.hpp"
 
 using namespace std::string_literals;
 using namespace std::chrono_literals;
@@ -350,6 +351,28 @@ public:
 #else
 				Logger::WriteMessage("\tDay 12 part 2 is prohibitively slow in DEBUG. Run in RELEASE to run this example\n");
 #endif
+			}
+		}
+
+		// Day 13
+		{
+			Logger::WriteMessage("Day 13:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day13_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				auto paper = std::move(aoc::Paper{}.load(data_file));
+				auto folds = aoc::FoldSequence{}.load(data_file);
+
+				auto mark_count = aoc::PaperFolder::apply_fold(std::move(paper), folds.front()).mark_count();
+
+				Logger::WriteMessage(std::format("\tNumber of marks after first fold: {}\n", mark_count).c_str());
+			}
+
+			// Part 2
+			{
 			}
 		}
 	}
@@ -955,4 +978,28 @@ TEST_CLASS(TestDay12)
 {
 public:
 };
+}
+
+namespace day_13
+{
+
+TEST_CLASS(TestDay13)
+{
+public:
+	TEST_METHOD(Part1)
+	{
+		{
+			std::ifstream data_file(DATA_DIR / "Day13_input.txt");
+			Assert::IsTrue(data_file.is_open());
+
+			auto paper = std::move(aoc::Paper{}.load(data_file));
+			auto folds = aoc::FoldSequence{}.load(data_file);
+
+			auto mark_count = aoc::PaperFolder::apply_fold(std::move(paper), folds.front()).mark_count();
+
+			Assert::AreEqual(size_t{ 655 }, mark_count);
+		}
+	}
+};
+
 }

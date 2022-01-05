@@ -146,5 +146,19 @@ public:
 		Assert::AreEqual(size_t{ 1 }, paper.mark_count());
 		Assert::IsTrue(paper.read({ 6, 4 }));
 	}
+
+	TEST_METHOD(PaperFolderWorksForXYFold)
+	{
+		std::stringstream paper_data("6,10");
+		auto paper = std::move(aoc::Paper{}.load(paper_data));
+
+		std::stringstream fold_data("fold along x=4\nfold along y=7");
+		auto folds = aoc::FoldSequence{}.load(fold_data);
+
+		paper = aoc::PaperFolder{ std::move(paper) }.apply(folds);
+
+		Assert::AreEqual(size_t{ 1 }, paper.mark_count());
+		Assert::IsTrue(paper.read({ 2, 4 }));
+	}
 };
 }

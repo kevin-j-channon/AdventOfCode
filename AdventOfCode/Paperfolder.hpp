@@ -176,6 +176,17 @@ class PaperFolder
 
 		Paper operator()(const Fold<fold_direction::y>& fold)
 		{
+			auto marks_to_move = std::vector<Paper::Point_t>{};
+			std::copy_if(_paper.begin(), _paper.end(), std::back_inserter(marks_to_move), [&fold](auto mark) {
+				return mark.y > fold.value;
+				});
+
+			std::for_each(marks_to_move.begin(), marks_to_move.end(), [this](const auto& mark) {_paper.erase(mark); });
+
+			std::transform(marks_to_move.begin(), marks_to_move.end(), std::inserter(_paper, _paper.end()), [&fold](auto mark) -> Paper::Point_t {
+				return { mark.x, 2 * fold.value - mark.y };
+				});
+
 			return std::move(_paper);
 		}
 

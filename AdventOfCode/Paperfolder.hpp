@@ -84,10 +84,22 @@ public:
 
 	Matrix_t as_matrix() const
 	{
-		return Matrix_t{};
+		const auto dimensions = _get_dimensions();
+		return std::accumulate(_marks.begin(), _marks.end(), Matrix_t(dimensions.y, dimensions.x).fill(0), [](auto matrix, auto point) {
+				matrix.at(point.y, point.x) = 1;
+				return std::move(matrix);
+			});
 	}
 
 private:
+
+	Point_t _get_dimensions() const {
+		return {
+			std::max_element(_marks.begin(), _marks.end(), [](auto m1, auto m2) { return m1.x < m2.x; })->x,
+			std::max_element(_marks.begin(), _marks.end(), [](auto m1, auto m2) { return m1.y < m2.y; })->y
+		};
+	}
+
 	std::set<Point_t> _marks;
 };
 

@@ -108,6 +108,14 @@ public:
 		paper.mark({ 5, 6 });
 
 		const auto mat = paper.as_matrix();
+		Assert::AreEqual(arma::uword{ 5 }, mat.n_cols);
+		Assert::AreEqual(arma::uword{ 6 }, mat.n_rows);
+
+		for (auto r = arma::uword{ 0 }; r < mat.n_rows; ++r) {
+			for (auto c = arma::uword{ 0 }; c < mat.n_cols; ++c) {
+				Assert::AreEqual(paper.read({ c, r }), (mat.at(r, c) != 0));
+			}
+		}
 	}
 };
 

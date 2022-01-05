@@ -202,8 +202,13 @@ public:
 	Paper apply(const FoldSequence& folds)
 	{
 		return std::accumulate(folds.begin(), folds.end(), std::move(_paper), [this](auto curr, auto fold) -> Paper {
-			return std::visit(FolderImpl{std::move(curr)}, fold);
+			return apply_fold(std::move(curr), fold);
 			});
+	}
+
+	static Paper apply_fold(Paper paper, const Fold_t& fold)
+	{
+		return std::visit(FolderImpl{ std::move(paper) }, fold);
 	}
 
 private:

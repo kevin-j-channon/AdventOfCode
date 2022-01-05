@@ -160,5 +160,76 @@ public:
 		Assert::AreEqual(size_t{ 1 }, paper.mark_count());
 		Assert::IsTrue(paper.read({ 2, 4 }));
 	}
+
+	TEST_METHOD(SimpleExampleWorks)
+	{
+		constexpr auto data_str =
+			"6,10\n"
+			"0,14\n"
+			"9,10\n"
+			"0,3\n"
+			"10,4\n"
+			"4,11\n"
+			"6,0\n"
+			"6,12\n"
+			"4,1\n"
+			"0,13\n"
+			"10,12\n"
+			"3,4\n"
+			"3,0\n"
+			"8,4\n"
+			"1,10\n"
+			"2,14\n"
+			"8,10\n"
+			"9,0\n"
+			"\n"
+			"fold along y=7\n"
+			"fold along x=5"
+			;
+		std::stringstream data(data_str);
+
+		auto paper = std::move(aoc::Paper{}.load(data));
+		auto folds = aoc::FoldSequence{}.load(data);
+
+		paper = aoc::PaperFolder{ std::move(paper) }.apply(folds);
+
+		Assert::IsTrue(paper.read({ 0, 0 }));
+		Assert::IsTrue(paper.read({ 0, 1 }));
+		Assert::IsTrue(paper.read({ 0, 2 }));
+		Assert::IsTrue(paper.read({ 0, 3 }));
+		Assert::IsTrue(paper.read({ 0, 4 }));
+		Assert::IsTrue(paper.read({ 1, 0 }));
+		Assert::IsFalse(paper.read({ 1, 1 }));
+		Assert::IsFalse(paper.read({ 1, 2 }));
+		Assert::IsFalse(paper.read({ 1, 3 }));
+		Assert::IsTrue(paper.read({ 1, 4 }));
+		Assert::IsTrue(paper.read({ 2, 0 }));
+		Assert::IsFalse(paper.read({ 2, 1 }));
+		Assert::IsFalse(paper.read({ 2, 2 }));
+		Assert::IsFalse(paper.read({ 2, 3 }));
+		Assert::IsTrue(paper.read({ 2, 4 }));
+		Assert::IsTrue(paper.read({ 3, 0 }));
+		Assert::IsFalse(paper.read({ 3, 1 }));
+		Assert::IsFalse(paper.read({ 3, 2 }));
+		Assert::IsFalse(paper.read({ 3, 3 }));
+		Assert::IsTrue(paper.read({ 3, 4 }));
+		Assert::IsTrue(paper.read({ 4, 0 }));
+		Assert::IsTrue(paper.read({ 4, 1 }));
+		Assert::IsTrue(paper.read({ 4, 2 }));
+		Assert::IsTrue(paper.read({ 4, 3 }));
+		Assert::IsTrue(paper.read({ 4, 4 }));
+		Assert::IsFalse(paper.read({ 5, 0 }));
+		Assert::IsFalse(paper.read({ 5, 1 }));
+		Assert::IsFalse(paper.read({ 5, 2 }));
+		Assert::IsFalse(paper.read({ 5, 3 }));
+		Assert::IsFalse(paper.read({ 5, 4 }));
+		Assert::IsFalse(paper.read({ 6, 0 }));
+		Assert::IsFalse(paper.read({ 6, 1 }));
+		Assert::IsFalse(paper.read({ 6, 2 }));
+		Assert::IsFalse(paper.read({ 6, 3 }));
+		Assert::IsFalse(paper.read({ 6, 4 }));
+
+		Assert::AreEqual(size_t{ 16 }, paper.mark_count());
+	}
 };
 }

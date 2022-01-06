@@ -295,8 +295,6 @@ public:
 		std::stringstream out;
 		
 		for (auto i = 0; i < character_count; ++i) {
-			const auto col_0 = i * CHAR_COLS;
-			const auto col_1 = CHAR_COLS * (i + 1) - 1;
 			const auto letter = paper.submat(0, i * CHAR_COLS, CHAR_ROWS - 1, CHAR_COLS * (i + 1) - 1);
 			out << CharacterReader<CHAR_ROWS, CHAR_COLS>::decode(letter);
 		}

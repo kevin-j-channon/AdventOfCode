@@ -373,6 +373,15 @@ public:
 
 			// Part 2
 			{
+				std::ifstream data_file(DATA_DIR / "Day13_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				auto paper = std::move(aoc::Paper{}.load(data_file));
+				auto folds = aoc::FoldSequence{}.load(data_file);
+
+				const auto code = aoc::PaperReader<6, 5>::decode(aoc::PaperFolder{ std::move(paper) }.apply(folds).as_matrix());
+
+				Logger::WriteMessage(std::format("\tThe secret code is: {}\n", code).c_str());
 			}
 		}
 	}
@@ -1015,18 +1024,27 @@ TEST_CLASS(TestDay13)
 public:
 	TEST_METHOD(Part1)
 	{
-		{
-			std::ifstream data_file(DATA_DIR / "Day13_input.txt");
-			Assert::IsTrue(data_file.is_open());
+		std::ifstream data_file(DATA_DIR / "Day13_input.txt");
+		Assert::IsTrue(data_file.is_open());
 
-			auto paper = std::move(aoc::Paper{}.load(data_file));
-			auto folds = aoc::FoldSequence{}.load(data_file);
-			auto mark_count = aoc::PaperFolder::apply_fold(std::move(paper), folds.front()).mark_count();
+		auto paper = std::move(aoc::Paper{}.load(data_file));
+		auto folds = aoc::FoldSequence{}.load(data_file);
+		auto mark_count = aoc::PaperFolder::apply_fold(std::move(paper), folds.front()).mark_count();
 			
-			Assert::AreEqual(size_t{ 655 }, mark_count);
+		Assert::AreEqual(size_t{ 655 }, mark_count);
+	}
 
+	TEST_METHOD(Part2)
+	{
+		std::ifstream data_file(DATA_DIR / "Day13_input.txt");
+		Assert::IsTrue(data_file.is_open());
 
-		}
+		auto paper = std::move(aoc::Paper{}.load(data_file));
+		auto folds = aoc::FoldSequence{}.load(data_file);
+
+		const auto code = aoc::PaperReader<6, 5>::decode(aoc::PaperFolder{ std::move(paper) }.apply(folds).as_matrix());
+
+		Assert::AreEqual("JPZCUAUR"s, code);
 	}
 };
 

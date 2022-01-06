@@ -33,6 +33,13 @@ struct OutOfRangeException : public Exception, public std::out_of_range
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct InvalidArgException : public Exception, public std::invalid_argument
+{
+	InvalidArgException(const std::string& msg) : Exception{ msg }, std::invalid_argument(msg) {}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 template<typename Value_T>
 struct Point2D
 {

@@ -251,4 +251,13 @@ public:
 		Assert::AreEqual(size_t{ 16 }, paper.mark_count());
 	}
 };
+
+TEST_CLASS(TestCodeReading)
+{
+public:
+	TEST_METHOD(CreateCharacterReader)
+	{
+		//const auto reader = aoc::CharacterReader{ 5, 6 };
+	}
+};
 }

@@ -1021,10 +1021,11 @@ public:
 
 			auto paper = std::move(aoc::Paper{}.load(data_file));
 			auto folds = aoc::FoldSequence{}.load(data_file);
-
 			auto mark_count = aoc::PaperFolder::apply_fold(std::move(paper), folds.front()).mark_count();
-
+			
 			Assert::AreEqual(size_t{ 655 }, mark_count);
+
+
 		}
 	}
 };

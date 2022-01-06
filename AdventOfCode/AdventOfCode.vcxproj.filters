@@ -86,6 +86,9 @@
     <ClInclude Include="Paperfolder.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CharacterMaps.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Data\Day1_input.txt">

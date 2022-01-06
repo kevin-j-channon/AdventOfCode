@@ -4,6 +4,8 @@
 
 #include "Common.hpp"
 
+#include "CharacterMaps.hpp"
+
 #include <variant>
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -85,7 +87,8 @@ public:
 	Matrix_t as_matrix() const
 	{
 		const auto dimensions = _get_dimensions();
-		return std::accumulate(_marks.begin(), _marks.end(), Matrix_t(dimensions.y, dimensions.x).fill(0), [](auto matrix, auto point) {
+		const auto mat = Matrix_t(dimensions.y, dimensions.x).fill(0);
+		return std::accumulate(_marks.begin(), _marks.end(), mat, [](auto matrix, auto point) {
 				matrix.at(point.y, point.x) = 1;
 				return std::move(matrix);
 			});
@@ -95,8 +98,8 @@ private:
 
 	Point_t _get_dimensions() const {
 		return {
-			std::max_element(_marks.begin(), _marks.end(), [](auto m1, auto m2) { return m1.x < m2.x; })->x,
-			std::max_element(_marks.begin(), _marks.end(), [](auto m1, auto m2) { return m1.y < m2.y; })->y
+			std::max_element(_marks.begin(), _marks.end(), [](auto m1, auto m2) { return m1.x < m2.x; })->x + 1,
+			std::max_element(_marks.begin(), _marks.end(), [](auto m1, auto m2) { return m1.y < m2.y; })->y + 1
 		};
 	}
 
@@ -137,10 +140,11 @@ private:
 	Fold_t _load_fold(const std::string& str)
 	{
 		const auto fold_details = _get_fold_details_from_string(str);
+		const auto value = string_to<size_t>(fold_details[1]);
 
 		switch (fold_details[0][0] ) {
-		case 'x': return Fold<fold_direction::x>{ string_to<size_t>(fold_details[1]) };
-		case 'y': return Fold<fold_direction::y>{ string_to<size_t>(fold_details[1]) };
+		case 'x': return Fold<fold_direction::x>{ value };
+		case 'y': return Fold<fold_direction::y>{ value };
 		default:;
 		}
 
@@ -232,6 +236,27 @@ public:
 private:
 
 	Paper _paper;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class CharacterReader
+{
+public:
+
+	using Matrix_t = arma::subview<Paper::Matrix_t::value_type>;
+	
+	CharacterReader(Matrix_t mat)
+		: _char_mat{std::move(mat)}
+	{
+		if (_char_mat.n_rows != 6 || _char_mat.n_cols != 5) {
+			throw InvalidArgException("");
+		}
+	}
+
+private:
+
+	Matrix_t _char_mat;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

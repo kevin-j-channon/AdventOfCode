@@ -98,7 +98,7 @@ private:
 
 	Point_t _get_dimensions() const {
 		return {
-			std::max_element(_marks.begin(), _marks.end(), [](auto m1, auto m2) { return m1.x < m2.x; })->x + 1,
+			std::max_element(_marks.begin(), _marks.end(), [](auto m1, auto m2) { return m1.x < m2.x; })->x + 2,	// Add an extra column because the last letter is only 4 wide
 			std::max_element(_marks.begin(), _marks.end(), [](auto m1, auto m2) { return m1.y < m2.y; })->y + 1
 		};
 	}
@@ -240,23 +240,69 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<size_t ROWS, size_t COLS>
 class CharacterReader
 {
 public:
 
 	using Matrix_t = arma::subview<Paper::Matrix_t::value_type>;
 	
-	CharacterReader(Matrix_t mat)
-		: _char_mat{std::move(mat)}
+	static char decode(const Matrix_t& mat)
 	{
-		if (_char_mat.n_rows != 6 || _char_mat.n_cols != 5) {
-			throw InvalidArgException("");
+		if (mat.n_rows != ROWS || mat.n_cols != COLS) {
+			throw InvalidArgException("Character matrix is not the correct size");
 		}
+
+		const auto scores = char_maps | std::ranges::views::transform([&mat](const auto& char_map) {
+			return _score_match(mat, char_map);
+			});
+
+		return _char_maps_index_to_letter(std::distance(scores.begin(), std::min_element(scores.begin(), scores.end())));
 	}
 
 private:
 
-	Matrix_t _char_mat;
+	static uint32_t _score_match(const Matrix_t& test, const CharMap_6x5& reference)
+	{
+		auto out = uint32_t{ 0 };
+
+		for (auto r = size_t{ 0 }; r < ROWS; ++r) {
+			for (auto c = 0; c < COLS; ++c) {
+				out += std::abs(test.at(r, c) - reference[r][c]);
+			}
+		}
+
+		return out;
+	}
+
+	static char _char_maps_index_to_letter(size_t idx)
+	{
+		return static_cast<char>('A' + idx);
+	}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<size_t CHAR_ROWS, size_t CHAR_COLS>
+class PaperReader
+{
+public:
+
+	static std::string decode(const Paper::Matrix_t& paper)
+	{
+		const auto character_count = paper.n_cols / CHAR_COLS;
+
+		std::stringstream out;
+		
+		for (auto i = 0; i < character_count; ++i) {
+			const auto col_0 = i * CHAR_COLS;
+			const auto col_1 = CHAR_COLS * (i + 1) - 1;
+			const auto letter = paper.submat(0, i * CHAR_COLS, CHAR_ROWS - 1, CHAR_COLS * (i + 1) - 1);
+			out << CharacterReader<CHAR_ROWS, CHAR_COLS>::decode(letter);
+		}
+
+		return out.str();
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

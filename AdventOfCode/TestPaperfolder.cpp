@@ -108,8 +108,8 @@ public:
 		paper.mark({ 5, 6 });
 
 		const auto mat = paper.as_matrix();
-		Assert::AreEqual(arma::uword{ 5 }, mat.n_cols);
-		Assert::AreEqual(arma::uword{ 6 }, mat.n_rows);
+		Assert::AreEqual(arma::uword{ 7 }, mat.n_cols, L"Incorrect column count");
+		Assert::AreEqual(arma::uword{ 7 }, mat.n_rows, L"Incorrect row count");
 
 		for (auto r = arma::uword{ 0 }; r < mat.n_rows; ++r) {
 			for (auto c = arma::uword{ 0 }; c < mat.n_cols; ++c) {
@@ -255,9 +255,44 @@ public:
 TEST_CLASS(TestCodeReading)
 {
 public:
-	TEST_METHOD(CreateCharacterReader)
+
+	auto create_test_letter(char letter) -> aoc::Paper::Matrix_t
 	{
-		//const auto reader = aoc::CharacterReader{ 5, 6 };
+		const auto& char_map = aoc::char_maps[letter - 'A'];
+		auto out = aoc::Paper::Matrix_t(6, 5).fill(0);
+
+		for (auto r = 0; r < out.n_rows; ++r) {
+			for (auto c = 0; c < out.n_cols; ++c) {
+				out.at(r, c) = char_map[r][c];
+			}
+		}
+
+		return out;
+	}
+	TEST_METHOD(CorrectLetterHasBiggestScore)
+	{
+		const auto letters = {
+			'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+			'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+		};
+		for (auto letter : letters) {
+			const auto test_letter_map = create_test_letter(letter);
+			Assert::AreEqual(letter, aoc::CharacterReader<6, 5>::decode(test_letter_map.submat(0,0,5,4)));
+		}
+	}
+	
+	TEST_METHOD(IterateLetterMatrices)
+	{
+		constexpr auto letter_width = 5;
+
+		// Build a fake paper matrix that has each of the letters in it in order.
+		auto paper_matrix = aoc::Paper::Matrix_t(6, 26 * letter_width);
+		for (auto idx = 0; idx < 26; ++idx) {
+			paper_matrix.submat(0, idx * letter_width, 5, letter_width * (idx + 1) - 1) = create_test_letter('A' + idx);
+		}
+
+		// Check that each of the letters can be read from the main thing.
+		Assert::AreEqual("ABCDEFGHIJKLMNOPQRSTUVWXYZ"s, aoc::PaperReader<6, 5>::decode(paper_matrix));
 	}
 };
 }

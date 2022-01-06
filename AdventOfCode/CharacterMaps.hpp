@@ -3,227 +3,220 @@
 namespace aoc
 {
 
-namespace character
-{
-enum
-{
-	A, B, C, D, E, F, G, H, I, J, K, L, M,
-	N, O, P, Q, R, S, T, U, V, W, X, Y, Z
-};
-}
-
 template<size_t ROWS, size_t COLS>
 using CharMap = std::array< std::array<int, COLS>, ROWS>;
 
-std::map<CharMap<6, 5>, char> char_maps = {
-	{ {
+using CharMap_6x5 = CharMap<6, 5>;
+
+constexpr std::array<CharMap_6x5, 26> char_maps = {
+	std::array{
 		std::array{0, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 1, 1, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0}
-	}, 'A'},
-	{ {
+	},
+	std::array{
 		std::array{1, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 1, 1, 1, 0}
-	}, 'B'},
-	{ {
+	},
+	std::array{
 		std::array{0, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{0, 1, 1, 0, 0}
-	}, 'C'},
-	{ {
+	},
+	std::array{
 		std::array{1, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 1, 1, 0, 0}
-	}, 'D'},
-	{ {
+	},
+	std::array{
 		std::array{1, 1, 1, 1, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 1, 1, 0, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 1, 1, 1, 0}
-	}, 'E'},
-	{ {
+	},
+	std::array{
 		std::array{1, 1, 1, 1, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 1, 1, 0, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 0, 0, 0, 0}
-	}, 'F'},
-	{ {
+	},
+	std::array{
 		std::array{0, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 0, 1, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{0, 1, 1, 0, 0}
-	}, 'G'},
-	{ {
+	},
+	std::array{
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 1, 1, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0}
-	}, 'H'},
-	{ {
+	},
+	std::array{
 		std::array{0, 1, 1, 1, 0},
 		std::array{0, 0, 1, 0, 0},
 		std::array{0, 0, 1, 0, 0},
 		std::array{0, 0, 1, 0, 0},
 		std::array{0, 0, 1, 0, 0},
 		std::array{0, 1, 1, 1, 0}
-	}, 'I'},
-	{ {
+	},
+	std::array{
 		std::array{0, 0, 1, 1, 0},
 		std::array{0, 0, 0, 1, 0},
 		std::array{0, 0, 0, 1, 0},
 		std::array{0, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{0, 1, 1, 0, 0}
-	}, 'J'},
-	{ {
+	},
+	std::array{
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 1, 0, 0},
 		std::array{1, 1, 0, 0, 0},
 		std::array{1, 1, 0, 0, 0},
 		std::array{1, 0, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0}
-	}, 'K'},
-	{ {
+	}, 
+	std::array{
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 1, 1, 1, 0}
-	}, 'L'},
-	{ {
+	},
+	std::array{
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 1, 1, 1, 0},
 		std::array{1, 1, 1, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0}
-	}, 'M'},
-	{ {
+	},
+	std::array{
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 1, 0, 1, 0},
 		std::array{1, 0, 1, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0}
-	}, 'N'},
-	{ {
+	},
+	std::array{
 		std::array{0, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{0, 1, 1, 0, 0}
-	}, 'O'},
-	{ {
+	},
+	std::array{
 		std::array{1, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 1, 1, 0, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 0, 0, 0, 0}
-	}, 'P'},
-	{ {
+	},
+	std::array{
 		std::array{0, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 1, 1, 0},
 		std::array{0, 1, 1, 1, 0}
-	}, 'Q'},
-	{ {
+	},
+	std::array{
 		std::array{1, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 1, 1, 0, 0},
 		std::array{1, 0, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0}
-	}, 'R'},
-	{ {
+	},
+	std::array{
 		std::array{0, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{0, 1, 1, 0, 0},
 		std::array{0, 0, 0, 1, 0},
 		std::array{1, 1, 1, 0, 0}
-	}, 'S'},
-	{ {
+	},
+	std::array{
 		std::array{1, 1, 1, 1, 0},
 		std::array{0, 0, 1, 0, 0},
 		std::array{0, 0, 1, 0, 0},
 		std::array{0, 0, 1, 0, 0},
 		std::array{0, 0, 1, 0, 0},
 		std::array{0, 0, 1, 0, 0}
-	}, 'T'},
-	{ {
+	},
+	std::array{
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{0, 1, 1, 0, 0}
-	}, 'U'},
-	{ {
+	},
+	std::array{
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 1, 0, 0},
 		std::array{1, 1, 0, 0, 0},
 		std::array{1, 0, 0, 0, 0}
-	}, 'V'},
-	{ {
+	},
+	std::array{
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 1, 1, 1, 0},
 		std::array{1, 1, 1, 1, 0},
 		std::array{1, 0, 0, 1, 0}
-	}, 'W'},
-	{ {
+	},
+	std::array{
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{0, 1, 1, 0, 0},
 		std::array{0, 1, 1, 0, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0}
-	}, 'X'},
-	{ {
+	},
+	std::array{
 		std::array{1, 0, 0, 1, 0},
 		std::array{1, 0, 0, 1, 0},
 		std::array{0, 1, 1, 0, 0},
 		std::array{0, 0, 1, 0, 0},
 		std::array{0, 0, 1, 0, 0},
 		std::array{0, 0, 1, 0, 0}
-	}, 'Y'},
-	{ {
+	},
+	std::array{
 		std::array{1, 1, 1, 1, 0},
 		std::array{0, 0, 0, 1, 0},
 		std::array{0, 0, 1, 0, 0},
 		std::array{0, 1, 0, 0, 0},
 		std::array{1, 0, 0, 0, 0},
 		std::array{1, 1, 1, 1, 0}
-	}, 'Z' }
+	}
 };
 
 }

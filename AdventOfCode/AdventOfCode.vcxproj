@@ -176,6 +176,7 @@
     <ClCompile Include="TestFunctionalAreascpp.cpp" />
     <ClCompile Include="TestModelling.cpp" />
     <ClCompile Include="TestPaperfolder.cpp" />
+    <ClCompile Include="TestPolymerizer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AdventOfCode.hpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="Lanternfish.hpp" />
     <ClInclude Include="Paperfolder.hpp" />
     <ClInclude Include="pch.hpp" />
+    <ClInclude Include="Polymerizer.hpp" />
     <ClInclude Include="StaticMap.hpp" />
     <ClInclude Include="StringOperations.hpp" />
     <ClInclude Include="SyntaxChecker.hpp" />

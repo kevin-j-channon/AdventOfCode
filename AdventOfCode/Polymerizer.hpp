@@ -44,14 +44,63 @@ public:
 		auto out = Polymer{};
 
 		out._sequence.assign(str.begin(), str.end());
+		out._seed_length = out._sequence.size();
 
 		return out;
 	}
 
 	Size_t length() const { return _sequence.size(); }
 
+	template<size_t N>
+	Polymer& polymerize(const InsertionRuleTable_t& rules)
+	{
+		_redistribute<N>();
+		for (auto cycle = 0; cycle < N; ++cycle) {
+			_single_polymerization_cycle<N>(cycle, rules);
+		}
+	}
+
 private:
 
+	template<size_t N>
+	size_t _calculate_step_size(size_t cycle) const
+	{
+		return std::pow(2, N - cycle - 1) * _seed_length;
+	}
+
+	template<size_t N>
+	void _redistribute()
+	{
+		const auto original_size = _sequence.size();
+		_sequence.resize(std::pow(2.0, N) * (_sequence.size() - 1) - 1, 0);
+		
+		auto it = _sequence.rbegin();
+		for (auto ch = std::reverse_iterator<decltype(_sequence.begin())>(std::next(_sequence.begin(), original_size));
+			 ch != _sequence.rend();
+			 ++ch, it += _calculate_step_size(0, cycles)) {
+			*it = *ch;
+		}
+	}
+
+	template<size_t N>
+	void _single_polymerization_cycle(size_t cycle, const InsertionRuleTable_t& rules)
+	{
+		const auto step = _calculate_step_size<N>(cycle + 1, )
+
+		auto left_char = _sequence.begin();
+		auto right_char = std::next(_sequence.begin(), step);
+
+		for (;; left_char += step, right_char += step) {
+
+			*std::next(left_char, step / 2) = rules.at({ *left_char, *right_char });
+
+			if (right_char == std::prev(_sequence.end())) {
+				break;
+			}
+		}
+	}
+
+	size_t _seed_length{ 0 };
 	std::vector<char> _sequence;
 };
 

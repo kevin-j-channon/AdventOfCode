@@ -174,6 +174,26 @@ class PaperFolder
 {
 	class FolderImpl
 	{
+		static bool _mark_should_move_x(const Fold<fold_direction::x>& fold, const Paper::Point_t& pt)
+		{
+			return pt.x > fold.value;
+		}
+
+		static bool _mark_should_move_y(const Fold<fold_direction::y>& fold, const Paper::Point_t& pt)
+		{
+			return pt.y > fold.value;
+		}
+
+		static Paper::Point_t _move_mark_x(const Fold<fold_direction::x>& fold, const Paper::Point_t& pt)
+		{
+			return { 2 * fold.value - pt.x, pt.y };
+		}
+
+		static Paper::Point_t _move_mark_y(const Fold<fold_direction::y>& fold, const Paper::Point_t& pt)
+		{
+			return { pt.x, 2 * fold.value - pt.y };
+		}
+
 	public:
 
 		FolderImpl(Paper p)
@@ -182,37 +202,33 @@ class PaperFolder
 
 		Paper operator()(const Fold<fold_direction::x>& fold)
 		{
-			auto marks_to_move = std::vector<Paper::Point_t>{};
-			std::copy_if(_paper.begin(), _paper.end(), std::back_inserter(marks_to_move), [&fold](auto mark) {
-				return mark.x > fold.value;
-				});
-
-			std::for_each(marks_to_move.begin(), marks_to_move.end(), [this](const auto& mark) {_paper.erase(mark); });
-
-			std::transform(marks_to_move.begin(), marks_to_move.end(), std::inserter(_paper, _paper.end()), [&fold](auto mark) -> Paper::Point_t {
-				return { 2 * fold.value - mark.x, mark.y };
-				});
-
-			return std::move(_paper);
+			return _do_fold(fold, _mark_should_move_x, _move_mark_x);
 		}
 
 		Paper operator()(const Fold<fold_direction::y>& fold)
 		{
+			return _do_fold(fold, _mark_should_move_y, _move_mark_y);
+		}
+
+	private:
+
+		template<typename Fold_T, typename CheckFn_T, typename ExecuteFn_T>
+		Paper _do_fold(const Fold_T& fold, CheckFn_T check_fn, ExecuteFn_T execute_fn)
+		{
 			auto marks_to_move = std::vector<Paper::Point_t>{};
-			std::copy_if(_paper.begin(), _paper.end(), std::back_inserter(marks_to_move), [&fold](auto mark) {
-				return mark.y > fold.value;
+			std::copy_if(_paper.begin(), _paper.end(), std::back_inserter(marks_to_move), [&fold, check_fn](auto mark) {
+				return check_fn(fold, mark);
 				});
 
 			std::for_each(marks_to_move.begin(), marks_to_move.end(), [this](const auto& mark) {_paper.erase(mark); });
 
-			std::transform(marks_to_move.begin(), marks_to_move.end(), std::inserter(_paper, _paper.end()), [&fold](auto mark) -> Paper::Point_t {
-				return { mark.x, 2 * fold.value - mark.y };
+			std::transform(marks_to_move.begin(), marks_to_move.end(), std::inserter(_paper, _paper.end()), [&fold, execute_fn](auto mark) -> Paper::Point_t {
+				return execute_fn(fold, mark);
 				});
 
 			return std::move(_paper);
 		}
 
-	private:
 		Paper _paper;
 	};
 

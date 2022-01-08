@@ -263,6 +263,22 @@ public:
 		Assert::IsTrue(std::equal(expected_points.begin(), expected_points.end(), points.begin()));
 	}
 };
+
+TEST_CLASS(TestExp)
+{
+public:
+	TEST_METHOD(PowerOf2)
+	{
+		Assert::AreEqual(size_t{   1 }, aoc::Exp<2, 0>::value);
+		Assert::AreEqual(size_t{   2 }, aoc::Exp<2, 1>::value);
+		Assert::AreEqual(size_t{   4 }, aoc::Exp<2, 2>::value);
+		Assert::AreEqual(size_t{   8 }, aoc::Exp<2, 3>::value);
+		Assert::AreEqual(size_t{  16 }, aoc::Exp<2, 4>::value);
+		Assert::AreEqual(size_t{  32 }, aoc::Exp<2, 5>::value);
+		Assert::AreEqual(size_t{  64 }, aoc::Exp<2, 6>::value);
+		Assert::AreEqual(size_t{ 128 }, aoc::Exp<2, 7>::value);
+	}
+};
 }
 
 namespace string_operations

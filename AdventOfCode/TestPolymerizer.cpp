@@ -20,29 +20,132 @@ public:
 		const auto polymer = aoc::polymer::Polymer::from_stream(data);
 
 		Assert::AreEqual(size_t{ 4 }, polymer.length());
+		Assert::AreEqual("NNCB"s, polymer.as_string());
 	}
 
-	TEST_METHOD(SamplePolymerization)
+	TEST_METHOD(SamplePolymerization_1)
 	{
 		constexpr auto data_str =
 			"NNCB\n"
 			"\n"
-			"CH->B\n"
-			"HH->N\n"
-			"CB->H\n"
-			"NH->C\n"
-			"HB->C\n"
-			"HC->B\n"
-			"HN->C\n"
-			"NN->C\n"
-			"BH->H\n"
-			"NC->B\n"
-			"NB->B\n"
-			"BN->B\n"
-			"BB->N\n"
-			"BC->B\n"
-			"CC->N\n"
-			"CN->C"
+			"HH -> N\n"
+			"CB -> H\n"
+			"NH -> C\n"
+			"CH -> B\n"
+			"HB -> C\n"
+			"HC -> B\n"
+			"HN -> C\n"
+			"NN -> C\n"
+			"BH -> H\n"
+			"NC -> B\n"
+			"NB -> B\n"
+			"BN -> B\n"
+			"BB -> N\n"
+			"BC -> B\n"
+			"CC -> N\n"
+			"CN -> C"
+			;
+
+		std::stringstream data(data_str);
+
+		auto polymer = aoc::polymer::Polymer::from_stream(data);
+		const auto rules = aoc::polymer::InsertionRuleLoader::insertion_rule_table_from_stream(data);
+
+		polymer.polymerize<1>(rules);
+
+		Assert::AreEqual(size_t{7}, polymer.length());
+		Assert::AreEqual("NCNBCHB"s, polymer.as_string());
+	}
+
+	TEST_METHOD(SamplePolymerization_2)
+	{
+		constexpr auto data_str =
+			"NNCB\n"
+			"\n"
+			"HH -> N\n"
+			"CB -> H\n"
+			"NH -> C\n"
+			"CH -> B\n"
+			"HB -> C\n"
+			"HC -> B\n"
+			"HN -> C\n"
+			"NN -> C\n"
+			"BH -> H\n"
+			"NC -> B\n"
+			"NB -> B\n"
+			"BN -> B\n"
+			"BB -> N\n"
+			"BC -> B\n"
+			"CC -> N\n"
+			"CN -> C"
+			;
+
+		std::stringstream data(data_str);
+
+		auto polymer = aoc::polymer::Polymer::from_stream(data);
+		const auto rules = aoc::polymer::InsertionRuleLoader::insertion_rule_table_from_stream(data);
+
+		polymer.polymerize<2>(rules);
+
+		Assert::AreEqual(size_t{ 13 }, polymer.length());
+		Assert::AreEqual("NBCCNBBBCBHCB"s, polymer.as_string());
+	}
+
+	TEST_METHOD(SamplePolymerization_3)
+	{
+		constexpr auto data_str =
+			"NNCB\n"
+			"\n"
+			"HH -> N\n"
+			"CB -> H\n"
+			"NH -> C\n"
+			"CH -> B\n"
+			"HB -> C\n"
+			"HC -> B\n"
+			"HN -> C\n"
+			"NN -> C\n"
+			"BH -> H\n"
+			"NC -> B\n"
+			"NB -> B\n"
+			"BN -> B\n"
+			"BB -> N\n"
+			"BC -> B\n"
+			"CC -> N\n"
+			"CN -> C"
+			;
+
+		std::stringstream data(data_str);
+
+		auto polymer = aoc::polymer::Polymer::from_stream(data);
+		const auto rules = aoc::polymer::InsertionRuleLoader::insertion_rule_table_from_stream(data);
+
+		polymer.polymerize<3>(rules);
+
+		Assert::AreEqual(size_t{ 25 }, polymer.length());
+		Assert::AreEqual("NBBBCNCCNBBNBNBBCHBHHBCHB"s, polymer.as_string());
+	}
+
+	TEST_METHOD(SamplePolymerization_4)
+	{
+		constexpr auto data_str =
+			"NNCB\n"
+			"\n"
+			"HH -> N\n"
+			"CB -> H\n"
+			"NH -> C\n"
+			"CH -> B\n"
+			"HB -> C\n"
+			"HC -> B\n"
+			"HN -> C\n"
+			"NN -> C\n"
+			"BH -> H\n"
+			"NC -> B\n"
+			"NB -> B\n"
+			"BN -> B\n"
+			"BB -> N\n"
+			"BC -> B\n"
+			"CC -> N\n"
+			"CN -> C"
 			;
 
 		std::stringstream data(data_str);
@@ -52,7 +155,8 @@ public:
 
 		polymer.polymerize<4>(rules);
 
-		Assert::AreEqual(size_t{}, polymer.length());
+		Assert::AreEqual(size_t{ 49 }, polymer.length());
+		Assert::AreEqual("NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB"s, polymer.as_string());
 	}
 };
 

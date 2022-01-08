@@ -50,53 +50,67 @@ public:
 	}
 
 	Size_t length() const { return _sequence.size(); }
+	std::string as_string() const { return std::string(_sequence.begin(), _sequence.end()); }
 
 	template<size_t N>
 	Polymer& polymerize(const InsertionRuleTable_t& rules)
 	{
 		_redistribute<N>();
-		for (auto cycle = 0; cycle < N; ++cycle) {
-			_single_polymerization_cycle<N>(cycle, rules);
-		}
+		_recursive_polymerize<1, N>(rules);
+
+		return *this;
 	}
 
 private:
 
-	template<size_t N>
-	size_t _calculate_step_size(size_t cycle) const
+	template<size_t CYCLE, size_t TOTAL_CYCLES>
+	static constexpr size_t _step_size()
 	{
-		return std::pow(2, N - cycle - 1) * _seed_length;
+		return Exp<2, TOTAL_CYCLES - CYCLE>::value;
 	}
 
 	template<size_t N>
 	void _redistribute()
 	{
 		const auto original_size = _sequence.size();
-		_sequence.resize(std::pow(2.0, N) * (_sequence.size() - 1) - 1, 0);
+		_sequence.resize(Exp<2, N>::value * (original_size - 1) + 1, 0);
 		
 		auto it = _sequence.rbegin();
-		for (auto ch = std::reverse_iterator<decltype(_sequence.begin())>(std::next(_sequence.begin(), original_size));
-			 ch != _sequence.rend();
-			 ++ch, it += _calculate_step_size(0, cycles)) {
-			*it = *ch;
-		}
+		const auto terminate = std::prev(_sequence.rend());
+		auto ch = std::reverse_iterator<decltype(_sequence.begin())>(std::next(_sequence.begin(), original_size));
+		do {
+			std::swap(*it, *ch);
+
+			++ch;
+			std::advance(it, _step_size<0, N>());
+		} while (it != terminate);
 	}
 
-	template<size_t N>
-	void _single_polymerization_cycle(size_t cycle, const InsertionRuleTable_t& rules)
+	template<size_t CYCLE, size_t TOTAL_CYCLES>
+	void _recursive_polymerize(const InsertionRuleTable_t& rules)
 	{
-		const auto step = _calculate_step_size<N>(cycle + 1, )
+		constexpr auto step = _step_size<CYCLE - 1, TOTAL_CYCLES>();
 
 		auto left_char = _sequence.begin();
 		auto right_char = std::next(_sequence.begin(), step);
+		auto insert_char = std::next(_sequence.begin(), step / 2);
+		const auto terminate = std::prev(_sequence.end());
 
-		for (;; left_char += step, right_char += step) {
+		while (true) {
+			*insert_char = rules.at({ *left_char, *right_char });
 
-			*std::next(left_char, step / 2) = rules.at({ *left_char, *right_char });
+			left_char = right_char;
 
-			if (right_char == std::prev(_sequence.end())) {
+			if (right_char == terminate) {
 				break;
 			}
+
+			right_char += step;
+			insert_char += step;
+		}
+
+		if constexpr (CYCLE < TOTAL_CYCLES) {
+			_recursive_polymerize<CYCLE + 1, TOTAL_CYCLES>(rules);
 		}
 	}
 

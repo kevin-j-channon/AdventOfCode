@@ -184,4 +184,43 @@ public:
 		Assert::AreEqual('L', rules.at(aoc::polymer::Dimer_t{ 'J', 'K' }));
 	}
 };
+
+TEST_CLASS(TestScorer)
+{
+public:
+	TEST_METHOD(CalculateWorksForExample)
+	{
+		constexpr auto data_str =
+			"NNCB\n"
+			"\n"
+			"HH -> N\n"
+			"CB -> H\n"
+			"NH -> C\n"
+			"CH -> B\n"
+			"HB -> C\n"
+			"HC -> B\n"
+			"HN -> C\n"
+			"NN -> C\n"
+			"BH -> H\n"
+			"NC -> B\n"
+			"NB -> B\n"
+			"BN -> B\n"
+			"BB -> N\n"
+			"BC -> B\n"
+			"CC -> N\n"
+			"CN -> C"
+			;
+
+		std::stringstream data(data_str);
+
+		auto polymer = aoc::polymer::Polymer::from_stream(data);
+		const auto rules = aoc::polymer::InsertionRuleLoader::insertion_rule_table_from_stream(data);
+
+		polymer.polymerize<10>(rules);
+		Assert::AreEqual(size_t{ 3073 }, polymer.length());
+
+		const auto score = aoc::polymer::Scorer{ polymer }.calculate();
+		Assert::AreEqual(uint32_t{ 1588 }, score);
+	}
+};
 }

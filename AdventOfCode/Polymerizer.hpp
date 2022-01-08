@@ -167,5 +167,37 @@ private:
 	}
 };
 
+class Scorer
+{
+public:
+	Scorer(const Polymer& p)
+		: _polymer{p.as_string()}
+	{}
+
+	uint32_t calculate() const
+	{
+		const auto counts = _count_monomers();
+
+		auto compare_counts = [](const auto& c1, const auto& c2) { return c1.second < c2.second; };
+
+		const auto min_count = std::min_element(counts.begin(), counts.end(), compare_counts)->second;
+		const auto max_count = std::max_element(counts.begin(), counts.end(), compare_counts)->second;
+
+		return static_cast<uint32_t>(max_count - min_count);
+	}
+
+private:
+
+	std::map<Monomer_t, uint32_t> _count_monomers() const
+	{
+		return std::accumulate(_polymer.begin(), _polymer.end(), std::map<Monomer_t, uint32_t>{}, [](auto&& counts, const auto& monomer) {
+			counts[monomer]++;
+			return std::move(counts);
+			});
+	}
+
+	const std::string _polymer;
+};
+
 }
 }

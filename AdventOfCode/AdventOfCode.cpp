@@ -12,6 +12,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "DumboOctopusModel.hpp"
 #include "CaveNavigator.hpp"
 #include "PaperFolder.hpp"
+#include "Polymerizer.hpp"
 
 using namespace std::string_literals;
 using namespace std::chrono_literals;
@@ -1045,6 +1046,29 @@ public:
 		const auto code = aoc::PaperReader<6, 5>::decode(aoc::PaperFolder{ std::move(paper) }.apply(folds).as_matrix());
 
 		Assert::AreEqual("JPZCUAUR"s, code);
+	}
+};
+
+}
+
+namespace day_14
+{
+
+TEST_CLASS(TestDay14)
+{
+public:
+	TEST_METHOD(Part1)
+	{
+		std::ifstream data_file(DATA_DIR / "Day14_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		auto polymer = aoc::polymer::Polymer::from_stream(data_file);
+		const auto rules = aoc::polymer::InsertionRuleLoader::insertion_rule_table_from_stream(data_file);
+
+		polymer.polymerize<10>(rules);
+		const auto score = aoc::polymer::Scorer{ polymer }.calculate();
+
+		Assert::AreEqual(uint32_t{ 2549 }, score);
 	}
 };
 

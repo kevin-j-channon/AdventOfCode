@@ -203,6 +203,7 @@
     <Text Include="Data\Day12_input.txt" />
     <Text Include="Data\Day13_input.txt" />
     <Text Include="Data\Day14_input.txt" />
+    <Text Include="Data\Day15_input.txt" />
     <Text Include="Data\Day1_input.txt" />
     <Text Include="Data\Day2_input.txt" />
     <Text Include="Data\Day3_input.txt" />

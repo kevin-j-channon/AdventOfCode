@@ -172,6 +172,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="TestCaveNavigator.cpp" />
+    <ClCompile Include="TestCavernPathFinder.cpp" />
     <ClCompile Include="TestEntertainment.cpp" />
     <ClCompile Include="TestFunctionalAreascpp.cpp" />
     <ClCompile Include="TestModelling.cpp" />
@@ -182,6 +183,7 @@
     <ClInclude Include="AdventOfCode.hpp" />
     <ClInclude Include="BoatSystems.hpp" />
     <ClInclude Include="CaveNavigator.hpp" />
+    <ClInclude Include="CavernPathFinder.hpp" />
     <ClInclude Include="CharacterMaps.hpp" />
     <ClInclude Include="Common.hpp" />
     <ClInclude Include="CrabSorter.hpp" />

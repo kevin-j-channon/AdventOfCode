@@ -331,8 +331,8 @@ public:
 				std::ifstream data_file(DATA_DIR / "Day12_input.txt");
 				Assert::IsTrue(data_file.is_open());
 
-				auto caves = aoc::CaveLoader::load(data_file);
-				auto routes = aoc::CaveRoutes{ caves };
+				auto caves = aoc::navigation::CaveLoader::load(data_file);
+				auto routes = aoc::navigation::CaveRoutes{ caves };
 				auto route_count = std::accumulate(routes.begin(), routes.end(), uint32_t{ 0 }, [](auto curr, auto _) { return ++curr; });
 
 				Logger::WriteMessage(std::format("\tNumber of routes: {}\n", route_count).c_str());
@@ -344,9 +344,9 @@ public:
 				std::ifstream data_file(DATA_DIR / "Day12_input.txt");
 				Assert::IsTrue(data_file.is_open());
 
-				auto caves = aoc::CaveLoader::load(data_file);
-				auto routes = aoc::CaveRoutes{ caves };
-				auto route_count = aoc::CaveRevisitor{ caves }.routes().size();
+				auto caves = aoc::navigation::CaveLoader::load(data_file);
+				auto routes = aoc::navigation::CaveRoutes{ caves };
+				auto route_count = aoc::navigation::CaveRevisitor{ caves }.routes().size();
 
 				Logger::WriteMessage(std::format("\tNumber of routes with single double-visits: {}\n", route_count).c_str());
 #else
@@ -1023,8 +1023,8 @@ public:
 		std::ifstream data_file(DATA_DIR / "Day12_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
-		auto caves = aoc::CaveLoader::load(data_file);
-		auto routes = aoc::CaveRoutes{ caves };
+		auto caves = aoc::navigation::CaveLoader::load(data_file);
+		auto routes = aoc::navigation::CaveRoutes{ caves };
 		auto route_count = std::accumulate(routes.begin(), routes.end(), uint32_t{ 0 }, [](auto curr, auto _) { return ++curr; });
 
 		Assert::AreEqual(uint32_t{ 5212 }, route_count);
@@ -1036,9 +1036,9 @@ public:
 		std::ifstream data_file(DATA_DIR / "Day12_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
-		auto caves = aoc::CaveLoader::load(data_file);
-		auto routes = aoc::CaveRoutes{ caves };
-		auto route_count = aoc::CaveRevisitor{ caves }.routes().size();
+		auto caves = aoc::navigation::CaveLoader::load(data_file);
+		auto routes = aoc::navigation::CaveRoutes{ caves };
+		auto route_count = aoc::navigation::CaveRevisitor{ caves }.routes().size();
 
 		Assert::AreEqual(size_t{ 134862 }, route_count);
 	#else

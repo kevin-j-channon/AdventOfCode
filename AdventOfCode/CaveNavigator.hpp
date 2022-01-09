@@ -12,6 +12,8 @@
 
 namespace aoc
 {
+namespace navigation
+{
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -64,7 +66,7 @@ struct TerminalCaveType
 				|| tunnel.second == TerminalCaveType::name<TerminalCaveType::end>()) {
 				return start | end;
 			}
-			
+
 			return start;
 		}
 
@@ -96,7 +98,7 @@ public:
 	};
 
 	CaveMapBuilder(CaveMap_t& cave_map)
-		: _cave_map{cave_map}
+		: _cave_map{ cave_map }
 	{}
 
 	template<size_t TYPE, typename TunnelIter_T>
@@ -156,7 +158,7 @@ public:
 			return 0 != (TerminalCaveType::to_type(t) & TerminalCaveType::end);
 			});
 
-		return { 
+		return {
 			{tunnels.begin(), end_of_starts},
 			{end_of_starts, end_of_ends},
 			{end_of_ends, tunnels.end()} };
@@ -263,7 +265,7 @@ private:
 	std::set<Cave_t> _not_revisitable;
 	Breadcrumb_t _current_route;
 
-	
+
 	RouteStatus _recurse_through_tunnels(const Cave_t& cave)
 	{
 		_current_route.emplace_back(cave, 0);
@@ -282,8 +284,8 @@ private:
 
 		auto status = RouteStatus::exploring;
 		for (auto [edge, edges_end] = boost::out_edges(_caves->vertex(cave), *_caves);
-			 edge != edges_end && status != RouteStatus::found_end;
-			 ++edge) {
+			edge != edges_end && status != RouteStatus::found_end;
+			++edge) {
 
 			const auto next_cave = _advance_into_cave(edge);
 
@@ -370,7 +372,7 @@ private:
 		auto [edge, edges_end] = boost::out_edges(_caves->vertex(_current_route.back().first), *_caves);
 
 		while (_current_route.back().second >= std::distance(edge, edges_end)) {
-			
+
 			_pop_route();
 
 			if (_current_route.empty()) {
@@ -405,7 +407,7 @@ public:
 	{}
 
 	auto begin() const { return RouteIterator{ _caves }; }
-	auto begin() { return RouteIterator{_caves}; }
+	auto begin() { return RouteIterator{ _caves }; }
 	auto end() const { return RouteIterator{}; }
 	auto end() { return RouteIterator{}; }
 
@@ -543,7 +545,7 @@ private:
 	CaveMap_t _modify_caves_to_doubly_visit(const Cave_t& cave) const
 	{
 		CaveMap_t out = _caves;
-		
+
 		const auto cave_dual = Cave_t{ cave + "_" };
 		auto [dual_vertex, inserted] = out.insert_vertex(cave_dual);
 		out[cave_dual] = cave_dual;
@@ -578,6 +580,7 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-}
+}	// namespace: navigation
+}	// namespace: aoc
 
 ///////////////////////////////////////////////////////////////////////////////

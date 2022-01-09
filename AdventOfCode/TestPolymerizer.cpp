@@ -54,7 +54,7 @@ public:
 		Assert::AreEqual(uint64_t{ 1 }, score);
 	}
 
-	TEST_METHOD(ExampleScoresCorrectly)
+	TEST_METHOD(ExampleScoresCorrectly_10Cycles)
 	{
 		constexpr auto data_str =
 			"NNCB\n"
@@ -84,6 +84,38 @@ public:
 
 		const auto score = polymer.polymerize(10, rules).score();
 		Assert::AreEqual(uint64_t{ 1588 }, score);
+	}
+
+	TEST_METHOD(ExampleScoresCorrectly_40Cycles)
+	{
+		constexpr auto data_str =
+			"NNCB\n"
+			"\n"
+			"HH -> N\n"
+			"CB -> H\n"
+			"NH -> C\n"
+			"CH -> B\n"
+			"HB -> C\n"
+			"HC -> B\n"
+			"HN -> C\n"
+			"NN -> C\n"
+			"BH -> H\n"
+			"NC -> B\n"
+			"NB -> B\n"
+			"BN -> B\n"
+			"BB -> N\n"
+			"BC -> B\n"
+			"CC -> N\n"
+			"CN -> C"
+			;
+
+		std::stringstream data(data_str);
+
+		auto polymer = aoc::polymer::Polymer::from_stream(data);
+		const auto rules = aoc::polymer::InsertionRuleLoader::from_stream(data);
+
+		const auto score = polymer.polymerize(40, rules).score();
+		Assert::AreEqual(uint64_t{ 2188189693529 }, score);
 	}
 };
 }

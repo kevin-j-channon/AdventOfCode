@@ -385,6 +385,37 @@ public:
 				Logger::WriteMessage(std::format("\tThe secret code is: {}\n", code).c_str());
 			}
 		}
+
+		// Day 14
+		{
+			Logger::WriteMessage("Day 14:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day14_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				auto polymer = aoc::polymer::Polymer::from_stream(data_file);
+				const auto rules = aoc::polymer::InsertionRuleLoader::from_stream(data_file);
+
+				const auto score = polymer.polymerize(10, rules).score();
+
+				Logger::WriteMessage(std::format("\tPolymerization score after 10 cycles: {}\n", score).c_str());
+			}
+
+			// Part 2
+			{
+				std::ifstream data_file(DATA_DIR / "Day14_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				auto polymer = aoc::polymer::Polymer::from_stream(data_file);
+				const auto rules = aoc::polymer::InsertionRuleLoader::from_stream(data_file);
+
+				const auto score = polymer.polymerize(40, rules).score();
+
+				Logger::WriteMessage(std::format("\tPolymerization score after 40 cycles: {}\n", score).c_str());
+			}
+		}
 	}
 };
 }
@@ -1068,6 +1099,19 @@ public:
 		const auto score = polymer.polymerize(10, rules).score();
 
 		Assert::AreEqual(uint64_t{ 2549 }, score);
+	}
+
+	TEST_METHOD(Part2)
+	{
+		std::ifstream data_file(DATA_DIR / "Day14_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		auto polymer = aoc::polymer::Polymer::from_stream(data_file);
+		const auto rules = aoc::polymer::InsertionRuleLoader::from_stream(data_file);
+
+		const auto score = polymer.polymerize(40, rules).score();
+
+		Assert::AreEqual(uint64_t{ 2516901104210 }, score);
 	}
 };
 

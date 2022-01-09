@@ -1063,12 +1063,11 @@ public:
 		Assert::IsTrue(data_file.is_open());
 
 		auto polymer = aoc::polymer::Polymer::from_stream(data_file);
-		const auto rules = aoc::polymer::InsertionRuleLoader::insertion_rule_table_from_stream(data_file);
+		const auto rules = aoc::polymer::InsertionRuleLoader::from_stream(data_file);
 
-		polymer.polymerize<10>(rules);
-		const auto score = aoc::polymer::Scorer{ polymer }.calculate();
+		const auto score = polymer.polymerize(10, rules).score();
 
-		Assert::AreEqual(uint32_t{ 2549 }, score);
+		Assert::AreEqual(uint64_t{ 2549 }, score);
 	}
 };
 

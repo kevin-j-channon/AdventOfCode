@@ -31,7 +31,7 @@ public:
 
 		std::stringstream data(data_str);
 
-		const auto cavern = aoc::navigation::Cavern::from_stream(data);
+		const auto cavern = aoc::navigation::Cavern{ data };
 
 		const auto& risks = cavern.risk_grid();
 		Assert::AreEqual(aoc::navigation::Cavern::Size_t{ 10 }, risks.n_rows);

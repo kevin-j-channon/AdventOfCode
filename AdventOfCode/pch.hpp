@@ -2,6 +2,8 @@
 
 #include <armadillo>
 
+#include <boost/noncopyable.hpp>
+
 #include <algorithm>
 #include <array>
 #include <bitset>

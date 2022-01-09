@@ -2,6 +2,8 @@
 
 #include "StringOperations.hpp"
 
+#include <boost/graph/adjacency_list.hpp>
+
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace aoc
@@ -11,18 +13,20 @@ namespace navigation
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class Cavern
+class Cavern : boost::noncopyable
 {
 public:
 	using Grid_t = arma::Mat<int>;
 	using Size_t = arma::uword;
 
-	static Cavern from_stream(std::istream& is)
-	{
-		auto out = Cavern{};
-		out._risk_grid = _read_risk_grid(is);
+	Cavern() {}
 
-		return out;
+	Cavern(Cavern&&) = default;
+	Cavern& operator=(Cavern&&) = default;
+
+	Cavern(std::istream& is)
+	{
+		_risk_grid = _read_risk_grid(is);
 	}
 
 	const Grid_t& risk_grid() const
@@ -54,6 +58,26 @@ private:
 	}
 
 	Grid_t _risk_grid;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class CavernPathFinder : boost::noncopyable
+{
+	using EdgeWeightProperty_t = boost::property<boost::edge_weight_t, int>;
+	using Graph_t = boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, int, EdgeWeightProperty_t>;
+public:
+
+	CavernPathFinder& plot_course(const Cavern& cavern)
+	{
+		return *this;
+	}
+
+private:
+	static Graph_t _build_graph(const Cavern::Grid_t& risk_grid)
+	{
+		return Graph_t{};
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

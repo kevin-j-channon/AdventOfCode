@@ -3,6 +3,7 @@
 #include "StringOperations.hpp"
 
 #include <boost/graph/adjacency_list.hpp>
+#include <boost/graph/dijkstra_shortest_paths.hpp>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -72,16 +73,20 @@ class CavernPathFinder : boost::noncopyable
 	using Route_t = std::vector<VertexDescriptor_t>;
 public:
 
-	CavernPathFinder& plot_course(const Cavern& cavern)
+	CavernPathFinder& plot_course(const Cavern::Grid_t& risk_grid)
 	{
-		const auto cavern_graph = _build_graph(cavern.risk_grid());
-
-		const auto start_vertex = VertexDescriptor_t{ 0 };
-		const auto end_vertex = VertexDescriptor_t{ cavern.risk_grid().n_cols * cavern.risk_grid().n_rows };
-		const auto optimal_path = _find_path_via_dijkstra(cavern_graph, start_vertex, end_vertex);
+		_optimal_path = _find_path_via_dijkstra(
+			_build_graph(risk_grid),
+			VertexDescriptor_t{ 0 },
+			VertexDescriptor_t{ risk_grid.n_cols * risk_grid.n_rows }
+		);
 
 		return *this;
 	}
+
+	Route_t route() const { return _optimal_path; }
+
+	size_t score() const { return 0; }
 
 private:
 	static Graph_t _build_graph(const Cavern::Grid_t& risk_grid)
@@ -117,34 +122,36 @@ private:
 
 	static Route_t _find_path_via_dijkstra(const Graph_t& cavern_graph, const VertexDescriptor_t& start_vertex, const VertexDescriptor_t& end_vertex)
 	{
-		const auto vertex_count = boost::num_vertices(cavern_graph);
+		using namespace boost;
+
+		const auto vertex_count = num_vertices(cavern_graph);
 		auto distances = std::vector<int>(vertex_count);
-		auto pMap = std::vector<VertexDescriptor_t>(vertex_count);
+		auto route_map = std::vector<VertexDescriptor_t>(vertex_count);
 
-		auto distanceMap = boost::predecessor_map(
-			boost::make_iterator_property_map(pMap.begin(), boost::get(boost::vertex_index, cavern_graph))).distance_map(
-				boost::make_iterator_property_map(distances.begin(), boost::get(boost::vertex_index, cavern_graph)));
+		auto distance_map = predecessor_map(make_iterator_property_map( route_map.begin(), get(vertex_index, cavern_graph)))
+			.distance_map(make_iterator_property_map(distances.begin(), get(vertex_index, cavern_graph)));
 
-		boost::dijkstra_shortest_paths(cavern_graph, start_vertex, distanceMap);
-		return _getPath(graph, pMap, source, destination);
+		boost::dijkstra_shortest_paths(cavern_graph, start_vertex, distance_map);
+
+		return _get_forward_path(cavern_graph, route_map, start_vertex, end_vertex);
 	}
 
-	static Route_t _getPath(
-		const DirectedGraphType& graph,
-		const std::vector<VertexDescriptor>& pMap,
-		const VertexDescriptor& source,
-		const VertexDescriptor& destination
-	) {
-		std::vector<VertexDescriptor> path;
-		VertexDescriptor current = destination;
-		while (current != source)
-		{
+	static Route_t _get_forward_path(const Graph_t& cavern_graph, const Route_t& route_map, const VertexDescriptor_t& start_vertex, const VertexDescriptor_t& end_vertex)
+	{
+		auto path = Route_t{};
+		path.reserve(route_map.size());
+
+		for (auto current = end_vertex; current != start_vertex; current = route_map[current]) {
 			path.push_back(current);
-			current = pMap[current];
 		}
-		path.push_back(source);
-		return path;
+
+		path.push_back(start_vertex);
+		
+		return std::move(path);
 	}
+
+
+	Route_t _optimal_path;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

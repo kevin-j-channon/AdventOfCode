@@ -57,4 +57,18 @@ public:
 		}
 	}
 };
+
+TEST_CLASS(TestCavernPathFinder)
+{
+public:
+
+	TEST_METHOD(SimplestCase)
+	{
+		auto risks = aoc::navigation::Cavern::Grid_t(2, 2);
+		risks << 1 << 1 << 2 << 1;
+
+		const auto route = aoc::navigation::CavernPathFinder{}.plot_course(risks).route();
+
+	}
+};
 }

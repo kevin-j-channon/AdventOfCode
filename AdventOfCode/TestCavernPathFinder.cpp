@@ -67,8 +67,12 @@ public:
 		auto risks = aoc::navigation::Cavern::Grid_t{ {1, 3}, {2, 1} };
 
 		const auto route = aoc::navigation::CavernPathFinder{}.plot_course(risks).route();
-		for (const auto& v : route) {
-			Logger::WriteMessage(std::format("{} ", v).c_str());
+		Assert::AreEqual(size_t{ 3 }, route.size());
+
+		constexpr auto expected_vertices = std::array{0, 2, 3};
+		auto expected = expected_vertices.begin();
+		for (auto vertex = route.begin(); vertex != route.end(); ++vertex, ++expected) {
+			Assert::AreEqual(static_cast<uint64_t>(*expected), *vertex);
 		}
 	}
 };

@@ -13,6 +13,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "CaveNavigator.hpp"
 #include "PaperFolder.hpp"
 #include "Polymerizer.hpp"
+#include "CavernPathFinder.hpp"
 
 using namespace std::string_literals;
 using namespace std::chrono_literals;
@@ -414,6 +415,27 @@ public:
 				const auto score = polymer.polymerize(40, rules).score();
 
 				Logger::WriteMessage(std::format("\tPolymerization score after 40 cycles: {}\n", score).c_str());
+			}
+		}
+
+		// Day 15
+		{
+			Logger::WriteMessage("Day 15:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day15_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto cavern = aoc::navigation::Cavern{ data_file };
+				const auto score = aoc::navigation::CavernPathFinder{}.plot_course(cavern.risk_grid()).score();
+
+				Logger::WriteMessage(std::format("\tOptimal path score: {}\n", score).c_str());
+			}
+
+			// Part 2
+			{
+				
 			}
 		}
 	}
@@ -1112,6 +1134,26 @@ public:
 		const auto score = polymer.polymerize(40, rules).score();
 
 		Assert::AreEqual(uint64_t{ 2516901104210 }, score);
+	}
+};
+
+}
+
+namespace day_15
+{
+
+TEST_CLASS(TestDay15)
+{
+public:
+	TEST_METHOD(Part1)
+	{
+		std::ifstream data_file(DATA_DIR / "Day15_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto cavern = aoc::navigation::Cavern{ data_file };
+		const auto score = aoc::navigation::CavernPathFinder{}.plot_course(cavern.risk_grid()).score();
+
+		Assert::AreEqual(size_t{ 811 }, score);
 	}
 };
 

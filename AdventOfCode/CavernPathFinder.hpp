@@ -78,7 +78,7 @@ public:
 		_optimal_path = _find_path_via_dijkstra(
 			_build_graph(risk_grid),
 			VertexDescriptor_t{ 0 },
-			VertexDescriptor_t{ risk_grid.n_elem- 1 }
+			VertexDescriptor_t{ risk_grid.n_elem - 1 }
 		);
 
 		return *this;
@@ -91,7 +91,7 @@ public:
 private:
 	static Graph_t _build_graph(const Cavern::Grid_t& risk_grid)
 	{
-		auto out = Graph_t(risk_grid.n_rows * risk_grid.n_cols);
+		auto out = Graph_t(risk_grid.n_elem);
 
 		auto vertex_from_row_col = [&risk_grid](auto r, auto c) -> size_t {
 			return r * risk_grid.n_cols + c;
@@ -101,34 +101,21 @@ private:
 		for (auto r = 0u; r < risk_grid.n_rows - 1; ++r) {
 			for (auto c = 0u; c < risk_grid.n_cols - 1; ++c) {
 				const auto v_0 = vertex_from_row_col(r, c);
-				const auto v_down = vertex_from_row_col(r + 1, c);
-				const auto v_right = vertex_from_row_col(r, c + 1);
 
-				Logger::WriteMessage(std::format("{} -{}-> {}\n", v_0, risk_grid.at(r + 1, c), v_down).c_str());
-				boost::add_edge(v_0, v_down, EdgeWeight_t{ risk_grid.at(r + 1, c) }, out);
-
-				Logger::WriteMessage(std::format("{} -{}-> {}\n", v_0, risk_grid.at(r, c + 1), v_right).c_str());
-				boost::add_edge(v_0, v_right, EdgeWeight_t{ risk_grid.at(r, c + 1) }, out);
+				boost::add_edge(v_0, vertex_from_row_col(r + 1, c), EdgeWeight_t{ risk_grid.at(r + 1, c) }, out);
+				boost::add_edge(v_0, vertex_from_row_col(r, c + 1), EdgeWeight_t{ risk_grid.at(r, c + 1) }, out);
 			}
 		}
 
 		// Add edges down right side of grid.
 		const auto final_col_idx = risk_grid.n_cols - 1;
 		for (auto r = 0u; r < risk_grid.n_rows - 1; ++r) {
-			const auto v_0 = vertex_from_row_col(r, final_col_idx);
-			const auto v_down = vertex_from_row_col(r + 1, final_col_idx);
-
-			Logger::WriteMessage(std::format("{} -{}-> {}\n", v_0, risk_grid.at(r + 1, final_col_idx), v_down).c_str());
 			boost::add_edge(vertex_from_row_col(r, final_col_idx), vertex_from_row_col(r + 1, final_col_idx), EdgeWeight_t{ risk_grid.at(r + 1, final_col_idx) }, out);
 		}
 
 		// Add edges along bottom of grid.
 		const auto final_row_idx = risk_grid.n_rows - 1;
 		for (auto c = 0u; c < risk_grid.n_cols - 1; ++c) {
-			const auto v_0 = vertex_from_row_col(final_row_idx, c);
-			const auto v_right = vertex_from_row_col(final_row_idx, c + 1);
-
-			Logger::WriteMessage(std::format("{} -{}-> {}\n", v_0, risk_grid.at(final_row_idx, c + 1), v_right).c_str());
 			boost::add_edge(vertex_from_row_col(final_row_idx, c), vertex_from_row_col(final_row_idx, c + 1), EdgeWeight_t{ risk_grid.at(final_row_idx, c + 1) }, out);
 		}
 

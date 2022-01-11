@@ -69,8 +69,36 @@ public:
 		const auto route = aoc::navigation::CavernPathFinder{}.plot_course(risks).route();
 		Assert::AreEqual(size_t{ 3 }, route.size());
 
-		constexpr auto expected_vertices = std::array{0, 2, 3};
-		auto expected = expected_vertices.begin();
+		constexpr auto expected_route = std::array{0, 2, 3};
+		auto expected = expected_route.begin();
+		for (auto vertex = route.begin(); vertex != route.end(); ++vertex, ++expected) {
+			Assert::AreEqual(static_cast<uint64_t>(*expected), *vertex);
+		}
+	}
+
+	TEST_METHOD(SimpleExampleRouteIsFound)
+	{
+		constexpr auto data_str =
+			"1163751742\n"
+			"1381373672\n"
+			"2136511328\n"
+			"3694931569\n"
+			"7463417111\n"
+			"1319128137\n"
+			"1359912421\n"
+			"3125421639\n"
+			"1293138521\n"
+			"2311944581"
+			;
+
+		std::stringstream data(data_str);
+
+		const auto cavern = aoc::navigation::Cavern{ data };
+		const auto route = aoc::navigation::CavernPathFinder{}.plot_course(cavern.risk_grid()).route();
+
+		constexpr auto expected_route = std::array{0, 10, 20, 21, 22, 23, 24, 25, 26, 36, 37, 47, 48, 58, 68, 78, 88, 89, 99 };
+		Assert::AreEqual(expected_route.size(), route.size());
+		auto expected = expected_route.begin();
 		for (auto vertex = route.begin(); vertex != route.end(); ++vertex, ++expected) {
 			Assert::AreEqual(static_cast<uint64_t>(*expected), *vertex);
 		}

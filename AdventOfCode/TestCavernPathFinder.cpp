@@ -64,11 +64,12 @@ public:
 
 	TEST_METHOD(SimplestCase)
 	{
-		auto risks = aoc::navigation::Cavern::Grid_t(2, 2);
-		risks << 1 << 1 << 2 << 1;
+		auto risks = aoc::navigation::Cavern::Grid_t{ {1, 3}, {2, 1} };
 
 		const auto route = aoc::navigation::CavernPathFinder{}.plot_course(risks).route();
-
+		for (const auto& v : route) {
+			Logger::WriteMessage(std::format("{} ", v).c_str());
+		}
 	}
 };
 }

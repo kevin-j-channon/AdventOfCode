@@ -75,7 +75,7 @@ public:
 
 		for (auto r = 0u; r < 4; ++r) {
 			for (auto c = 0u; c < 4; ++c) {
-				Assert::AreEqual(expected_risks[r][c], risks.at(r, c));
+				Assert::AreEqual(expected_risks[r][c], risks.at(r, c), std::format(L"Mismatch at {}, {}", r, c).c_str());
 			}
 		}
 	}

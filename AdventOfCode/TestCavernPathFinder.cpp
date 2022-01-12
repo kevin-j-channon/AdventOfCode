@@ -56,6 +56,29 @@ public:
 			}
 		}
 	}
+
+	TEST_METHOD(ExpandSmallCave)
+	{
+		std::stringstream data("56\n78");
+
+		const auto risks = aoc::navigation::Cavern{ data }.expand(2).risk_grid();
+
+		Assert::AreEqual(aoc::navigation::Cavern::Size_t{ 4 }, risks.n_rows);
+		Assert::AreEqual(aoc::navigation::Cavern::Size_t{ 4 }, risks.n_cols);
+
+		constexpr auto expected_risks = std::array{
+			std::array{5,6,6,7},
+			std::array{7,8,8,9},
+			std::array{6,7,7,8},
+			std::array{8,9,9,1}
+		};
+
+		for (auto r = 0u; r < 4; ++r) {
+			for (auto c = 0u; c < 4; ++c) {
+				Assert::AreEqual(expected_risks[r][c], risks.at(r, c));
+			}
+		}
+	}
 };
 
 TEST_CLASS(TestCavernPathFinder)

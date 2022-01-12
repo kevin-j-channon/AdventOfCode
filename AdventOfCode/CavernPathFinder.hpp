@@ -35,6 +35,21 @@ public:
 		return _risk_grid;
 	}
 
+	Cavern& expand(Size_t factor)
+	{
+		auto new_grid = Grid_t(_risk_grid.n_rows * factor, _risk_grid.n_cols * factor);
+
+		for (auto block_row = 0u; block_row < factor; ++block_row) {
+			for (auto block_col = 0u; block_col < factor; ++block_col) {
+				_apply_scaled_grid(_row_from_block_row(block_row), _col_from_block_col(block_col), new_grid);
+			}
+		}
+
+		std::swap(new_grid, _risk_grid);
+
+		return *this;
+	}
+
 private:
 	static Grid_t _read_risk_grid(std::istream& is)
 	{
@@ -56,6 +71,40 @@ private:
 		return std::transform(str.begin(), str.end(), it, [](auto c) {
 			return static_cast<int>(c - '0');
 			});
+	}
+
+	Size_t _row_from_block_row(Size_t block_row) const
+	{
+		return block_row * _risk_grid.n_rows;
+	}
+
+	Size_t _col_from_block_col(Size_t block_col) const
+	{
+		return block_col * _risk_grid.n_cols;
+	}
+
+	void _apply_scaled_grid(Size_t start_row, Size_t start_col, Grid_t& target) const
+	{
+		const auto offset = _offset_from_row_and_col(start_row, start_col);
+		for (auto r = 0u; r < _risk_grid.n_rows; ++r) {
+			const auto target_row = r + start_row;
+			for (auto c = 0u; c < _risk_grid.n_cols; ++c) {
+				target.at(target_row, c) = _apply_offset(offset, _risk_grid.at(r, c));
+			}
+		}
+	}
+
+	int _offset_from_row_and_col(Size_t row, Size_t col) const
+	{
+		const auto block_row = row / _risk_grid.n_rows;
+		const auto block_col = col / _risk_grid.n_cols;
+
+		return block_row + block_col;
+	}
+
+	static int _apply_offset(int offset, int value)
+	{
+		return (value + offset) % 10;
 	}
 
 	Grid_t _risk_grid;

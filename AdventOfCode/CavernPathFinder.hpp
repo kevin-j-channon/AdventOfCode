@@ -106,8 +106,7 @@ private:
 
 	static int _apply_offset(int offset, int value)
 	{
-		const auto v = value + offset;
-		return v > 9 ? 1 : v;
+		return (value + offset - 1) % 9 + 1;
 	}
 
 	Grid_t _risk_grid;

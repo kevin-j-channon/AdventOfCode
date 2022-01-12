@@ -89,8 +89,6 @@ private:
 		for (auto r = 0u; r < _risk_grid.n_rows; ++r) {
 			const auto target_row = r + start_row;
 			for (auto c = 0u; c < _risk_grid.n_cols; ++c) {
-				const auto risk = _risk_grid.at(r, c);
-				const auto off = _apply_offset(offset, _risk_grid.at(r, c));
 				target.at(target_row, c + start_col) = _apply_offset(offset, _risk_grid.at(r, c));
 			}
 		}
@@ -101,7 +99,7 @@ private:
 		const auto block_row = row / _risk_grid.n_rows;
 		const auto block_col = col / _risk_grid.n_cols;
 
-		return block_row + block_col;
+		return static_cast<int>(block_row + block_col);
 	}
 
 	static int _apply_offset(int offset, int value)

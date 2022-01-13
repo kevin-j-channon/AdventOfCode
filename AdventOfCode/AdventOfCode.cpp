@@ -1161,7 +1161,8 @@ public:
 		std::ifstream data_file(DATA_DIR / "Day15_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
-		const auto score = aoc::navigation::CavernPathFinder{}.plot_course(aoc::navigation::Cavern{ data_file }.expand(5).risk_grid()).score();
+		const auto cavern = aoc::navigation::Cavern{ data_file }.expand(5);
+		const auto score = aoc::navigation::CavernPathFinder{}.plot_course(cavern.risk_grid()).score();
 
 		Assert::AreEqual(size_t{ 811 }, score);
 	}

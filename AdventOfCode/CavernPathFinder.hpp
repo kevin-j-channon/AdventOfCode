@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Common.hpp"
 #include "StringOperations.hpp"
 
 #include <boost/graph/adjacency_list.hpp>
@@ -14,13 +15,16 @@ namespace navigation
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class Cavern : boost::noncopyable
+class Cavern
 {
 public:
 	using Grid_t = arma::Mat<int>;
 	using Size_t = arma::uword;
 
 	Cavern() {}
+
+	Cavern(const Cavern&) = default;
+	Cavern& operator=(const Cavern&) = default;
 
 	Cavern(Cavern&&) = default;
 	Cavern& operator=(Cavern&&) = default;
@@ -119,11 +123,16 @@ class CavernPathFinder : boost::noncopyable
 	using Graph_t = boost::adjacency_list<boost::listS, boost::vecS, boost::directedS, Vertex_t, EdgeWeight_t>;
 
 	using VertexDescriptor_t = boost::graph_traits<Graph_t>::vertex_descriptor;
-	using Route_t = std::vector<VertexDescriptor_t>;
+	using VertexRoute_t = std::vector<VertexDescriptor_t>;
 public:
+
+	using Point_t = Point2D<Cavern::Size_t>;
+	using Route_t = std::vector<Point_t>;
 
 	CavernPathFinder& plot_course(const Cavern::Grid_t& risk_grid)
 	{
+		_cavern_rows = risk_grid.n_rows;
+		_cavern_cols = risk_grid.n_cols;
 		_graph = _build_graph(risk_grid);
 		_optimal_path = _find_path_via_dijkstra(
 			VertexDescriptor_t{ 0 },
@@ -140,7 +149,7 @@ public:
 		auto out = size_t{ 0 };
 
 		for (auto src = _optimal_path.begin(), dst = std::next(src); dst != _optimal_path.end(); ++src, ++dst) {
-			out += boost::get(boost::edge_weight, _graph, _get_edge(*src, *dst));
+			out += boost::get(boost::edge_weight, _graph, _get_edge(_vertex_from_cavern_location(*src), _vertex_from_cavern_location(*dst)));
 		}
 
 		return out;
@@ -194,11 +203,10 @@ private:
 	Route_t _find_path_via_dijkstra(const VertexDescriptor_t& start_vertex, const VertexDescriptor_t& end_vertex)
 	{
 		using namespace boost;
-		
 
 		const auto vertex_count = num_vertices(_graph);
 		auto distances = std::vector<int>(vertex_count);
-		auto route_map = std::vector<VertexDescriptor_t>(vertex_count);
+		auto route_map = VertexRoute_t(vertex_count);
 
 		auto distance_map = predecessor_map(make_iterator_property_map( route_map.begin(), get(vertex_index, _graph)))
 			.distance_map(make_iterator_property_map(distances.begin(), get(vertex_index, _graph)));
@@ -208,24 +216,36 @@ private:
 		return _get_forward_path(route_map, start_vertex, end_vertex);
 	}
 
-	static Route_t _get_forward_path(const Route_t& route_map, const VertexDescriptor_t& start_vertex, const VertexDescriptor_t& end_vertex)
+	Route_t _get_forward_path(const VertexRoute_t& route_map, const VertexDescriptor_t& start_vertex, const VertexDescriptor_t& end_vertex) const
 	{
 		auto path = Route_t{};
 		path.reserve(route_map.size());
 
 		for (auto current = end_vertex; current != start_vertex; current = route_map[current]) {
-			path.push_back(current);
+			path.push_back(_cavern_location_from_vertex(current));
 		}
 
-		path.push_back(start_vertex);
+		path.push_back({ 0, 0 });
 
 		std::reverse(path.begin(), path.end());
 		
 		return std::move(path);
 	}
 
+	Point_t _cavern_location_from_vertex(const VertexDescriptor_t& v) const
+	{
+		return {v % _cavern_cols, v / _cavern_rows};
+	}
+
+	VertexDescriptor_t _vertex_from_cavern_location(const Point_t& p) const
+	{
+		return static_cast<int>(p.y * _cavern_cols + p.x);
+	}
+
 	Graph_t _graph;
 	Route_t _optimal_path;
+	Cavern::Size_t _cavern_rows;
+	Cavern::Size_t _cavern_cols;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

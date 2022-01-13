@@ -48,7 +48,7 @@ struct Point2D
 
 	Point2D() : x{ 0 }, y{ 0 } {}
 
-	Point2D(Value_t x_, Value_t y_)
+	constexpr Point2D(Value_t x_, Value_t y_)
 		: x{ std::move(x_) }
 		, y{ std::move(y_) }
 	{}

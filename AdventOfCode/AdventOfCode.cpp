@@ -1165,6 +1165,28 @@ public:
 
 		Assert::AreEqual(size_t{ 3019 }, score);
 	}
+
+	TEST_METHOD(Part2_compareExpanded)
+	{
+		std::ifstream data_file(DATA_DIR / "Day15_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto expanded_risks = aoc::navigation::Cavern{ data_file }.expand(5).risk_grid();
+
+		std::ifstream ref_data_file(DATA_DIR / "Day15_expanded_cave_mike.txt");
+		Assert::IsTrue(ref_data_file.is_open());
+
+		const auto reference_risks = aoc::navigation::Cavern{ ref_data_file }.risk_grid();
+
+		Assert::AreEqual(reference_risks.n_rows, expanded_risks.n_rows);
+		Assert::AreEqual(reference_risks.n_cols, expanded_risks.n_cols);
+
+		for (auto r = 0u; r < expanded_risks.n_rows; ++r) {
+			for (auto c = 0u; c < expanded_risks.n_cols; ++c) {
+				Assert::AreEqual(reference_risks.at(r, c), expanded_risks.at(r, c), std::format(L"Mismatch at ({}, {})", r, c).c_str());
+			}
+		}
+	}
 };
 
 }

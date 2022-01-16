@@ -124,6 +124,15 @@ class CavernPathFinder : boost::noncopyable
 
 	using VertexDescriptor_t = boost::graph_traits<Graph_t>::vertex_descriptor;
 	using VertexRoute_t = std::vector<VertexDescriptor_t>;
+
+	enum Neighbour
+	{
+		up    = 0b0001,
+		down  = 0b0010,
+		left  = 0b0100,
+		right = 0b1000
+	};
+
 public:
 
 	using Point_t = Point2D<Cavern::Size_t>;
@@ -131,15 +140,13 @@ public:
 
 	CavernPathFinder& plot_course(const Cavern::Grid_t& risk_grid)
 	{
-		_cavern_rows = risk_grid.n_rows;
-		_cavern_cols = risk_grid.n_cols;
-		_graph = _build_graph(risk_grid);
-		_optimal_path = _find_path_via_dijkstra(
-			VertexDescriptor_t{ 0 },
-			VertexDescriptor_t{ risk_grid.n_elem - 1 }
-		);
+		_graph = build_graph(risk_grid);
+_optimal_path = _find_path_via_dijkstra(
+	VertexDescriptor_t{ 0 },
+	VertexDescriptor_t{ risk_grid.n_elem - 1 }
+);
 
-		return *this;
+return *this;
 	}
 
 	Route_t route() const { return _optimal_path; }
@@ -149,10 +156,84 @@ public:
 		auto out = size_t{ 0 };
 
 		for (auto src = _optimal_path.begin(), dst = std::next(src); dst != _optimal_path.end(); ++src, ++dst) {
-			out += boost::get(boost::edge_weight, _graph, _get_edge(_vertex_from_cavern_location(*src), _vertex_from_cavern_location(*dst)));
+			out += boost::get(boost::edge_weight, _graph, _get_edge(vertex_from_cavern_location(*src), vertex_from_cavern_location(*dst)));
 		}
 
 		return out;
+	}
+
+	Graph_t build_graph(const Cavern::Grid_t& risk_grid)
+	{
+		_cavern_rows = risk_grid.n_rows;
+		_cavern_cols = risk_grid.n_cols;
+
+		auto out = Graph_t(risk_grid.n_elem);
+
+		_add_edges<up|down|left|right>(risk_grid, out);	// Bulk edges
+		_add_edges<up|down|     right>(risk_grid, out);	// Left-most column
+		_add_edges<up|down|left      >(risk_grid, out);	// Right-most column
+		_add_edges<   down|left|right>(risk_grid, out);	// Top row
+		_add_edges<up|     left|right>(risk_grid, out);	// Bottom row
+		_add_edges<   down|     right>(risk_grid, out);	// Top-left grid position
+		_add_edges<   down|left      >(risk_grid, out);	// Top-right grid position
+		_add_edges<up|          right>(risk_grid, out);	// Bottom-left grid position
+		_add_edges<up|     left      >(risk_grid, out);	// Bottom-right grid position
+
+		return std::move(out);
+	}
+
+	template<int HAS_NEIGHBOUR>
+	static constexpr int _row_col_offset()
+	{
+		if constexpr (HAS_NEIGHBOUR != 0) {
+			return 1;
+		}
+		else {
+			return 0;
+		}
+	}
+
+	template<int NEIGHBOURS>
+	void _add_edges(const Cavern::Grid_t& risk_grid, Graph_t& graph)
+	{
+		auto vertex_from_row_col = [&risk_grid](auto r, auto c) -> size_t {
+			return r * risk_grid.n_cols + c;
+		};
+
+		const auto row_start = 0u + _row_col_offset<NEIGHBOURS & up>();
+		const auto row_end = risk_grid.n_rows - _row_col_offset<NEIGHBOURS & down>();
+		const auto col_start = 0u + _row_col_offset<NEIGHBOURS & left>();
+		const auto col_end = risk_grid.n_cols - _row_col_offset<NEIGHBOURS & right>();
+
+		// Add bulk edges.
+		for (auto r = row_start; r < row_end; ++r) {
+			for (auto c = col_start; c < col_end; ++c) {
+				const auto v_0 = vertex_from_row_col(r, c);
+
+				if constexpr ((NEIGHBOURS & up) != 0) {
+					boost::add_edge(v_0, vertex_from_row_col(r - 1, c), EdgeWeight_t{ risk_grid.at(r - 1, c) }, graph);
+				}
+				if constexpr ((NEIGHBOURS & down) != 0) {
+					boost::add_edge(v_0, vertex_from_row_col(r + 1, c), EdgeWeight_t{ risk_grid.at(r + 1, c) }, graph);
+				}
+				if constexpr ((NEIGHBOURS & left) != 0) {
+					boost::add_edge(v_0, vertex_from_row_col(r, c - 1), EdgeWeight_t{ risk_grid.at(r, c - 1) }, graph);
+				}
+				if constexpr ((NEIGHBOURS & right) != 0) {
+					boost::add_edge(v_0, vertex_from_row_col(r, c + 1), EdgeWeight_t{ risk_grid.at(r, c + 1) }, graph);
+				}
+			}
+		}
+	}
+
+	Point_t cavern_location_from_vertex(const VertexDescriptor_t& v) const
+	{
+		return { v % _cavern_cols, v / _cavern_rows };
+	}
+
+	VertexDescriptor_t vertex_from_cavern_location(const Point_t& p) const
+	{
+		return static_cast<int>(p.y * _cavern_cols + p.x);
 	}
 
 private:
@@ -165,39 +246,6 @@ private:
 		}
 
 		return std::move(edge);
-	}
-
-	static Graph_t _build_graph(const Cavern::Grid_t& risk_grid)
-	{
-		auto out = Graph_t(risk_grid.n_elem);
-
-		auto vertex_from_row_col = [&risk_grid](auto r, auto c) -> size_t {
-			return r * risk_grid.n_cols + c;
-		};
-
-		// Add bulk edges.
-		for (auto r = 0u; r < risk_grid.n_rows - 1; ++r) {
-			for (auto c = 0u; c < risk_grid.n_cols - 1; ++c) {
-				const auto v_0 = vertex_from_row_col(r, c);
-
-				boost::add_edge(v_0, vertex_from_row_col(r + 1, c), EdgeWeight_t{ risk_grid.at(r + 1, c) }, out);
-				boost::add_edge(v_0, vertex_from_row_col(r, c + 1), EdgeWeight_t{ risk_grid.at(r, c + 1) }, out);
-			}
-		}
-
-		// Add edges down right side of grid.
-		const auto final_col_idx = risk_grid.n_cols - 1;
-		for (auto r = 0u; r < risk_grid.n_rows - 1; ++r) {
-			boost::add_edge(vertex_from_row_col(r, final_col_idx), vertex_from_row_col(r + 1, final_col_idx), EdgeWeight_t{ risk_grid.at(r + 1, final_col_idx) }, out);
-		}
-
-		// Add edges along bottom of grid.
-		const auto final_row_idx = risk_grid.n_rows - 1;
-		for (auto c = 0u; c < risk_grid.n_cols - 1; ++c) {
-			boost::add_edge(vertex_from_row_col(final_row_idx, c), vertex_from_row_col(final_row_idx, c + 1), EdgeWeight_t{ risk_grid.at(final_row_idx, c + 1) }, out);
-		}
-
-		return std::move(out);
 	}
 
 	Route_t _find_path_via_dijkstra(const VertexDescriptor_t& start_vertex, const VertexDescriptor_t& end_vertex)
@@ -222,7 +270,7 @@ private:
 		path.reserve(route_map.size());
 
 		for (auto current = end_vertex; current != start_vertex; current = route_map[current]) {
-			path.push_back(_cavern_location_from_vertex(current));
+			path.push_back(cavern_location_from_vertex(current));
 		}
 
 		path.push_back({ 0, 0 });
@@ -230,16 +278,6 @@ private:
 		std::reverse(path.begin(), path.end());
 		
 		return std::move(path);
-	}
-
-	Point_t _cavern_location_from_vertex(const VertexDescriptor_t& v) const
-	{
-		return {v % _cavern_cols, v / _cavern_rows};
-	}
-
-	VertexDescriptor_t _vertex_from_cavern_location(const Point_t& p) const
-	{
-		return static_cast<int>(p.y * _cavern_cols + p.x);
 	}
 
 	Graph_t _graph;

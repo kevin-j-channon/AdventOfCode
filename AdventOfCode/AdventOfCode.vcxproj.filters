@@ -151,6 +151,9 @@
     <Text Include="Data\Day15_expanded_cave_mike.txt">
       <Filter>Data</Filter>
     </Text>
+    <Text Include="Data\Day15_input_mike.txt">
+      <Filter>Data</Filter>
+    </Text>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\README.md" />

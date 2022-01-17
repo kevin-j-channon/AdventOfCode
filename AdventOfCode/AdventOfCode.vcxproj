@@ -175,6 +175,7 @@
     <ClCompile Include="TestCavernPathFinder.cpp" />
     <ClCompile Include="TestEntertainment.cpp" />
     <ClCompile Include="TestFunctionalAreascpp.cpp" />
+    <ClCompile Include="TestIO.cpp" />
     <ClCompile Include="TestModelling.cpp" />
     <ClCompile Include="TestPaperfolder.cpp" />
     <ClCompile Include="TestPolymerizer.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="DumboOctopusModel.hpp" />
     <ClInclude Include="EntertainmentSystems.hpp" />
     <ClInclude Include="Lanternfish.hpp" />
+    <ClInclude Include="PacketDecoder.hpp" />
     <ClInclude Include="Paperfolder.hpp" />
     <ClInclude Include="pch.hpp" />
     <ClInclude Include="Polymerizer.hpp" />

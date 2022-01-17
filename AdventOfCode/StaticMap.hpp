@@ -1,5 +1,7 @@
 #pragma once
 
+namespace aoc
+{
 
 template<typename Key_T, typename Value_T, size_t ITEM_COUNT>
 class StaticMap
@@ -9,8 +11,9 @@ class StaticMap
 public:
 	using value_type = std::pair<Key_T, Value_T>;
 	using size_type = size_t;
+	using This_t = StaticMap<Key_T, Value_T, ITEM_COUNT>;
 
-	StaticMap(std::initializer_list<value_type>&& init)
+	constexpr StaticMap(std::initializer_list<value_type>&& init)
 	{
 		std::copy(init.begin(), init.end(), m_items.begin());
 	}
@@ -18,6 +21,11 @@ public:
 	constexpr size_type size() const { return m_items.size(); }
 
 	const Value_T& at(const Key_T& k) const
+	{
+		return get<Key_T, Value_T, Direction::forward>(k);
+	}
+
+	Value_T& at(const Key_T& k)
 	{
 		return get<Key_T, Value_T, Direction::forward>(k);
 	}
@@ -40,5 +48,13 @@ private:
 		return std::get<1 - static_cast<int>(DIRECTION)>(*it);
 	}
 
+	template<typename Target_T, typename Result_T, Direction DIRECTION>
+	Result_T& get(const Target_T& t)
+	{
+		return const_cast<Result_T&>(const_cast<const This_t*>(this)->get<Target_T, Result_T, DIRECTION>(t));
+	}
+
 	std::array<value_type, ITEM_COUNT> m_items;
 };
+
+}

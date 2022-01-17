@@ -273,4 +273,79 @@ public:
 		Assert::AreEqual(size_t{ 315 }, score);
 	}
 };
+
+TEST_CLASS(LongTestsOnFullData)
+{
+public:
+
+	TEST_METHOD(Part2_mike)
+	{
+		std::ifstream data_file(DATA_DIR / "Day15_input_mike.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto score = aoc::navigation::CavernPathFinder{}.plot_course(aoc::navigation::Cavern{ data_file }.expand(5).risk_grid()).score();
+
+		Assert::AreEqual(size_t{ 2835 }, score);
+	}
+
+	TEST_METHOD(Part2_compareExpanded)
+	{
+		std::ifstream data_file(DATA_DIR / "Day15_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto expanded_risks = aoc::navigation::Cavern{ data_file }.expand(5).risk_grid();
+
+		std::ifstream ref_data_file(DATA_DIR / "Day15_expanded_cave_mike.txt");
+		Assert::IsTrue(ref_data_file.is_open());
+
+		const auto reference_risks = aoc::navigation::Cavern{ ref_data_file }.risk_grid();
+
+		Assert::AreEqual(reference_risks.n_rows, expanded_risks.n_rows);
+		Assert::AreEqual(reference_risks.n_cols, expanded_risks.n_cols);
+
+		for (auto r = 0u; r < expanded_risks.n_rows; ++r) {
+			for (auto c = 0u; c < expanded_risks.n_cols; ++c) {
+				Assert::AreEqual(reference_risks.at(r, c), expanded_risks.at(r, c), std::format(L"Mismatch at ({}, {})", r, c).c_str());
+			}
+		}
+	}
+
+	TEST_METHOD(ExpandedGraphIsCorrect)
+	{
+		std::ifstream data_file(DATA_DIR / "Day15_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto risks = aoc::navigation::Cavern{ data_file }.expand(5).risk_grid();
+		auto path_finder = aoc::navigation::CavernPathFinder{};
+		const auto graph = path_finder.build_graph(risks);
+
+		Assert::AreEqual(risks.n_elem, boost::num_vertices(graph));
+
+		for (auto [vertex, end] = boost::vertices(graph); vertex != end; ++vertex) {
+			const auto location = path_finder.cavern_location_from_vertex(*vertex);
+
+			// Check location to the right, if this is not in the rightmost column
+			if (location.x < risks.n_cols - 1) {
+				const auto dest = path_finder.vertex_from_cavern_location({ location.x + 1, location.y });
+				const auto edge_descriptor = boost::edge(*vertex, dest, graph);
+				const auto weight = boost::get(boost::edge_weight, graph, edge_descriptor.first);
+
+				Assert::AreEqual(risks.at(location.y, location.x + 1), weight,
+					std::format(L"Weight mismatch on edge ({},{}) --{}-> ({}, {})",
+						location.x, location.y, weight, location.x + 1, location.y).c_str());
+			}
+
+			// Check location underneath, if this is not in the bottom row
+			if (location.y < risks.n_rows - 1) {
+				const auto dest = path_finder.vertex_from_cavern_location({ location.x, location.y + 1 });
+				const auto edge_descriptor = boost::edge(*vertex, dest, graph);
+				const auto weight = boost::get(boost::edge_weight, graph, edge_descriptor.first);
+
+				Assert::AreEqual(risks.at(location.y + 1, location.x), weight,
+					std::format(L"Weight mismatch on edge ({},{}) --{}-> ({}, {})",
+						location.x, location.y, weight, location.x, location.y + 1).c_str());
+			}
+		}
+	}
+};
 }

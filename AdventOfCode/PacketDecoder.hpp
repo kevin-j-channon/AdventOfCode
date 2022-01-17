@@ -10,6 +10,8 @@ namespace aoc
 {
 namespace comms
 {
+namespace BITS
+{
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -17,10 +19,10 @@ using HexStream_t = std::istream;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class BitsStreambuf : public std::streambuf
+class Streambuf : public std::streambuf
 {
 public:
-	BitsStreambuf(std::streambuf* hex_char_buf)
+	Streambuf(std::streambuf* hex_char_buf)
 		: _hex_char_buf{ hex_char_buf }
 	{
 	}
@@ -79,17 +81,65 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class BitsInputStream : public std::istream
+class IStream : public std::istream
 {
 public:
-	BitsInputStream(std::istream& is)
-		: std::istream{ new BitsStreambuf{is.rdbuf()} }
+	IStream(std::istream& is)
+		: std::istream{ new Streambuf{is.rdbuf()} }
 	{}
 
-	virtual ~BitsInputStream()
+	virtual ~IStream()
 	{
 		delete rdbuf();
 	}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class Header
+{
+public:
+
+	Header(std::istream& is)
+		: _version{ _read_3bit_value(is) }
+		, _operation{ _read_3bit_value(is) }
+	{
+	}
+
+	uint8_t version() const { return _version; }
+	uint8_t operation() const { return _operation; }
+
+private:
+
+	static uint8_t _read_3bit_value(std::istream& is)
+	{
+		auto bit_chars = std::array{ '0', '0', '0' };
+		is.read(bit_chars.data(), 3);
+		if (is.fail()) {
+			throw IOException("Failed to read header");
+		}
+
+		return _bits_to_value(bit_chars);
+	}
+
+	static uint8_t _bits_to_value(const std::array<char, 3>& chars)
+	{
+		static constexpr auto chars_to_value = StaticMap<std::array<char, 3>, uint8_t, 8>{
+			{ std::array{ '0', '0', '0' }, 0 },
+			{ std::array{ '0', '0', '1' }, 1 },
+			{ std::array{ '0', '1', '0' }, 2 },
+			{ std::array{ '0', '1', '1' }, 3 },
+			{ std::array{ '1', '0', '0' }, 4 },
+			{ std::array{ '1', '0', '1' }, 5 },
+			{ std::array{ '1', '1', '0' }, 6 },
+			{ std::array{ '1', '1', '1' }, 7 }
+		};
+
+		return chars_to_value.at(chars);
+	}
+
+	uint8_t _version;
+	uint8_t _operation;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -101,6 +151,7 @@ using BitsPacket = std::variant<LiteralValuePacket, OperatorPacket>;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+}
 }
 }
 

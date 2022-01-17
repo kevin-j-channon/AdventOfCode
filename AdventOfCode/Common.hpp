@@ -40,6 +40,13 @@ struct InvalidArgException : public Exception, public std::invalid_argument
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct IOException : public Exception, public std::invalid_argument
+{
+	IOException(const std::string& msg) : Exception{ msg }, std::invalid_argument(msg) {}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 template<typename Value_T>
 struct Point2D
 {

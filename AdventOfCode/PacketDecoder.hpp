@@ -19,10 +19,7 @@ using HexStream_t = std::istream;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-template<typename Result_T, size_t SIZE>
-std::enable_if_t<std::is_integral_v<Result_T>, Result_T> bit_chars_to_value(const std::array<char, SIZE>& bits)
-{
-	static constexpr auto bit_masks = std::array{
+constexpr auto bit_masks = std::array{
 		uint64_t{0b00000000'00000000'00000000'00000000'00000000'00000000'00000000'00000001 },
 		uint64_t{0b00000000'00000000'00000000'00000000'00000000'00000000'00000000'00000010 },
 		uint64_t{0b00000000'00000000'00000000'00000000'00000000'00000000'00000000'00000100 },
@@ -94,8 +91,11 @@ std::enable_if_t<std::is_integral_v<Result_T>, Result_T> bit_chars_to_value(cons
 		uint64_t{0b00100000'00000000'00000000'00000000'00000000'00000000'00000000'00000000 },
 		uint64_t{0b01000000'00000000'00000000'00000000'00000000'00000000'00000000'00000000 },
 		uint64_t{0b10000000'00000000'00000000'00000000'00000000'00000000'00000000'00000000 }
-	};
+};
 
+template<typename Result_T, size_t SIZE>
+std::enable_if_t<std::is_integral_v<Result_T> && SIZE <= 64, Result_T> bit_chars_to_value(const std::array<char, SIZE>& bits)
+{
 	auto out = Result_T{ 0 };
 
 	for (size_t i = 0; i < SIZE; ++i) {
@@ -106,6 +106,25 @@ std::enable_if_t<std::is_integral_v<Result_T>, Result_T> bit_chars_to_value(cons
 
 	return out;
 }
+
+template<typename Result_T>
+std::enable_if_t<std::is_integral_v<Result_T>, Result_T> bit_chars_to_value(const std::vector<char>& bits)
+{
+	if (bits.size() > 64) {
+		throw OutOfRangeException("Bits vector is too large (>64)");
+	}
+
+	auto out = Result_T{ 0 };
+
+	for (size_t i = 0; i < bits.size(); ++i) {
+		if (bits[i] != '0') {
+			out |= bit_masks[bits.size() - i - 1];
+		}
+	}
+
+	return out;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class Streambuf : public std::streambuf
@@ -185,6 +204,20 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<size_t SIZE>
+static uint8_t read_bit_value(std::istream& is)
+{
+	auto bit_chars = std::array<char, SIZE>{};
+	is.read(bit_chars.data(), SIZE);
+	if (is.fail()) {
+		throw IOException("Failed to read bits from stream");
+	}
+
+	return bit_chars_to_value<uint8_t, SIZE>(bit_chars);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 enum class PacketType
 {
 	operation_0,
@@ -204,8 +237,8 @@ class Header
 public:
 
 	Header(std::istream& is)
-		: _version{ _read_3bit_value(is) }
-		, _type{ static_cast<PacketType>(_read_3bit_value(is))}
+		: _version{ read_bit_value<3>(is) }
+		, _type{ static_cast<PacketType>(read_bit_value<3>(is))}
 	{
 	}
 
@@ -214,32 +247,82 @@ public:
 
 private:
 
-	static uint8_t _read_3bit_value(std::istream& is)
-	{
-		auto bit_chars = std::array{ '0', '0', '0' };
-		is.read(bit_chars.data(), 3);
-		if (is.fail()) {
-			throw IOException("Failed to read header");
-		}
-
-		return bit_chars_to_value<uint8_t, 3>(bit_chars);
-	}
-
 	uint8_t _version;
 	PacketType _type;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class LiteralValuePacket {};
-class OperatorPacket {};
+class LiteralValuePacket
+{
+public:
+	LiteralValuePacket() {}
+	LiteralValuePacket(std::istream& is) {}
 
-using BitsPacket = std::variant<LiteralValuePacket, OperatorPacket>;
+private:
+	std::vector<char> _bits;
+};
+
+class OperatorPacket
+{
+public:
+	OperatorPacket() {}
+	OperatorPacket(std::istream& is) {}
+};
+
+using Packet = std::variant<LiteralValuePacket, OperatorPacket>;
 
 ///////////////////////////////////////////////////////////////////////////////
 
 }
 }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+std::istream& operator>>(std::istream& is, aoc::comms::BITS::Packet& packet)
+{
+	using namespace aoc::comms;
+
+	const auto header = BITS::Header{ is };
+	switch (header.type()) {
+	case aoc::comms::BITS::PacketType::operation_0: {
+		packet = BITS::OperatorPacket{ is };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_1: {
+		packet = BITS::OperatorPacket{ is };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_2: {
+		packet = BITS::OperatorPacket{ is };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_3: {
+		packet = BITS::OperatorPacket{ is };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::literal_value: {
+		packet = BITS::LiteralValuePacket{ is };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_5: {
+		packet = BITS::OperatorPacket{ is };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_6: {
+		packet = BITS::OperatorPacket{ is };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_7: {
+		packet = BITS::OperatorPacket{ is };
+		break;
+	}
+	default:
+		throw aoc::IOException("Invalid packet type");
+	}
+
+	return is;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

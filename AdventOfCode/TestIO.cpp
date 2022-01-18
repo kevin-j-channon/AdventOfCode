@@ -60,11 +60,24 @@ public:
 	TEST_METHOD(PacketHeaderHasOperation)
 	{
 		// The actual header stops here V
-		std::stringstream bits("1101001010101");
+		std::stringstream bits(   "1101001010101");
 
 		const auto header = aoc::comms::BITS::Header{ bits };
 
 		Assert::AreEqual(aoc::comms::BITS::PacketType::literal_value, header.type());
+	}
+};
+
+TEST_CLASS(PacketDeserialisation)
+{
+public:
+	TEST_METHOD(LiteralValue)
+	{
+		std::stringstream hex_data{"D2FE28"};
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
 	}
 };
 }

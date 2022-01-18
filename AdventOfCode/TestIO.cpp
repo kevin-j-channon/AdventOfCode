@@ -78,6 +78,8 @@ public:
 
 		auto packet = aoc::comms::BITS::Packet{};
 		bits >> packet;
+
+		Assert::AreEqual(uint64_t{ 2021 }, packet.value());
 	}
 };
 }

@@ -9,6 +9,25 @@ using namespace std::chrono_literals;
 
 const auto DATA_DIR = std::filesystem::path(R"(..\..\AdventOfCode\Data)"s);
 
+
+template<>
+std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString<aoc::comms::BITS::PacketType>(const aoc::comms::BITS::PacketType& type)
+{
+	switch (type)
+	{
+	case aoc::comms::BITS::PacketType::operation_0: return L"operation 0";
+	case aoc::comms::BITS::PacketType::operation_1: return L"operation 1";
+	case aoc::comms::BITS::PacketType::operation_2: return L"operation 2";
+	case aoc::comms::BITS::PacketType::operation_3: return L"operation 3";
+	case aoc::comms::BITS::PacketType::literal_value: return L"literal value";
+	case aoc::comms::BITS::PacketType::operation_5: return L"operation 5";
+	case aoc::comms::BITS::PacketType::operation_6: return L"operation 6";
+	case aoc::comms::BITS::PacketType::operation_7: return L"operation 7";
+	default:
+		return L"UNKNOWN";
+	}
+}
+
 namespace test_packet_decoder
 {
 TEST_CLASS(BitsStream)
@@ -45,7 +64,7 @@ public:
 
 		const auto header = aoc::comms::BITS::Header{ bits };
 
-		Assert::AreEqual(uint8_t{ 4 }, header.operation());
+		Assert::AreEqual(aoc::comms::BITS::PacketType::literal_value, header.type());
 	}
 };
 }

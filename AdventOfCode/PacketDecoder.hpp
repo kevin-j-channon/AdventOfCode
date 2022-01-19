@@ -310,9 +310,9 @@ private:
 			const auto bits_from_stream = aoc::comms::BITS::extract_bits<5>(is);
 			items_consumed += 5;
 
-			_bits.insert(_bits.end(), bits_from_stream.begin(), bits_from_stream.end());
+			_bits.insert(_bits.end(), std::next(bits_from_stream.begin()), bits_from_stream.end());
 
-			if (bits_from_stream[0] == 0) {
+			if (bits_from_stream[0] == '0') {
 				break;
 			}
 		}

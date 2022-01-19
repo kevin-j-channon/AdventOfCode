@@ -43,6 +43,42 @@ public:
 		const auto mismatching_bit = std::mismatch(expected_bits, expected_bits + 64, std::istreambuf_iterator<char>(bit_stream));
 		Assert::IsTrue(mismatching_bit.first == expected_bits + 64, std::format(L"Mismatching bit at {}", std::distance(expected_bits, mismatching_bit.first)).c_str());
 	}
+
+	TEST_METHOD(DecompressExample1)
+	{
+		std::stringstream hex_stream("D2FE28");
+
+		aoc::comms::BITS::IStream bit_stream(hex_stream);
+
+		constexpr auto expected_bits = "110100101111111000101000";
+		const auto len = std::strlen(expected_bits);
+		const auto mismatching_bit = std::mismatch(expected_bits, expected_bits + len, std::istreambuf_iterator<char>(bit_stream));
+		Assert::IsTrue(mismatching_bit.first == expected_bits + len, std::format(L"Mismatching bit at {}", std::distance(expected_bits, mismatching_bit.first)).c_str());
+	}
+
+	TEST_METHOD(DecompressExample2)
+	{
+		std::stringstream hex_stream("38006F45291200");
+
+		aoc::comms::BITS::IStream bit_stream(hex_stream);
+
+		constexpr auto expected_bits = "00111000000000000110111101000101001010010001001000000000";
+		const auto len = std::strlen(expected_bits);
+		const auto mismatching_bit = std::mismatch(expected_bits, expected_bits + len, std::istreambuf_iterator<char>(bit_stream));
+		Assert::IsTrue(mismatching_bit.first == expected_bits + len, std::format(L"Mismatching bit at {}", std::distance(expected_bits, mismatching_bit.first)).c_str());
+	}
+
+	TEST_METHOD(DecompressExample2)
+	{
+		std::stringstream hex_stream("EE00D40C823060");
+
+		aoc::comms::BITS::IStream bit_stream(hex_stream);
+
+		constexpr auto expected_bits = "11101110000000001101010000001100100000100011000001100000";
+		const auto len = std::strlen(expected_bits);
+		const auto mismatching_bit = std::mismatch(expected_bits, expected_bits + len, std::istreambuf_iterator<char>(bit_stream));
+		Assert::IsTrue(mismatching_bit.first == expected_bits + len, std::format(L"Mismatching bit at {}", std::distance(expected_bits, mismatching_bit.first)).c_str());
+	}
 };
 
 TEST_CLASS(HeaderDeserialization)
@@ -74,6 +110,16 @@ public:
 	TEST_METHOD(LiteralValue)
 	{
 		std::stringstream hex_data{"D2FE28"};
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		Assert::AreEqual(uint64_t{ 2021 }, packet.value());
+	}
+	TEST_METHOD(OPeratorPacket)
+	{
+		std::stringstream hex_data{ "38006F45291200" };
 		aoc::comms::BITS::IStream bits{ hex_data };
 
 		auto packet = aoc::comms::BITS::Packet{};

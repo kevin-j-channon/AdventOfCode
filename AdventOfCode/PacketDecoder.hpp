@@ -274,13 +274,11 @@ public:
 	LiteralValuePacket(LiteralValuePacket&&) = default;
 	LiteralValuePacket& operator=(LiteralValuePacket&&) = default;
 
-	LiteralValuePacket& from_stream(std::istream& is)
+	std::streamsize from_stream(std::istream& is)
 	{
 		_reset();
 		const auto items_consumed = _read_bit_groups(is);
-		_consume_padding_bits_from_stream(is, items_consumed);
-
-		return *this;
+		return _consume_padding_bits_from_stream(is, items_consumed);
 	}
 
 	uint64_t value() const
@@ -320,10 +318,12 @@ private:
 		return items_consumed;
 	}
 
-	void _consume_padding_bits_from_stream(std::istream& is, std::streamsize items_consumed)
+	std::streamsize _consume_padding_bits_from_stream(std::istream& is, std::streamsize items_consumed)
 	{
 		const auto addition_items_to_consume = items_consumed % 4;
 		is.seekg(is.tellg() + addition_items_to_consume);
+
+		return items_consumed + addition_items_to_consume;
 	}
 
 	void _update_cached_value() const
@@ -338,11 +338,29 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class Packet;
+
+///////////////////////////////////////////////////////////////////////////////
+
 class OperatorPacket
 {
 public:
-	OperatorPacket() {}
-	OperatorPacket(uint8_t version) {}
+	~OperatorPacket();
+
+	OperatorPacket() : _version{ 0 } {}
+	OperatorPacket(uint8_t version) : _version{ version } {}
+
+	OperatorPacket(const OperatorPacket&) = delete;
+	OperatorPacket& operator=(const OperatorPacket&) = delete;
+
+	OperatorPacket(OperatorPacket&&) = default;
+	OperatorPacket& operator=(OperatorPacket&&) = default;
+
+	std::streamsize from_stream(std::istream& is);
+
+private:
+	uint8_t _version;
+	std::vector<std::unique_ptr<Packet>> _child_packets;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -362,11 +380,54 @@ class Packet : public std::variant<LiteralValuePacket, OperatorPacket>
 		}
 	};
 
+	struct StreamDeserialiser
+	{
+		std::istream& _is;
+
+		StreamDeserialiser(std::istream& is) : _is{ is } {}
+
+		std::streamsize operator()(LiteralValuePacket& literal_packet)
+		{
+			return literal_packet.from_stream(_is);
+		}
+
+		std::streamsize operator()(OperatorPacket& op_packet)
+		{
+			return op_packet.from_stream(_is);
+		}
+	};
+
 public:
 
 	using Base_t = std::variant<LiteralValuePacket, OperatorPacket>;
 
 	using Base_t::operator=;
+
+	std::streamsize from_stream(std::istream& is)
+	{
+		const auto header = BITS::Header{ is };
+
+		switch (header.type()) {
+		case aoc::comms::BITS::PacketType::operation_0:
+		case aoc::comms::BITS::PacketType::operation_1:
+		case aoc::comms::BITS::PacketType::operation_2:
+		case aoc::comms::BITS::PacketType::operation_3:
+		case aoc::comms::BITS::PacketType::operation_5:
+		case aoc::comms::BITS::PacketType::operation_6:
+		case aoc::comms::BITS::PacketType::operation_7: {
+			*this = OperatorPacket{ header.version() };
+			break;
+		}
+		case aoc::comms::BITS::PacketType::literal_value: {
+			*this = LiteralValuePacket{ header.version() };
+			break;
+		}
+		default:
+			throw aoc::IOException("Invalid packet type");
+		}
+
+		return std::visit(StreamDeserialiser{ is }, *this);
+	}
 
 	uint64_t value() const
 	{
@@ -382,52 +443,8 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-std::istream& operator>>(std::istream& is, aoc::comms::BITS::LiteralValuePacket& packet)
-{
-	packet.from_stream(is);
-	return is;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-std::istream& operator>>(std::istream& is, aoc::comms::BITS::OperatorPacket& packet)
-{
-
-	return is;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-std::istream& operator>>(std::istream& is, aoc::comms::BITS::Packet& packet)
-{
-	using namespace aoc::comms;
-
-	const auto header = BITS::Header{ is };
-
-	switch (header.type()) {
-	case aoc::comms::BITS::PacketType::operation_0:
-	case aoc::comms::BITS::PacketType::operation_1:
-	case aoc::comms::BITS::PacketType::operation_2:
-	case aoc::comms::BITS::PacketType::operation_3:
-	case aoc::comms::BITS::PacketType::operation_5:
-	case aoc::comms::BITS::PacketType::operation_6:
-	case aoc::comms::BITS::PacketType::operation_7: {
-		auto packet_impl = BITS::OperatorPacket{ header.version() };
-		is >> packet_impl;
-		packet = std::move(packet_impl);
-		break;
-	}
-	case aoc::comms::BITS::PacketType::literal_value: {
-		auto packet_impl = BITS::LiteralValuePacket{ header.version()};
-		is >> packet_impl;
-		packet = std::move(packet_impl);
-		break;
-	}
-	default:
-		throw aoc::IOException("Invalid packet type");
-	}
-
-	return is;
-}
+std::istream& operator>>(std::istream& is, aoc::comms::BITS::LiteralValuePacket& packet);
+std::istream& operator>>(std::istream& is, aoc::comms::BITS::OperatorPacket& packet);
+std::istream& operator>>(std::istream& is, aoc::comms::BITS::Packet& packet);
 
 ///////////////////////////////////////////////////////////////////////////////

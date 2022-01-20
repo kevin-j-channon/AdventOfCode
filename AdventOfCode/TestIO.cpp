@@ -68,7 +68,7 @@ public:
 		Assert::IsTrue(mismatching_bit.first == expected_bits + len, std::format(L"Mismatching bit at {}", std::distance(expected_bits, mismatching_bit.first)).c_str());
 	}
 
-	TEST_METHOD(DecompressExample2)
+	TEST_METHOD(DecompressExample3)
 	{
 		std::stringstream hex_stream("EE00D40C823060");
 

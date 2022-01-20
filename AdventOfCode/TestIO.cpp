@@ -131,7 +131,7 @@ public:
 TEST_CLASS(OperatorPacket)
 {
 public:
-	TEST_METHOD(ChildPacketsAreCorrect)
+	TEST_METHOD(TotalLengthChildPacketsAreCorrect)
 	{
 		std::stringstream hex_data{ "38006F45291200" };
 		aoc::comms::BITS::IStream bits{ hex_data };
@@ -147,6 +147,91 @@ public:
 
 		Assert::AreEqual(uint8_t{ 2 }, packets[1]->version());
 		Assert::AreEqual(uint64_t{ 20 }, packets[1]->value());
+	}
+
+	TEST_METHOD(TotalNumberChildPacketsAreCorrect)
+	{
+		std::stringstream hex_data{ "EE00D40C823060" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto packets = packet.children();
+		Assert::AreEqual(size_t{ 3 }, packets.size());
+
+		Assert::AreEqual(uint8_t{ 2 }, packets[0]->version());
+		Assert::AreEqual(uint64_t{ 1 }, packets[0]->value());
+
+		Assert::AreEqual(uint8_t{ 4 }, packets[1]->version());
+		Assert::AreEqual(uint64_t{ 2 }, packets[1]->value());
+
+		Assert::AreEqual(uint8_t{ 1 }, packets[2]->version());
+		Assert::AreEqual(uint64_t{ 3 }, packets[2]->value());
+	}
+};
+
+TEST_CLASS(PacketEnumerator)
+{
+public:
+	TEST_METHOD(SumVersions1)
+	{
+		std::stringstream hex_data{ "8A004A801A8002F478" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto version_sum = aoc::comms::BITS::PacketEnumerator{ packet }.reduce([](auto& current, auto&& pkt) {
+				return current + pkt.version();
+			}, uint32_t{ 0 });
+
+		Assert::AreEqual(uint32_t{ 16 }, version_sum);
+	}
+
+	TEST_METHOD(SumVersions2)
+	{
+		std::stringstream hex_data{ "620080001611562C8802118E34" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto version_sum = aoc::comms::BITS::PacketEnumerator{ packet }.reduce([](auto& current, auto&& pkt) {
+			return current + pkt.version();
+			}, uint32_t{ 0 });
+
+		Assert::AreEqual(uint32_t{ 12 }, version_sum);
+	}
+
+	TEST_METHOD(SumVersions3)
+	{
+		std::stringstream hex_data{ "C0015000016115A2E0802F182340" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto version_sum = aoc::comms::BITS::PacketEnumerator{ packet }.reduce([](auto& current, auto&& pkt) {
+			return current + pkt.version();
+			}, uint32_t{ 0 });
+
+		Assert::AreEqual(uint32_t{ 23 }, version_sum);
+	}
+
+	TEST_METHOD(SumVersions4)
+	{
+		std::stringstream hex_data{ "A0016C880162017C3686B18A3D4780" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto version_sum = aoc::comms::BITS::PacketEnumerator{ packet }.reduce([](auto& current, auto&& pkt) {
+			return current + pkt.version();
+			}, uint32_t{ 0 });
+
+		Assert::AreEqual(uint32_t{ 31 }, version_sum);
 	}
 };
 }

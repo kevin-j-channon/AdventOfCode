@@ -309,6 +309,37 @@ public:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class PacketEnumerator
+{
+public:
+	PacketEnumerator(const Packet& root_packet)
+		: _root(root_packet)
+	{}
+
+	template<typename Result_T, typename Reduce_T>
+	Result_T reduce(Reduce_T reducer, Result_T initial_value = Result_T{})
+	{
+		_recursive_apply_reduce(_root, reducer, initial_value);
+		return initial_value;
+	}
+
+private:
+
+	template<typename Result_T, typename Reduce_T>
+	void _recursive_apply_reduce(const Packet& pkt, Reduce_T& reducer, Result_T& result) const
+	{
+		result = reducer(result, pkt);
+		
+		for (const auto* child_pkt : pkt.children()) {
+			_recursive_apply_reduce(*child_pkt, reducer, result);
+		}
+	}
+
+	const Packet& _root;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 }
 }
 }

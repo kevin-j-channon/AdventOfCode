@@ -14,6 +14,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "PaperFolder.hpp"
 #include "Polymerizer.hpp"
 #include "CavernPathFinder.hpp"
+#include "PacketDecoder.hpp"
 
 using namespace std::string_literals;
 using namespace std::chrono_literals;
@@ -1176,4 +1177,27 @@ public:
 	}
 };
 
+}
+
+namespace day_16
+{
+TEST_CLASS(TestDay16)
+{
+public:
+	TEST_METHOD(Part1)
+	{
+		std::ifstream data_file(DATA_DIR / "Day16_input.txt");
+		Assert::IsTrue(data_file.is_open());
+		aoc::comms::BITS::IStream bits{ data_file };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto version_sum = aoc::comms::BITS::PacketEnumerator{ packet }.reduce([](auto& current, auto&& pkt) {
+			return current + pkt.version();
+			}, uint32_t{ 0 });
+
+		Assert::AreEqual(uint32_t{ 31 }, version_sum);
+	}
+};
 }

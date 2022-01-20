@@ -18,6 +18,10 @@ namespace
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<typename> static constexpr auto always_false_v = false;
+
+///////////////////////////////////////////////////////////////////////////////
+
 struct ValueExtractor
 {
 	uint64_t operator()(const LiteralValuePacket& literal_value) const
@@ -111,7 +115,7 @@ std::streamsize LiteralValuePacket::from_stream(std::istream& is)
 {
 	_reset();
 	const auto items_consumed = _read_bit_groups(is);
-	return _consume_padding_bits_from_stream(is, items_consumed);
+	return items_consumed; // _consume_padding_bits_from_stream(is, items_consumed);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -191,24 +195,39 @@ std::streamsize aoc::comms::BITS::OperatorPacket::from_stream(std::istream& is)
 	switch (static_cast<LengthType>(length_type)) {
 	case LengthType::toal_length: {
 		const auto total_length = read_bit_value<15>(is);
+		bits_consumed += 15;
 
-		while (bits_consumed < total_length) {
+		const auto bits_consumed_in_preamble = bits_consumed;
+
+		while ((bits_consumed - bits_consumed_in_preamble) < total_length) {
 			bits_consumed += _deserialize_and_add_subpackets(is);
 		}
-	}
+	} break;
 	case LengthType::number_of_packets: {
 		const auto number_of_packets = read_bit_value<11>(is);
+		bits_consumed += 11;
 
 		for (auto pkt_idx = 0; pkt_idx < number_of_packets; ++pkt_idx) {
 			bits_consumed += _deserialize_and_add_subpackets(is);
 		}
-	}
+	} break;
 	default:
 		throw IOException("Invalid length type");
 	}
 
 	return bits_consumed;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+std::vector<const Packet*> OperatorPacket::children() const
+{
+	auto out = std::vector<const Packet*>(_child_packets.size(), nullptr);
+	std::transform(_child_packets.begin(), _child_packets.end(), out.begin(), [](auto&& pkt) { return pkt.get(); });
+	return out;
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 std::streamsize OperatorPacket::_deserialize_and_add_subpackets(std::istream& is)
 {
@@ -244,7 +263,8 @@ std::streamsize Packet::from_stream(std::istream& is)
 		throw aoc::IOException("Invalid packet type");
 	}
 
-	return std::visit(StreamDeserialiser{ is }, *this);
+	// The header is always 6 bits, so we add those now too.
+	return 6 + std::visit(StreamDeserialiser{ is }, *this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -252,6 +272,33 @@ std::streamsize Packet::from_stream(std::istream& is)
 uint64_t Packet::value() const
 {
 	return std::visit(ValueExtractor(), *this);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint8_t Packet::version() const
+{
+	return std::visit([](auto&& arg) -> uint8_t {
+		return arg.version();
+		}, *this);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+std::vector<const Packet*> Packet::children() const
+{
+	return std::visit([](auto&& arg) -> std::vector<const Packet*> {
+		using Arg_t = std::decay_t<decltype(arg)>;
+		if constexpr (std::is_same_v<Arg_t, LiteralValuePacket>) {
+			return std::vector<const Packet*>();
+		}
+		else if constexpr (std::is_same_v<Arg_t, OperatorPacket>) {
+			return arg.children();
+		}
+		else {
+			static_assert(always_false_v<Arg_t>, "Unhandled variant type");
+		}
+		}, *this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

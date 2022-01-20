@@ -236,6 +236,7 @@ public:
 
 	std::streamsize from_stream(std::istream& is);
 	uint64_t value() const;
+	uint8_t version() const { return _version; }
 
 private:
 
@@ -270,6 +271,8 @@ public:
 	OperatorPacket& operator=(OperatorPacket&&) = default;
 
 	std::streamsize from_stream(std::istream& is);
+	std::vector<const Packet*> children() const;
+	uint8_t version() const { return _version; }
 
 private:
 
@@ -297,6 +300,9 @@ public:
 
 	std::streamsize from_stream(std::istream& is);
 	uint64_t value() const;
+	uint8_t version() const;
+
+	std::vector<const Packet*> children() const;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

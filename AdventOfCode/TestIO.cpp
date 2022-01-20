@@ -117,7 +117,7 @@ public:
 
 		Assert::AreEqual(uint64_t{ 2021 }, packet.value());
 	}
-	TEST_METHOD(OPeratorPacket)
+	TEST_METHOD(OperatorPacket1)
 	{
 		std::stringstream hex_data{ "38006F45291200" };
 		aoc::comms::BITS::IStream bits{ hex_data };
@@ -125,7 +125,28 @@ public:
 		auto packet = aoc::comms::BITS::Packet{};
 		bits >> packet;
 
-		Assert::AreEqual(uint64_t{ 2021 }, packet.value());
+	}
+};
+
+TEST_CLASS(OperatorPacket)
+{
+public:
+	TEST_METHOD(ChildPacketsAreCorrect)
+	{
+		std::stringstream hex_data{ "38006F45291200" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto packets = packet.children();
+		Assert::AreEqual(size_t{ 2 }, packets.size());
+
+		Assert::AreEqual(uint8_t{ 6 }, packets[0]->version());
+		Assert::AreEqual(uint64_t{ 10 }, packets[0]->value());
+
+		Assert::AreEqual(uint8_t{ 2 }, packets[1]->version());
+		Assert::AreEqual(uint64_t{ 20 }, packets[1]->value());
 	}
 };
 }

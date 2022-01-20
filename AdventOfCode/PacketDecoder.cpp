@@ -194,25 +194,43 @@ std::streamsize aoc::comms::BITS::OperatorPacket::from_stream(std::istream& is)
 	
 	switch (static_cast<LengthType>(length_type)) {
 	case LengthType::toal_length: {
-		const auto total_length = read_bit_value<15>(is);
-		bits_consumed += 15;
-
-		const auto bits_consumed_in_preamble = bits_consumed;
-
-		while ((bits_consumed - bits_consumed_in_preamble) < total_length) {
-			bits_consumed += _deserialize_and_add_subpackets(is);
-		}
+		bits_consumed += _read_total_length_block(is);
 	} break;
 	case LengthType::number_of_packets: {
-		const auto number_of_packets = read_bit_value<11>(is);
-		bits_consumed += 11;
-
-		for (auto pkt_idx = 0; pkt_idx < number_of_packets; ++pkt_idx) {
-			bits_consumed += _deserialize_and_add_subpackets(is);
-		}
+		bits_consumed += _read_total_number_blocks(is);
 	} break;
 	default:
 		throw IOException("Invalid length type");
+	}
+
+	return bits_consumed;
+}
+
+std::streamsize OperatorPacket::_read_total_number_blocks(std::istream& is)
+{
+	auto bits_consumed = std::streamsize{ 0 };
+
+	const auto number_of_packets = read_bit_value<11>(is);
+	bits_consumed += 11;
+
+	for (auto pkt_idx = 0; pkt_idx < number_of_packets; ++pkt_idx) {
+		bits_consumed += _deserialize_and_add_subpackets(is);
+	}
+
+	return bits_consumed;
+}
+
+std::streamsize OperatorPacket::_read_total_length_block(std::istream& is)
+{
+	auto bits_consumed = std::streamsize{ 0 };
+
+	const auto total_length = read_bit_value<15>(is);
+	bits_consumed += 15;
+
+	const auto bits_consumed_in_preamble = bits_consumed;
+
+	while ((bits_consumed - bits_consumed_in_preamble) < total_length) {
+		bits_consumed += _deserialize_and_add_subpackets(is);
 	}
 
 	return bits_consumed;

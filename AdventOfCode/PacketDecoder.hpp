@@ -282,6 +282,8 @@ private:
 		number_of_packets = '1'
 	};
 
+	std::streamsize _read_total_length_block(std::istream& is);
+	std::streamsize _read_total_number_blocks(std::istream& is);
 	std::streamsize _deserialize_and_add_subpackets(std::istream& is);
 
 	uint8_t _version;

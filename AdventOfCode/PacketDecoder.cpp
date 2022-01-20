@@ -206,6 +206,8 @@ std::streamsize aoc::comms::BITS::OperatorPacket::from_stream(std::istream& is)
 	return bits_consumed;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 std::streamsize OperatorPacket::_read_total_number_blocks(std::istream& is)
 {
 	auto bits_consumed = std::streamsize{ 0 };
@@ -219,6 +221,8 @@ std::streamsize OperatorPacket::_read_total_number_blocks(std::istream& is)
 
 	return bits_consumed;
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 std::streamsize OperatorPacket::_read_total_length_block(std::istream& is)
 {

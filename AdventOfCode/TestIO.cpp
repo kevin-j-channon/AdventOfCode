@@ -256,6 +256,40 @@ public:
 
 		Assert::AreEqual(uint64_t{ 0 }, packet.value());
 	}
+
+	TEST_METHOD(LessThanPacketsHaveTheCorrectValue)
+	{
+		std::stringstream hex_data{ "D8005AC2A8F0" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto child_packets = packet.children();
+		Assert::AreEqual(size_t{ 2 }, child_packets.size());
+
+		Assert::AreEqual(uint64_t{ 5 }, child_packets[0]->value());
+		Assert::AreEqual(uint64_t{ 15 }, child_packets[1]->value());
+
+		Assert::AreEqual(uint64_t{ 1 }, packet.value());
+	}
+
+	TEST_METHOD(EqualToPacketsHaveTheCorrectValue)
+	{
+		std::stringstream hex_data{ "9C005AC2F8F0" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto child_packets = packet.children();
+		Assert::AreEqual(size_t{ 2 }, child_packets.size());
+
+		Assert::AreEqual(uint64_t{ 5 }, child_packets[0]->value());
+		Assert::AreEqual(uint64_t{ 15 }, child_packets[1]->value());
+
+		Assert::AreEqual(uint64_t{ 0 }, packet.value());
+	}
 };
 
 TEST_CLASS(PacketEnumerator)

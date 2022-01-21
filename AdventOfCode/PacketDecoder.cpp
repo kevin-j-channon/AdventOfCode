@@ -346,12 +346,12 @@ uint64_t GreaterThanPacket::value() const
 
 uint64_t LessThanPacket::value() const
 {
-	return uint64_t();
+	return _child_packets[0]->value() < _child_packets[1]->value() ? 1 : 0;
 }
 
 uint64_t EqualToPacket::value() const
 {
-	return uint64_t();
+	return _child_packets[0]->value() == _child_packets[1]->value() ? 1 : 0;
 }
 
 }

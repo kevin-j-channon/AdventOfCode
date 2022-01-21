@@ -15,14 +15,14 @@ std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString<aoc::comms:
 {
 	switch (type)
 	{
-	case aoc::comms::BITS::PacketType::operation_0: return L"operation 0";
-	case aoc::comms::BITS::PacketType::operation_1: return L"operation 1";
-	case aoc::comms::BITS::PacketType::operation_2: return L"operation 2";
-	case aoc::comms::BITS::PacketType::operation_3: return L"operation 3";
+	case aoc::comms::BITS::PacketType::operation_sum: return L"operation 0";
+	case aoc::comms::BITS::PacketType::operation_product: return L"operation 1";
+	case aoc::comms::BITS::PacketType::operation_min: return L"operation 2";
+	case aoc::comms::BITS::PacketType::operation_max: return L"operation 3";
 	case aoc::comms::BITS::PacketType::literal_value: return L"literal value";
-	case aoc::comms::BITS::PacketType::operation_5: return L"operation 5";
-	case aoc::comms::BITS::PacketType::operation_6: return L"operation 6";
-	case aoc::comms::BITS::PacketType::operation_7: return L"operation 7";
+	case aoc::comms::BITS::PacketType::operation_greater: return L"operation 5";
+	case aoc::comms::BITS::PacketType::operation_less: return L"operation 6";
+	case aoc::comms::BITS::PacketType::operation_equal: return L"operation 7";
 	default:
 		return L"UNKNOWN";
 	}
@@ -168,6 +168,40 @@ public:
 
 		Assert::AreEqual(uint8_t{ 1 }, packets[2]->version());
 		Assert::AreEqual(uint64_t{ 3 }, packets[2]->value());
+	}
+
+	TEST_METHOD(SumPacketsHaveTheCorrectValue)
+	{
+		std::stringstream hex_data{ "C200B40A82" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto child_packets = packet.children();
+		Assert::AreEqual(size_t{ 2 }, child_packets.size());
+
+		Assert::AreEqual(uint64_t{ 1 }, child_packets[0]->value());
+		Assert::AreEqual(uint64_t{ 2 }, child_packets[1]->value());
+
+		Assert::AreEqual(uint64_t{ 3 }, packet.value());
+	}
+
+	TEST_METHOD(ProductPacketsHaveTheCorrectValue)
+	{
+		std::stringstream hex_data{ "04005AC33890" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto child_packets = packet.children();
+		Assert::AreEqual(size_t{ 2 }, child_packets.size());
+
+		Assert::AreEqual(uint64_t{ 6 }, child_packets[0]->value());
+		Assert::AreEqual(uint64_t{ 9 }, child_packets[1]->value());
+
+		Assert::AreEqual(uint64_t{ 54 }, packet.value());
 	}
 };
 

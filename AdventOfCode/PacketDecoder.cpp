@@ -22,40 +22,6 @@ template<typename> static constexpr auto always_false_v = false;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-struct ValueExtractor
-{
-	uint64_t operator()(const LiteralValuePacket& literal_value) const
-	{
-		return literal_value.value();
-	}
-
-	uint64_t operator()(const OperatorPacket& op_packet) const
-	{
-		return 0;
-	}
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct StreamDeserialiser
-{
-	std::istream& _is;
-
-	StreamDeserialiser(std::istream& is) : _is{ is } {}
-
-	std::streamsize operator()(LiteralValuePacket& literal_packet)
-	{
-		return literal_packet.from_stream(_is);
-	}
-
-	std::streamsize operator()(OperatorPacket& op_packet)
-	{
-		return op_packet.from_stream(_is);
-	}
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -267,18 +233,36 @@ std::streamsize Packet::from_stream(std::istream& is)
 	const auto header = BITS::Header{ is };
 
 	switch (header.type()) {
-	case aoc::comms::BITS::PacketType::operation_0:
-	case aoc::comms::BITS::PacketType::operation_1:
-	case aoc::comms::BITS::PacketType::operation_2:
-	case aoc::comms::BITS::PacketType::operation_3:
-	case aoc::comms::BITS::PacketType::operation_5:
-	case aoc::comms::BITS::PacketType::operation_6:
-	case aoc::comms::BITS::PacketType::operation_7: {
-		*this = OperatorPacket{ header.version() };
+	case aoc::comms::BITS::PacketType::operation_sum: {
+		*this = SumPacket{ header.version()};
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_product: {
+		*this = ProductPacket{ header.version() };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_min: {
+		*this = MinimumPacket{ header.version() };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_max: {
+		*this = MaximumPacket{ header.version() };
 		break;
 	}
 	case aoc::comms::BITS::PacketType::literal_value: {
 		*this = LiteralValuePacket{ header.version() };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_greater: {
+		*this = GreaterThanPacket{ header.version() };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_less: {
+		*this = LessThanPacket{ header.version() };
+		break;
+	}
+	case aoc::comms::BITS::PacketType::operation_equal: {
+		*this = EqualToPacket{ header.version() };
 		break;
 	}
 	default:
@@ -286,14 +270,14 @@ std::streamsize Packet::from_stream(std::istream& is)
 	}
 
 	// The header is always 6 bits, so we add those now too.
-	return 6 + std::visit(StreamDeserialiser{ is }, *this);
+	return 6 + std::visit([&is](auto&& arg) { return arg.from_stream(is); }, *this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 uint64_t Packet::value() const
 {
-	return std::visit(ValueExtractor(), *this);
+	return std::visit([](auto&& arg) {return arg.value(); }, *this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -314,7 +298,7 @@ std::vector<const Packet*> Packet::children() const
 		if constexpr (std::is_same_v<Arg_t, LiteralValuePacket>) {
 			return std::vector<const Packet*>();
 		}
-		else if constexpr (std::is_same_v<Arg_t, OperatorPacket>) {
+		else if constexpr (std::is_base_of_v<OperatorPacket, Arg_t>) {
 			return arg.children();
 		}
 		else {
@@ -324,6 +308,45 @@ std::vector<const Packet*> Packet::children() const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+uint64_t SumPacket::value() const
+{
+	return std::accumulate(_child_packets.begin(), _child_packets.end(), uint64_t{ 0 }, [](auto&& curr, auto& pkt) {
+		return curr + pkt->value();
+		});
+}
+
+uint64_t ProductPacket::value() const
+{
+	return std::accumulate(_child_packets.begin(), _child_packets.end(), uint64_t{ 1 }, [](auto&& curr, auto& pkt) {
+		return curr * pkt->value();
+		});
+}
+
+uint64_t MinimumPacket::value() const
+{
+	return uint64_t();
+}
+
+uint64_t MaximumPacket::value() const
+{
+	return uint64_t();
+}
+
+uint64_t GreaterThanPacket::value() const
+{
+	return uint64_t();
+}
+
+uint64_t LessThanPacket::value() const
+{
+	return uint64_t();
+}
+
+uint64_t EqualToPacket::value() const
+{
+	return uint64_t();
+}
 
 }
 }
@@ -364,26 +387,7 @@ std::istream& operator>>(std::istream& is, aoc::comms::BITS::Packet& packet)
 {
 	using namespace aoc::comms;
 
-	const auto header = BITS::Header{ is };
-
-	switch (header.type()) {
-	case aoc::comms::BITS::PacketType::operation_0:
-	case aoc::comms::BITS::PacketType::operation_1:
-	case aoc::comms::BITS::PacketType::operation_2:
-	case aoc::comms::BITS::PacketType::operation_3:
-	case aoc::comms::BITS::PacketType::operation_5:
-	case aoc::comms::BITS::PacketType::operation_6:
-	case aoc::comms::BITS::PacketType::operation_7: {
-		packet = extract_packet_impl<BITS::OperatorPacket>(is, header.version());
-		break;
-	}
-	case aoc::comms::BITS::PacketType::literal_value: {
-		packet = extract_packet_impl<BITS::LiteralValuePacket>(is, header.version());
-		break;
-	}
-	default:
-		throw aoc::IOException("Invalid packet type");
-	}
+	packet.from_stream(is);
 
 	return is;
 }

@@ -189,15 +189,22 @@ static uint8_t read_bit_value(std::istream& is)
 
 enum class PacketType
 {
-	operation_0,
-	operation_1,
-	operation_2,
-	operation_3,
+	operation_sum,
+	operation_product,
+	operation_min,
+	operation_max,
 	literal_value,
-	operation_5,
-	operation_6,
-	operation_7
+	operation_greater,
+	operation_less,
+	operation_equal
 };
+
+///////////////////////////////////////////////////////////////////////////////
+
+inline PacketType int_to_packet_type(int x)
+{
+	return static_cast<PacketType>(x);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -207,7 +214,7 @@ public:
 
 	Header(std::istream& is)
 		: _version{ read_bit_value<3>(is) }
-		, _type{ static_cast<PacketType>(read_bit_value<3>(is))}
+		, _type{ int_to_packet_type(read_bit_value<3>(is))}
 	{
 	}
 
@@ -274,7 +281,7 @@ public:
 	std::vector<const Packet*> children() const;
 	uint8_t version() const { return _version; }
 
-private:
+protected:
 
 	enum class LengthType
 	{
@@ -292,11 +299,88 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-class Packet : public std::variant<LiteralValuePacket, OperatorPacket>
+class SumPacket : public OperatorPacket
+{
+public:
+	SumPacket() : OperatorPacket{ 0 } {}
+	SumPacket(uint8_t version) : OperatorPacket{ version } {}
+
+	uint64_t value() const;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class ProductPacket : public OperatorPacket
+{
+public:
+	ProductPacket() : OperatorPacket{ 0 } {}
+	ProductPacket(uint8_t version) : OperatorPacket{ version } {}
+
+	uint64_t value() const;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class MinimumPacket : public OperatorPacket
+{
+public:
+	MinimumPacket() : OperatorPacket{ 0 } {}
+	MinimumPacket(uint8_t version) : OperatorPacket{ version } {}
+
+	uint64_t value() const;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class MaximumPacket : public OperatorPacket
+{
+public:
+	MaximumPacket() : OperatorPacket{ 0 } {}
+	MaximumPacket(uint8_t version) : OperatorPacket{ version } {}
+
+	uint64_t value() const;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class GreaterThanPacket : public OperatorPacket
+{
+public:
+	GreaterThanPacket() : OperatorPacket{ 0 } {}
+	GreaterThanPacket(uint8_t version) : OperatorPacket{ version } {}
+
+	uint64_t value() const;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class LessThanPacket : public OperatorPacket
+{
+public:
+	LessThanPacket() : OperatorPacket{ 0 } {}
+	LessThanPacket(uint8_t version) : OperatorPacket{ version } {}
+
+	uint64_t value() const;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class EqualToPacket : public OperatorPacket
+{
+public:
+	EqualToPacket() : OperatorPacket{ 0 } {}
+	EqualToPacket(uint8_t version) : OperatorPacket{ version } {}
+
+	uint64_t value() const;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class Packet : public std::variant<LiteralValuePacket, SumPacket, ProductPacket, MaximumPacket, MinimumPacket, GreaterThanPacket, LessThanPacket, EqualToPacket>
 {
 public:
 
-	using Base_t = std::variant<LiteralValuePacket, OperatorPacket>;
+	using Base_t = std::variant<LiteralValuePacket, SumPacket, ProductPacket, MaximumPacket, MinimumPacket, GreaterThanPacket, LessThanPacket, EqualToPacket>;
 	using Base_t::operator=;
 
 	Packet() = default;

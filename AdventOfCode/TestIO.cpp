@@ -239,6 +239,23 @@ public:
 
 		Assert::AreEqual(uint64_t{ 9 }, packet.value());
 	}
+
+	TEST_METHOD(GreaterThanPacketsHaveTheCorrectValue)
+	{
+		std::stringstream hex_data{ "F600BC2D8F" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto child_packets = packet.children();
+		Assert::AreEqual(size_t{ 2 }, child_packets.size());
+
+		Assert::AreEqual(uint64_t{ 5 }, child_packets[0]->value());
+		Assert::AreEqual(uint64_t{ 15 }, child_packets[1]->value());
+
+		Assert::AreEqual(uint64_t{ 0 }, packet.value());
+	}
 };
 
 TEST_CLASS(PacketEnumerator)

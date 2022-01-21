@@ -221,6 +221,24 @@ public:
 
 		Assert::AreEqual(uint64_t{ 7 }, packet.value());
 	}
+
+	TEST_METHOD(MaxValuePacketsHaveTheCorrectValue)
+	{
+		std::stringstream hex_data{ "CE00C43D881120" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto child_packets = packet.children();
+		Assert::AreEqual(size_t{ 3 }, child_packets.size());
+
+		Assert::AreEqual(uint64_t{ 7 }, child_packets[0]->value());
+		Assert::AreEqual(uint64_t{ 8 }, child_packets[1]->value());
+		Assert::AreEqual(uint64_t{ 9 }, child_packets[2]->value());
+
+		Assert::AreEqual(uint64_t{ 9 }, packet.value());
+	}
 };
 
 TEST_CLASS(PacketEnumerator)

@@ -325,7 +325,7 @@ uint64_t ProductPacket::value() const
 
 uint64_t MinimumPacket::value() const
 {
-	return uint64_t();
+	return std::min_element(_child_packets.begin(), _child_packets.end(), [](auto&& p1, auto&& p2) {return p1->value() < p2->value(); })->get()->value();
 }
 
 uint64_t MaximumPacket::value() const

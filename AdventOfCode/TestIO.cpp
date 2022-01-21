@@ -290,6 +290,19 @@ public:
 
 		Assert::AreEqual(uint64_t{ 0 }, packet.value());
 	}
+
+	TEST_METHOD(MultipleOperators)
+	{
+		std::stringstream hex_data{ "9C0141080250320F1802104A08" };
+		aoc::comms::BITS::IStream bits{ hex_data };
+
+		auto packet = aoc::comms::BITS::Packet{};
+		bits >> packet;
+
+		const auto child_packets = packet.children();
+		
+		Assert::AreEqual(uint64_t{ 1 }, packet.value());
+	}
 };
 
 TEST_CLASS(PacketEnumerator)

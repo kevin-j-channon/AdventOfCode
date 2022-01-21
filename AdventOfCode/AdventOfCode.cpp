@@ -1186,18 +1186,31 @@ TEST_CLASS(TestDay16)
 public:
 	TEST_METHOD(Part1)
 	{
+		using namespace aoc::comms;
+
 		std::ifstream data_file(DATA_DIR / "Day16_input.txt");
 		Assert::IsTrue(data_file.is_open());
-		aoc::comms::BITS::IStream bits{ data_file };
+		BITS::IStream bits{ data_file };
 
-		auto packet = aoc::comms::BITS::Packet{};
-		bits >> packet;
+		auto packet = BITS::Packet{};
+		auto top_level_packets = std::vector<BITS::Packet>{};
 
-		const auto version_sum = aoc::comms::BITS::PacketEnumerator{ packet }.reduce([](auto& current, auto&& pkt) {
-			return current + pkt.version();
-			}, uint32_t{ 0 });
+		try {
+			while (!bits.eof()) {
+				auto packet = BITS::Packet{};
+				bits >> packet;
+				top_level_packets.push_back(std::move(packet));
+			}
+		}
+		catch (const aoc::IOException&) {}
 
-		Assert::AreEqual(uint32_t{ 31 }, version_sum);
+		const auto version_sum = std::accumulate(top_level_packets.begin(), top_level_packets.end(), uint32_t{ 0 }, [](uint32_t&& curr, BITS::Packet& pkt) -> uint32_t{
+			return aoc::comms::BITS::PacketEnumerator{ pkt }.reduce([](auto& current, auto&& pkt) {
+				return current + pkt.version();
+				}, curr);
+			});
+
+		Assert::AreEqual(uint32_t{ 913 }, version_sum);
 	}
 };
 }

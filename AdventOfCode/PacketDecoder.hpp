@@ -297,8 +297,13 @@ class Packet : public std::variant<LiteralValuePacket, OperatorPacket>
 public:
 
 	using Base_t = std::variant<LiteralValuePacket, OperatorPacket>;
-
 	using Base_t::operator=;
+
+	Packet() = default;
+	Packet(const Packet&) = default;
+	Packet& operator=(const Packet&) = default;
+	Packet(Packet&&) = default;
+	Packet& operator=(Packet&&) = default;
 
 	std::streamsize from_stream(std::istream& is);
 	uint64_t value() const;

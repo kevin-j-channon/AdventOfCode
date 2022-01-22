@@ -422,6 +422,7 @@ public:
 		// Day 15
 		{
 			Logger::WriteMessage("Day 15:\n");
+#ifndef _DEBUG
 
 			// Part 1
 			{
@@ -436,17 +437,16 @@ public:
 
 			// Part 2
 			{
-#ifndef _DEBUG
 				std::ifstream data_file(DATA_DIR / "Day15_input.txt");
 				Assert::IsTrue(data_file.is_open());
 
 				const auto score = aoc::navigation::CavernPathFinder{}.plot_course(aoc::navigation::Cavern{ data_file }.expand(5).risk_grid()).score();
 
 				Logger::WriteMessage(std::format("\tOptimal expanded path score: {}\n", score).c_str());
-#else
-				Logger::WriteMessage("\tDay 15 part 2 is prohibitively slow in DEBUG. Run in RELEASE to run this example\n");
-#endif
 			}
+#else
+			Logger::WriteMessage("\tDay 15 is prohibitively slow in DEBUG. Run in RELEASE to run this example\n");
+#endif
 		}
 
 		// Day 16
@@ -1192,6 +1192,7 @@ TEST_CLASS(TestDay15)
 public:
 	TEST_METHOD(Part1)
 	{
+#ifndef _DEBUG
 		std::ifstream data_file(DATA_DIR / "Day15_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
@@ -1199,16 +1200,24 @@ public:
 		const auto score = aoc::navigation::CavernPathFinder{}.plot_course(cavern.risk_grid()).score();
 
 		Assert::AreEqual(size_t{ 811 }, score);
+#else
+		Logger::WriteMessage("\tDay 15 part 1 is prohibitively slow in DEBUG. Run in RELEASE to run this example\n");
+#endif
+
 	}
 
 	TEST_METHOD(Part2)
 	{
+#ifndef _DEBUG
 		std::ifstream data_file(DATA_DIR / "Day15_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
 		const auto score = aoc::navigation::CavernPathFinder{}.plot_course(aoc::navigation::Cavern{ data_file }.expand(5).risk_grid()).score();
 
 		Assert::AreEqual(size_t{ 3012 }, score);
+#else
+		Logger::WriteMessage("\tDay 15 part 2 is prohibitively slow in DEBUG. Run in RELEASE to run this example\n");
+#endif
 	}
 };
 

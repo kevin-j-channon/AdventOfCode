@@ -675,6 +675,7 @@ public:
 
 	TEST_METHOD(LargestExample)
 	{
+#ifndef _DEBUG
 		constexpr auto data_str =
 			"fs-end\n"
 			"he-DX\n"
@@ -701,6 +702,9 @@ public:
 		auto route_count = aoc::navigation::CaveRevisitor{ caves }.routes().size();
 
 		Assert::AreEqual(size_t{ 3509 }, route_count);
+#else
+		Logger::WriteMessage("\tThis test is prohibitively slow in DEBUG. Run in RELEASE to run this example\n");
+#endif
 	}
 };
 }

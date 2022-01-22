@@ -1,0 +1,103 @@
+<Playlist Version="2.0">
+  <Rule Name="Includes" Match="Any">
+    <Rule Match="All">
+      <Property Name="Solution" />
+      <Rule Match="Any">
+        <Rule Match="All">
+          <Property Name="Project" Value="AdventOfCode" />
+          <Rule Match="Any">
+            <Property Name="Namespace" Value="test_paper_folder" />
+            <Property Name="Namespace" Value="test_packet_decoder" />
+            <Property Name="Namespace" Value="string_operations" />
+            <Property Name="Namespace" Value="modelling" />
+            <Property Name="Namespace" Value="entertainment" />
+            <Property Name="Namespace" Value="diagnostic_log" />
+            <Property Name="Namespace" Value="day_8" />
+            <Property Name="Namespace" Value="day_7" />
+            <Property Name="Namespace" Value="day_9" />
+            <Property Name="Namespace" Value="day_6" />
+            <Property Name="Namespace" Value="day_5" />
+            <Property Name="Namespace" Value="day_4" />
+            <Property Name="Namespace" Value="day_3" />
+            <Property Name="Namespace" Value="day_2" />
+            <Property Name="Namespace" Value="day_16" />
+            <Property Name="Namespace" Value="day_14" />
+            <Property Name="Namespace" Value="day_13" />
+            <Rule Match="All">
+              <Property Name="Namespace" Value="day_12" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="TestDay12" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="day_12::TestDay12::Part1" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Part1" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
+            <Property Name="Namespace" Value="day_11" />
+            <Property Name="Namespace" Value="day_10" />
+            <Property Name="Namespace" Value="day_1" />
+            <Property Name="Namespace" Value="common" />
+            <Property Name="Namespace" Value="boat_systems" />
+            <Property Name="Namespace" Value="test_polymerizer" />
+            <Rule Match="All">
+              <Property Name="Namespace" Value="test_cave_nav" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="TestCaveRevisitor" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="test_cave_nav::TestCaveRevisitor::WorksForSimplestExample" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="WorksForSimplestExample" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="test_cave_nav::TestCaveRevisitor::TwoDoublyVisitableCavesWorks" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="TwoDoublyVisitableCavesWorks" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="test_cave_nav::TestCaveRevisitor::SmallExample" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="SmallExample" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="test_cave_nav::TestCaveRevisitor::DoublyVisitableCavesAreFound" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="DoublyVisitableCavesAreFound" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="test_cave_nav::TestCaveRevisitor::LargeExample" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="LargeExample" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+                <Property Name="Class" Value="TestRouteIterator" />
+                <Property Name="Class" Value="TestCaveNavigator" />
+                <Property Name="Class" Value="TestCaveBuilder" />
+              </Rule>
+            </Rule>
+            <Rule Match="All">
+              <Property Name="Namespace" Value="test_cavern_path_finder" />
+              <Rule Match="Any">
+                <Property Name="Class" Value="TestCavernPathFinder" />
+                <Property Name="Class" Value="TestCavern" />
+              </Rule>
+            </Rule>
+          </Rule>
+        </Rule>
+      </Rule>
+    </Rule>
+  </Rule>
+</Playlist>

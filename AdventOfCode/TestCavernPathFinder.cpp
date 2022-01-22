@@ -280,21 +280,16 @@ public:
 
 	TEST_METHOD(Part2_mike)
 	{
-#ifndef _DEBUG
 		std::ifstream data_file(DATA_DIR / "Day15_input_mike.txt");
 		Assert::IsTrue(data_file.is_open());
 
 		const auto score = aoc::navigation::CavernPathFinder{}.plot_course(aoc::navigation::Cavern{ data_file }.expand(5).risk_grid()).score();
 
 		Assert::AreEqual(size_t{ 2835 }, score);
-#else
-		Logger::WriteMessage("\tDay 15 part 2 (Mike) is prohibitively slow in DEBUG. Run in RELEASE to run this example\n");
-#endif
 	}
 
 	TEST_METHOD(Part2_compareExpanded)
 	{
-#ifndef _DEBUG
 		std::ifstream data_file(DATA_DIR / "Day15_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
@@ -313,14 +308,10 @@ public:
 				Assert::AreEqual(reference_risks.at(r, c), expanded_risks.at(r, c), std::format(L"Mismatch at ({}, {})", r, c).c_str());
 			}
 		}
-#else
-		Logger::WriteMessage("\tDay 15 Part2_compareExpanded is prohibitively slow in DEBUG. Run in RELEASE to run this example\n");
-#endif
 	}
 
 	TEST_METHOD(ExpandedGraphIsCorrect)
 	{
-#ifndef _DEBUG
 		std::ifstream data_file(DATA_DIR / "Day15_input.txt");
 		Assert::IsTrue(data_file.is_open());
 
@@ -355,9 +346,6 @@ public:
 						location.x, location.y, weight, location.x, location.y + 1).c_str());
 			}
 		}
-#else
-		Logger::WriteMessage("\tDay 15 ExpandedGraphIsCorrect is prohibitively slow in DEBUG. Run in RELEASE to run this example\n");
-#endif
 	}
 };
 }

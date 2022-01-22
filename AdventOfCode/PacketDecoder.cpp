@@ -393,7 +393,7 @@ std::istream& operator>>(std::istream& is, aoc::comms::BITS::Packet& packet)
 {
 	using namespace aoc::comms;
 
-	packet.from_stream(is);
+	std::ignore = packet.from_stream(is);
 
 	return is;
 }

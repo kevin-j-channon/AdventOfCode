@@ -180,9 +180,20 @@ static std::array<char, SIZE> extract_bits(std::istream& is)
 ///////////////////////////////////////////////////////////////////////////////
 
 template<size_t SIZE>
-static uint8_t read_bit_value(std::istream& is)
+static auto read_bit_value(std::istream& is)
 {
-	return bit_chars_to_value<uint8_t, SIZE>(extract_bits<SIZE>(is));
+	if constexpr (SIZE <= 8) {
+		return bit_chars_to_value<uint8_t, SIZE>(extract_bits<SIZE>(is));
+	}
+	else if constexpr (SIZE <= 16) {
+		return bit_chars_to_value<uint16_t, SIZE>(extract_bits<SIZE>(is));
+	}
+	else if constexpr (SIZE <= 32) {
+		return bit_chars_to_value<uint32_t, SIZE>(extract_bits<SIZE>(is));
+	}
+	else if constexpr (SIZE <= 64) {
+		return bit_chars_to_value<uint64_t, SIZE>(extract_bits<SIZE>(is));
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

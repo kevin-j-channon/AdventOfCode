@@ -448,6 +448,41 @@ public:
 #endif
 			}
 		}
+
+		// Day 16
+		{
+			Logger::WriteMessage("Day 16:\n");
+
+			// Part 1
+			{
+				using namespace aoc::comms;
+				std::ifstream data_file(DATA_DIR / "Day16_input.txt");
+				Assert::IsTrue(data_file.is_open());
+				BITS::IStream bits{ data_file };
+
+				auto packet = BITS::Packet{};
+				bits >> packet;
+				const auto version_sum = BITS::PacketEnumerator{ packet }.reduce([](auto&& current, auto& pkt) -> uint32_t {
+					return current + pkt.version();
+					}, uint32_t{ 0 });
+
+				Logger::WriteMessage(std::format("\tSum of packet versions: {}\n", version_sum).c_str());
+			}
+
+			// Part 2
+			{
+				using namespace aoc::comms;
+
+				std::ifstream data_file(DATA_DIR / "Day16_input.txt");
+				Assert::IsTrue(data_file.is_open());
+				BITS::IStream bits{ data_file };
+
+				auto packet = BITS::Packet{};
+				bits >> packet;
+
+				Logger::WriteMessage(std::format("\tAll packets evaluate to: {}\n", packet.value()).c_str());
+			}
+		}
 	}
 };
 }
@@ -1187,30 +1222,31 @@ public:
 	TEST_METHOD(Part1)
 	{
 		using namespace aoc::comms;
+		std::ifstream data_file(DATA_DIR / "Day16_input.txt");
+		Assert::IsTrue(data_file.is_open());
+		BITS::IStream bits{ data_file };
+
+		auto packet = BITS::Packet{};
+		bits >> packet;
+		const auto version_sum = BITS::PacketEnumerator{ packet }.reduce([](auto&& current, auto& pkt) -> uint32_t {
+			return current + pkt.version();
+			}, uint32_t{0});
+
+		Assert::AreEqual(uint32_t{ 913 }, version_sum);
+	}
+
+	TEST_METHOD(Part2)
+	{
+		using namespace aoc::comms;
 
 		std::ifstream data_file(DATA_DIR / "Day16_input.txt");
 		Assert::IsTrue(data_file.is_open());
 		BITS::IStream bits{ data_file };
 
 		auto packet = BITS::Packet{};
-		auto top_level_packets = std::vector<BITS::Packet>{};
+		bits >> packet;
 
-		try {
-			while (!bits.eof()) {
-				auto packet = BITS::Packet{};
-				bits >> packet;
-				top_level_packets.push_back(std::move(packet));
-			}
-		}
-		catch (const aoc::IOException&) {}
-
-		const auto version_sum = std::accumulate(top_level_packets.begin(), top_level_packets.end(), uint32_t{ 0 }, [](uint32_t&& curr, BITS::Packet& pkt) -> uint32_t{
-			return aoc::comms::BITS::PacketEnumerator{ pkt }.reduce([](auto& current, auto&& pkt) {
-				return current + pkt.version();
-				}, curr);
-			});
-
-		Assert::AreEqual(uint32_t{ 913 }, version_sum);
+		Assert::AreEqual(uint64_t{ 1510977819698 }, packet.value());
 	}
 };
 }

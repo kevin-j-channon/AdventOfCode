@@ -181,6 +181,7 @@
     <ClCompile Include="TestModelling.cpp" />
     <ClCompile Include="TestPaperfolder.cpp" />
     <ClCompile Include="TestPolymerizer.cpp" />
+    <ClCompile Include="TestProbeLauncher.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AdventOfCode.hpp" />

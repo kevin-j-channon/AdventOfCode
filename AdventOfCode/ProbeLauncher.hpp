@@ -10,6 +10,7 @@ namespace science
 
 class ProbeLauncher
 {
+	using Target_t = Rectangle<uint32_t>;
 public:
 	ProbeLauncher& read_target(std::istream& is)
 	{
@@ -36,11 +37,22 @@ public:
 			throw IOException("Invalid target area input: Invalid x range");
 		}
 
+		auto top_left = Target_t::Point_t{};
+		auto bottom_right = Target_t::Point_t{};
+
+		try {
+			top_left.x = string_to<decltype(top_left)::Value_t>(x_min_max[0]);
+			bottom_right.x = string_to<decltype(top_left)::Value_t>(x_min_max[1]);
+		}
+		catch (const std::invalid_argument& e) {
+			throw IOException(std::format("Invalid target area input: {}", e.what()));
+		}
+
 		return *this;
 	}
 
 private:
-	Rectangle<uint32_t> _target;
+	Target_t _target;
 };
 
 }

@@ -195,6 +195,7 @@
     <ClInclude Include="DigitAnalyser.hpp" />
     <ClInclude Include="DumboOctopusModel.hpp" />
     <ClInclude Include="EntertainmentSystems.hpp" />
+    <ClInclude Include="Exception.hpp" />
     <ClInclude Include="Lanternfish.hpp" />
     <ClInclude Include="PacketDecoder.hpp" />
     <ClInclude Include="Paperfolder.hpp" />

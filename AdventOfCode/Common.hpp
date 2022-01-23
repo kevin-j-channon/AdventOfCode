@@ -3,6 +3,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include "StringOperations.hpp"
+#include "Exception.hpp"
 
 #include <armadillo>
 
@@ -16,34 +17,6 @@
 
 namespace aoc
 {
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct Exception : public std::runtime_error
-{
-	Exception(const std::string& msg) : std::runtime_error{ msg } {}
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct OutOfRangeException : public Exception, public std::out_of_range
-{
-	OutOfRangeException(const std::string& msg) : Exception{ msg }, std::out_of_range(msg) {}
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct InvalidArgException : public Exception, public std::invalid_argument
-{
-	InvalidArgException(const std::string& msg) : Exception{ msg }, std::invalid_argument(msg) {}
-};
-
-///////////////////////////////////////////////////////////////////////////////
-
-struct IOException : public Exception, public std::invalid_argument
-{
-	IOException(const std::string& msg) : Exception{ msg }, std::invalid_argument(msg) {}
-};
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -325,6 +298,94 @@ struct Point3D
 	XValue_t x;
 	YValue_t y;
 	ZValue_t z;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
+struct ValueRange
+{
+	using Value_t = Value_T;
+	using This_t = ValueRange<Value_t>;
+
+	ValueRange() : min{ 0 }, max{ 0 } {}
+
+	constexpr ValueRange(Value_t x_, Value_t y_)
+		: min{ std::move(x_) }
+		, max{ std::move(y_) }
+	{}
+
+	ValueRange(const This_t&) = default;
+	This_t& operator=(const This_t&) = default;
+
+	ValueRange(This_t&&) = default;
+	This_t& operator=(This_t&&) = default;
+
+	bool operator==(const This_t& other) const
+	{
+		return min == other.x && max == other.y;
+	}
+
+	bool operator!=(const This_t& other) const
+	{
+		return !(*this == other);
+	}
+
+
+	bool operator<(const This_t& other) const
+	{
+		if (min != other.x)
+			return min < other.x;
+
+		if (max != other.y)
+			return max < other.y;
+
+		return false;
+	}
+
+	ValueRange& load(std::istream& is) try
+	{
+		if (is.eof())
+			return *this;
+
+		auto str = std::string{};
+		is >> str;
+
+		from_string(str);
+
+		return *this;
+	}
+	catch (const Exception&)
+	{
+		is.setstate(std::ios::failbit);
+		throw;
+	}
+	catch (const std::invalid_argument&)
+	{
+		is.setstate(std::ios::failbit);
+		throw aoc::Exception("Failed to extract ValueRange from stream");
+	}
+	catch (const std::out_of_range&)
+	{
+		is.setstate(std::ios::failbit);
+		throw aoc::Exception("Failed to extract ValueRange from stream");
+	}
+
+	ValueRange& from_string(const std::string& str)
+	{
+		auto x_and_y_str = split(str, '.', SplitBehaviour::drop_empty);
+		if (x_and_y_str.size() != 2) {
+			throw aoc::Exception("Failed to read ValueRange");
+		}
+
+		this->min = string_to<Value_T>(x_and_y_str[0]);
+		this->max = string_to<Value_T>(x_and_y_str[1]);
+
+		return *this;
+	}
+
+	Value_T min;
+	Value_T max;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -88,13 +88,19 @@ public:
 
 TEST_CLASS(SplitStringOnString)
 {
-public:TEST_METHOD(splitStringReturnsEmptyIfStringLengthIsLessThanOrEqualToDelimiterLength)
-{
-	const auto str = "1**2"s;
-	const auto split_str = split(str, "****"s, SplitBehaviour::drop_empty);
+public:
+	TEST_METHOD(SplittingOnAnEmptyStringRaisesException)
+	{
+		Assert::ExpectException<aoc::InvalidArgException>([]() { split("1 2 3"s, ""s); });
+	}
+	
+	TEST_METHOD(splitStringReturnsEmptyIfStringLengthIsLessThanOrEqualToDelimiterLength)
+	{
+		const auto str = "1**2"s;
+		const auto split_str = split(str, "****"s, SplitBehaviour::drop_empty);
 
-	Assert::AreEqual(size_t{ 0 }, split_str.size());
-}
+		Assert::AreEqual(size_t{ 0 }, split_str.size());
+	}
 
 	TEST_METHOD(splitStringWorksWhenDropEmptyOptionIsSet)
 	{

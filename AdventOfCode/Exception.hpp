@@ -1,0 +1,38 @@
+#pragma once
+
+namespace aoc
+{
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct Exception : public std::runtime_error
+{
+	Exception(const std::string& msg) : std::runtime_error{ msg } {}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct OutOfRangeException : public Exception, public std::out_of_range
+{
+	OutOfRangeException(const std::string& msg) : Exception{ msg }, std::out_of_range(msg) {}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct InvalidArgException : public Exception, public std::invalid_argument
+{
+	InvalidArgException(const std::string& msg) : Exception{ msg }, std::invalid_argument(msg) {}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+struct IOException : public Exception, public std::invalid_argument
+{
+	IOException(const std::string& msg) : Exception{ msg }, std::invalid_argument(msg) {}
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+}
+
+///////////////////////////////////////////////////////////////////////////////

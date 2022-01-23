@@ -47,6 +47,9 @@ public:
 		catch (const std::invalid_argument& e) {
 			throw IOException(std::format("Invalid target area input: {}", e.what()));
 		}
+		catch (const std::out_of_range& e) {
+			throw IOException(std::format("Invalid target area input: {}", e.what()));
+		}
 
 		return *this;
 	}

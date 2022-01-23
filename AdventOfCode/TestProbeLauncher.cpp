@@ -42,5 +42,11 @@ public:
 		std::stringstream data("target area: x=ddd..303, y=-91..-54");
 		Assert::ExpectException<aoc::IOException>([&data]() { aoc::science::ProbeLauncher{}.read_target(data); });
 	}
+
+	TEST_METHOD(InputWithOutOfRangeXMinThrows)
+	{
+		std::stringstream data("target area: x=4294967296..303, y=-91..-54");
+		Assert::ExpectException<aoc::IOException>([&data]() { aoc::science::ProbeLauncher{}.read_target(data); });
+	}
 };
 }

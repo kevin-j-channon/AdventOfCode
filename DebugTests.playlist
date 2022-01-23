@@ -95,6 +95,7 @@
                 <Property Name="Class" Value="TestCavern" />
               </Rule>
             </Rule>
+            <Property Name="Namespace" Value="test_common" />
           </Rule>
         </Rule>
       </Rule>

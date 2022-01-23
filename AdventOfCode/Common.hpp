@@ -262,7 +262,31 @@ std::vector<Point2D<Value_T>> rasterize(const Line2d<Value_T>& line)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<typename Value_T>
+class Rectangle
+{
+public:
+	using Value_t = Value_T;
+	using Point_t = Point2D<Value_t>;
 
+	Rectangle()
+		: _top_left{0, 0}
+		, _bottom_right{0, 0}
+	{}
+
+	Rectangle(const Rectangle&) = default;
+	Rectangle& operator=(const Rectangle&) = default;
+
+	Rectangle(Rectangle&&) = default;
+	Rectangle& operator=(Rectangle&&) = default;
+
+	const Point_t& top_left() const { return _top_left; }
+	const Point_t& bottom_right() const { return _bottom_right; }
+
+private:
+	Point_t _top_left;
+	Point_t _bottom_right;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 

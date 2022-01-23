@@ -36,6 +36,40 @@ std::vector<std::basic_string<Char_T>> split(const std::basic_string<Char_T>& st
     return result;
 }
 
+template<typename Char_T>
+std::vector<std::basic_string<Char_T>> split(const std::basic_string<Char_T>& str, const std::basic_string<Char_T>& delimiter, SplitBehaviour behaviour = SplitBehaviour::none)
+{
+    auto result = std::vector<std::basic_string<Char_T>>();
+
+    if (str.length() <= delimiter.length()) {
+        return result;
+    }
+
+    auto begin = str.cbegin();
+    while (true) {
+        if (SplitBehaviour::drop_empty == behaviour) {
+            begin = std::find_if(begin, str.end(), [delimiter](auto c) { return c != delimiter.front(); });
+        }
+
+        if (str.cend() == begin) {
+            break;
+        }
+
+        auto pos = std::find(begin, str.cend(), delimiter.front());
+
+        result.emplace_back(begin, pos);
+
+        if (str.cend() == pos) {
+            break;
+        }
+        else {
+            begin = std::next(pos);
+        }
+    }
+
+    return result;
+}
+
 namespace
 {
     template<typename Char_T>

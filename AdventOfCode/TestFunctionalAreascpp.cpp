@@ -25,7 +25,7 @@ const auto DATA_DIR = std::filesystem::path(R"(..\..\AdventOfCode\Data)"s);
 
 namespace string_operations
 {
-TEST_CLASS(SplitString)
+TEST_CLASS(SplitStringOnChar)
 {
 public:
 
@@ -33,6 +33,73 @@ public:
 	{
 		const auto str = "1 2 3"s;
 		const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+
+		Assert::AreEqual(size_t{ 3 }, split_str.size());
+	}
+
+	TEST_METHOD(splitStringWorksWhenDropEmptyOptionIsNotSet)
+	{
+		const auto str = "1 2 3"s;
+		const auto split_str = split(str, ' ');
+
+		Assert::AreEqual(size_t{ 3 }, split_str.size());
+	}
+
+	TEST_METHOD(SplitStringDropsConsecutiveDelimitersWhenOptionIsSet)
+	{
+		const auto str = "1  2      3"s;
+		const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+
+		Assert::AreEqual(size_t{ 3 }, split_str.size());
+	}
+
+	TEST_METHOD(SplitStringDropsConsecutiveDelimitersAtBeginning)
+	{
+		const auto str = "   1 2      3"s;
+		const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+
+		Assert::AreEqual(size_t{ 3 }, split_str.size());
+	}
+
+	TEST_METHOD(SplitStringDropsConsecutiveDelimitersAtEnd)
+	{
+		const auto str = "1 2      3   "s;
+		const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+
+		Assert::AreEqual(size_t{ 3 }, split_str.size());
+	}
+
+	TEST_METHOD(SplitStringEmptyResultWhenStringIsOnlyDelimiters)
+	{
+		const auto str = "   "s;
+		const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+
+		Assert::IsTrue(split_str.empty());
+	}
+
+	TEST_METHOD(SplitStringNonEmptyResultWhenStringIsOnlyUndroppedDelimiters)
+	{
+		const auto str = "    "s;
+		const auto split_str = split(str, ' ', SplitBehaviour::none);
+
+		Assert::AreEqual(size_t{ 4 }, split_str.size());
+	}
+};
+
+TEST_CLASS(SplitStringOnString)
+{
+public:TEST_METHOD(splitStringReturnsEmptyIfStringLengthIsLessThanOrEqualToDelimiterLength)
+{
+	const auto str = "1**2"s;
+	const auto split_str = split(str, "****"s, SplitBehaviour::drop_empty);
+
+	Assert::AreEqual(size_t{ 0 }, split_str.size());
+}
+
+	TEST_METHOD(splitStringWorksWhenDropEmptyOptionIsSet)
+	{
+		const auto str = "1**2**3"s;
+		const auto split_str = split(str, "**"s, SplitBehaviour::drop_empty);
 
 		Assert::AreEqual(size_t{ 3 }, split_str.size());
 	}

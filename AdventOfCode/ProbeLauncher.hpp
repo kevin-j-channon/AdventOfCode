@@ -26,6 +26,11 @@ public:
 			throw IOException("Invalid target area input: two points required to define a rectangle");
 		}
 
+		auto x_parts = split(parts[0], '=');
+		if (x_parts.size() != 2) {
+			throw IOException("Invalid target area input: Invalid x parts");
+		}
+
 		return *this;
 	}
 

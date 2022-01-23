@@ -31,6 +31,12 @@ public:
 		Assert::ExpectException<aoc::IOException>([&data]() { aoc::science::ProbeLauncher{}.read_target(data); });
 	}
 
+	TEST_METHOD(InputWithInvalidDimensionLabelThrows)
+	{
+		std::stringstream data("target area: z=244..303, y=-91..-54");
+		Assert::ExpectException<aoc::IOException>([&data]() { aoc::science::ProbeLauncher{}.read_target(data); });
+	}
+
 	TEST_METHOD(InputWithoutValidXRangeThrows)
 	{
 		std::stringstream data("target area: x=244.., y=-91..-54");

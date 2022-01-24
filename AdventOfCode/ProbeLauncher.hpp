@@ -36,24 +36,13 @@ public:
 			throw IOException(std::format("Invalid target area input: Invalid dimension label '{}'", strip(x_parts[0])));
 		}
 
-		auto x_min_max = split(x_parts[1], '.', SplitBehaviour::drop_empty);
-		if (x_min_max.size() != 2) {
-			throw IOException("Invalid target area input: Invalid x range");
-		}
+		const auto x_range = ValueRange<typename Target_t::Point_t::Value_t>{}.from_stream(is);
 
 		auto top_left = Target_t::Point_t{};
 		auto bottom_right = Target_t::Point_t{};
 
-		try {
-			top_left.x = string_to<decltype(top_left)::Value_t>(x_min_max[0]);
-			bottom_right.x = string_to<decltype(top_left)::Value_t>(x_min_max[1]);
-		}
-		catch (const std::invalid_argument& e) {
-			throw IOException(std::format("Invalid target area input: {}", e.what()));
-		}
-		catch (const std::out_of_range& e) {
-			throw IOException(std::format("Invalid target area input: {}", e.what()));
-		}
+		top_left.x = x_range.min();
+		bottom_right.x = x_range.max();
 
 		return *this;
 	}

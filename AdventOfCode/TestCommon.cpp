@@ -299,7 +299,17 @@ public:
 
 	TEST_METHOD(StreamExtractionFailsIfThereAreNonnumericElements)
 	{
-		std::stringstream ss("0,X");
+		std::stringstream ss("0..X");
+		auto v = aoc::ValueRange<uint32_t>{};
+
+		Assert::ExpectException<aoc::IOException>([&]() { ss >> v; });
+
+		Assert::IsTrue(ss.fail());
+	}
+
+	TEST_METHOD(StreamExtractionFailsIfMaxIsMissing)
+	{
+		std::stringstream ss("0..");
 		auto v = aoc::ValueRange<uint32_t>{};
 
 		Assert::ExpectException<aoc::IOException>([&]() { ss >> v; });

@@ -368,20 +368,28 @@ public:
 	{
 		using namespace std::string_literals;
 
-		auto min_max_str = split(str, ".."s);
+		auto min_max_str = split(str, ".."s, SplitBehaviour::drop_empty);
 		if (min_max_str.size() != 2) {
 			throw aoc::IOException("Failed to read ValueRange");
 		}
 
-		const auto min = string_to<Value_T>(min_max_str[0]);
-		const auto max = string_to<Value_T>(min_max_str[1]);
+		try {
+			const auto min = string_to<Value_T>(min_max_str[0]);
+			const auto max = string_to<Value_T>(min_max_str[1]);
 
-		if (min > max) {
-			throw IOException("Range min is greater than max");
+			if (min > max) {
+				throw IOException("Range min is greater than max");
+			}
+
+			_min = min;
+			_max = max;
 		}
-
-		_min = min;
-		_max = max;
+		catch (const std::out_of_range& e) {
+			throw IOException(std::format("Failed to read ValueRange: {}", e.what()));
+		}
+		catch (const std::invalid_argument& e) {
+			throw IOException(std::format("Failed to read ValueRange: {}", e.what()));
+		}
 
 		return *this;
 	}

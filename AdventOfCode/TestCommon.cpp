@@ -254,6 +254,59 @@ public:
 		Assert::AreEqual(size_t{ 0 }, rect.bottom_right().y);
 	}
 };
+TEST_CLASS(TestValueRange)
+{
+public:
+
+	TEST_METHOD(StreamExtractionWorksForValidStream)
+	{
+		std::stringstream ss("1..2");
+		auto v = aoc::ValueRange<uint32_t>{};
+
+		ss >> v;
+
+		Assert::AreEqual(uint32_t{ 1 }, v.min());
+		Assert::AreEqual(uint32_t{ 2 }, v.max());
+	}
+
+	TEST_METHOD(ConstructRangeWithOutOfOrderMinMaxFails)
+	{
+		std::stringstream values("10 9");
+		auto min = uint32_t{ 0 };
+		auto max = uint32_t{ 0 };
+
+		values >> min >> max;
+
+		Assert::ExpectException<aoc::InvalidArgException>([&]() { aoc::ValueRange<uint32_t>{min, max}; });
+	}
+
+	TEST_METHOD(ReadOutOfOrderMinMaxFromStreamFails)
+	{
+		std::stringstream data("10..9");
+		auto range = aoc::ValueRange<uint32_t>{};
+		Assert::ExpectException<aoc::IOException>([&]() { data >> range; });
+	}
+
+	TEST_METHOD(StreamExtractionFailsIfMalformed)
+	{
+		std::stringstream ss("09");
+		auto v = aoc::ValueRange<uint32_t>{};
+
+		Assert::ExpectException<aoc::IOException>([&]() { ss >> v; });
+
+		Assert::IsTrue(ss.fail());
+	}
+
+	TEST_METHOD(StreamExtractionFailsIfThereAreNonnumericElements)
+	{
+		std::stringstream ss("0,X");
+		auto v = aoc::ValueRange<uint32_t>{};
+
+		Assert::ExpectException<aoc::IOException>([&]() { ss >> v; });
+
+		Assert::IsTrue(ss.fail());
+	}
+};
 
 TEST_CLASS(TestExp)
 {

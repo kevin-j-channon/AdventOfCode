@@ -303,17 +303,22 @@ struct Point3D
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
-struct ValueRange
+class ValueRange
 {
+public:
 	using Value_t = Value_T;
 	using This_t = ValueRange<Value_t>;
 
-	ValueRange() : min{ 0 }, max{ 0 } {}
+	ValueRange() : _min{ 0 }, _max{ 0 } {}
 
 	constexpr ValueRange(Value_t x_, Value_t y_)
-		: min{ std::move(x_) }
-		, max{ std::move(y_) }
-	{}
+		: _min{ std::move(x_) }
+		, _max{ std::move(y_) }
+	{
+		if (_min > _max) {
+			throw InvalidArgException("Range min is greater than max");
+		}
+	}
 
 	ValueRange(const This_t&) = default;
 	This_t& operator=(const This_t&) = default;
@@ -323,7 +328,7 @@ struct ValueRange
 
 	bool operator==(const This_t& other) const
 	{
-		return min == other.x && max == other.y;
+		return _min == other.x && _max == other.y;
 	}
 
 	bool operator!=(const This_t& other) const
@@ -331,19 +336,7 @@ struct ValueRange
 		return !(*this == other);
 	}
 
-
-	bool operator<(const This_t& other) const
-	{
-		if (min != other.x)
-			return min < other.x;
-
-		if (max != other.y)
-			return max < other.y;
-
-		return false;
-	}
-
-	ValueRange& load(std::istream& is) try
+	ValueRange& from_stream(std::istream& is) try
 	{
 		if (is.eof())
 			return *this;
@@ -363,29 +356,42 @@ struct ValueRange
 	catch (const std::invalid_argument&)
 	{
 		is.setstate(std::ios::failbit);
-		throw aoc::Exception("Failed to extract ValueRange from stream");
+		throw aoc::IOException("Failed to extract ValueRange from stream");
 	}
 	catch (const std::out_of_range&)
 	{
 		is.setstate(std::ios::failbit);
-		throw aoc::Exception("Failed to extract ValueRange from stream");
+		throw aoc::IOException("Failed to extract ValueRange from stream");
 	}
 
 	ValueRange& from_string(const std::string& str)
 	{
-		auto x_and_y_str = split(str, '.', SplitBehaviour::drop_empty);
-		if (x_and_y_str.size() != 2) {
-			throw aoc::Exception("Failed to read ValueRange");
+		using namespace std::string_literals;
+
+		auto min_max_str = split(str, ".."s);
+		if (min_max_str.size() != 2) {
+			throw aoc::IOException("Failed to read ValueRange");
 		}
 
-		this->min = string_to<Value_T>(x_and_y_str[0]);
-		this->max = string_to<Value_T>(x_and_y_str[1]);
+		const auto min = string_to<Value_T>(min_max_str[0]);
+		const auto max = string_to<Value_T>(min_max_str[1]);
+
+		if (min > max) {
+			throw IOException("Range min is greater than max");
+		}
+
+		_min = min;
+		_max = max;
 
 		return *this;
 	}
 
-	Value_T min;
-	Value_T max;
+	const Value_t& min() const { return _min; }
+	const Value_t& max() const { return _max; }
+
+private:
+	Value_T _max;
+	Value_T _min;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -417,6 +423,15 @@ template<typename Value_T>
 inline istream& operator>>(std::istream& is, aoc::Point2D<Value_T>& p)
 {
 	p.load(is);
+	return is;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
+inline istream& operator>>(std::istream& is, aoc::ValueRange<Value_T>& range)
+{
+	range.from_stream(is);
 	return is;
 }
 

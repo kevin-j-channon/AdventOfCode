@@ -59,24 +59,22 @@ std::vector<std::basic_string<Char_T>> split(const std::basic_string<Char_T>& st
 
     const auto str_len = str.length();
 
-    if (str_len <= delim_len) {
-        return result;
-    }
+    auto add_to_result_if_necessary = [&](auto start, auto end) {
+        if (!(SplitBehaviour::drop_empty == behaviour && end == start)) {
+            result.push_back(str.substr(start, end - start));
+        }
+    };
 
     auto pos = typename Str_t::size_type{ 0 };
-    while (pos != Str_t::npos && pos != str_len) {
+    while (pos != Str_t::npos) {
         const auto next_delim_start_pos = str.find(delimiter, pos);
         if (next_delim_start_pos == Str_t::npos) {
-            result.push_back(str.substr(pos, next_delim_start_pos - pos));
+            add_to_result_if_necessary(pos, str.length());
             return result;
         }
 
-        if (SplitBehaviour::drop_empty == behaviour && next_delim_start_pos == pos + delimiter.length()) {
-            pos = next_delim_start_pos + delim_len;
-            continue;
-        }
+        add_to_result_if_necessary(pos, next_delim_start_pos);
 
-        result.push_back(str.substr(pos, next_delim_start_pos - pos));
         pos = next_delim_start_pos + delim_len;
     }
 

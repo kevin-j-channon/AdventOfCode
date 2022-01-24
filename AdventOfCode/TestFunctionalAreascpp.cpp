@@ -94,17 +94,17 @@ public:
 		Assert::ExpectException<aoc::InvalidArgException>([]() { split("1 2 3"s, ""s); });
 	}
 	
-	TEST_METHOD(splitStringReturnsEmptyIfStringLengthIsLessThanOrEqualToDelimiterLength)
+	TEST_METHOD(splitStringReturnsEmptyIfStringLengthIsLessThanToDelimiterLength)
 	{
 		const auto str = "1**2"s;
-		const auto split_str = split(str, "****"s, SplitBehaviour::drop_empty);
+		const auto split_str = split(str, "*****"s, SplitBehaviour::drop_empty);
 
-		Assert::AreEqual(size_t{ 0 }, split_str.size());
+		Assert::AreEqual(size_t{ 1 }, split_str.size());
 	}
 
 	TEST_METHOD(splitStringWorksWhenDropEmptyOptionIsSet)
 	{
-		const auto str = "1**2**3"s;
+		const auto str = "1****2**3"s;
 		const auto split_str = split(str, "**"s, SplitBehaviour::drop_empty);
 
 		Assert::AreEqual(size_t{ 3 }, split_str.size());
@@ -112,50 +112,77 @@ public:
 
 	TEST_METHOD(splitStringWorksWhenDropEmptyOptionIsNotSet)
 	{
-		const auto str = "1 2 3"s;
-		const auto split_str = split(str, ' ');
+		const auto str = "1<|>2<|>3<|>4"s;
+		const auto split_str = split(str, "<|>"s);
 
-		Assert::AreEqual(size_t{ 3 }, split_str.size());
+		Assert::AreEqual(size_t{ 4 }, split_str.size());
 	}
 
 	TEST_METHOD(SplitStringDropsConsecutiveDelimitersWhenOptionIsSet)
 	{
-		const auto str = "1  2      3"s;
-		const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+		const auto str = "1..2......3"s;
+		const auto split_str = split(str, ".."s, SplitBehaviour::drop_empty);
 
 		Assert::AreEqual(size_t{ 3 }, split_str.size());
 	}
 
 	TEST_METHOD(SplitStringDropsConsecutiveDelimitersAtBeginning)
 	{
-		const auto str = "   1 2      3"s;
-		const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+		const auto str = "_delim__delim__delim_1_delim_2_delim__delim__delim__delim__delim__delim_3"s;
+		const auto split_str = split(str, "_delim_"s, SplitBehaviour::drop_empty);
 
 		Assert::AreEqual(size_t{ 3 }, split_str.size());
 	}
 
 	TEST_METHOD(SplitStringDropsConsecutiveDelimitersAtEnd)
 	{
-		const auto str = "1 2      3   "s;
-		const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+		const auto str = "1xyz2xyzxyzxyzxyzxyzxyz3xyzxyzxyz"s;
+		const auto split_str = split(str, "xyz"s, SplitBehaviour::drop_empty);
 
 		Assert::AreEqual(size_t{ 3 }, split_str.size());
 	}
 
 	TEST_METHOD(SplitStringEmptyResultWhenStringIsOnlyDelimiters)
 	{
-		const auto str = "   "s;
-		const auto split_str = split(str, ' ', SplitBehaviour::drop_empty);
+		const auto str = "************"s;
+		const auto split_str = split(str, "***"s, SplitBehaviour::drop_empty);
 
 		Assert::IsTrue(split_str.empty());
 	}
 
 	TEST_METHOD(SplitStringNonEmptyResultWhenStringIsOnlyUndroppedDelimiters)
 	{
-		const auto str = "    "s;
-		const auto split_str = split(str, ' ', SplitBehaviour::none);
+		const auto str = "************"s;
+		
+		{
+			const auto split_str = split(str, "*"s, SplitBehaviour::none);
+			Assert::AreEqual(size_t{ 13 }, split_str.size());
+		}
 
-		Assert::AreEqual(size_t{ 4 }, split_str.size());
+		{
+			const auto split_str = split(str, "**"s, SplitBehaviour::none);
+			Assert::AreEqual(size_t{ 7 }, split_str.size());
+		}
+
+		{
+			const auto split_str = split(str, "***"s, SplitBehaviour::none);
+			Assert::AreEqual(size_t{ 5 }, split_str.size());
+		}
+
+		{
+			const auto split_str = split(str, "****"s, SplitBehaviour::none);
+			Assert::AreEqual(size_t{ 4 }, split_str.size());
+		}
+
+		{
+			const auto split_str = split(str, "******"s, SplitBehaviour::none);
+			Assert::AreEqual(size_t{ 3 }, split_str.size());
+		}
+
+		{
+			const auto split_str = split(str, "************"s, SplitBehaviour::none);
+			Assert::AreEqual(size_t{ 2 }, split_str.size());
+		}
 	}
 };
 }

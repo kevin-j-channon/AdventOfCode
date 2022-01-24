@@ -54,5 +54,29 @@ public:
 		std::stringstream data("target area: x=4294967296..303, y=-91..-54");
 		Assert::ExpectException<aoc::IOException>([&data]() { aoc::science::ProbeLauncher{}.read_target(data); });
 	}
+
+	TEST_METHOD(InputWithoutValidYPartThrows)
+	{
+		std::stringstream data("target area: x=244..303, y-91..-54");
+		Assert::ExpectException<aoc::IOException>([&data]() { aoc::science::ProbeLauncher{}.read_target(data); });
+	}
+
+	TEST_METHOD(InputWithoutValidYRangeThrows)
+	{
+		std::stringstream data("target area: x=244..303, y=-..-54");
+		Assert::ExpectException<aoc::IOException>([&data]() { aoc::science::ProbeLauncher{}.read_target(data); });
+	}
+
+	TEST_METHOD(InputWithNonNumericYMinThrows)
+	{
+		std::stringstream data("target area: x=ddd..303, y=abc..-54");
+		Assert::ExpectException<aoc::IOException>([&data]() { aoc::science::ProbeLauncher{}.read_target(data); });
+	}
+
+	TEST_METHOD(InputWithOutOfRangeYMaxThrows)
+	{
+		std::stringstream data("target area: x=244..303, y=-91..4294967296");
+		Assert::ExpectException<aoc::IOException>([&data]() { aoc::science::ProbeLauncher{}.read_target(data); });
+	}
 };
 }

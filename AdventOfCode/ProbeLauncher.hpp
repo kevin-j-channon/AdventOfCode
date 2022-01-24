@@ -14,6 +14,25 @@ class ProbeLauncher
 public:
 	ProbeLauncher& read_target(std::istream& is)
 	{
+		const auto [x_range_str, y_range_str] = _get_x_and_y_range_strings(is);
+
+		auto top_left = Target_t::Point_t{};
+		auto bottom_right = Target_t::Point_t{};
+
+		const auto x_range = _get_range_for_dimension(x_range_str, "x");
+		const auto y_range = _get_range_for_dimension(y_range_str, "y");
+
+		top_left = { x_range.min(), y_range.min() };
+		bottom_right = { x_range.max(), y_range.max() };
+
+
+		return *this;
+	}
+
+private:
+
+	static std::pair<std::string, std::string> _get_x_and_y_range_strings(std::istream& is)
+	{
 		auto line = std::string{};
 		std::getline(is, line);
 
@@ -27,19 +46,8 @@ public:
 			throw IOException("Invalid target area input: two points required to define a rectangle");
 		}
 
-		auto top_left = Target_t::Point_t{};
-		auto bottom_right = Target_t::Point_t{};
-
-		const auto x_range = _get_range_for_dimension(parts[0], "x");
-
-		top_left.x = x_range.min();
-		bottom_right.x = x_range.max();
-
-
-		return *this;
+		return { std::move(parts[0]), std::move(parts[1]) };
 	}
-
-private:
 
 	static ValueRange<typename Target_t::Point_t::Value_t> _get_range_for_dimension(const std::string& str, const std::string& dimension)
 	{

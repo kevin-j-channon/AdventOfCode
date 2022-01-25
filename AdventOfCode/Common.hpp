@@ -334,6 +334,13 @@ public:
 			return *this;
 		}
 
+		ConstIterator operator++(int)
+		{
+			ConstIterator out = *this;
+			++(*this);
+			return out;
+		}
+
 	private:
 		value_type _current;
 	};

@@ -323,13 +323,23 @@ public:
 		Assert::AreEqual(uint32_t{ 123 }, *range.begin());
 	}
 
-	TEST_METHOD(PrefixOperatorWorksOnIterator)
+	TEST_METHOD(PrefixIncrementOperatorWorksOnIterator)
 	{
 		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
 		auto it = range.begin();
 
 		for (auto step = 0; step < 10; ++step, ++it) {
 			Assert::AreEqual(range.min() + step, *it);
+		}
+	}
+
+	TEST_METHOD(PostfixIncrementOperatorWorksOnIterator)
+	{
+		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
+		auto it = range.begin();
+
+		for (auto step = 0; step < 10; ++step) {
+			Assert::AreEqual(range.min() + step, *it++);
 		}
 	}
 };

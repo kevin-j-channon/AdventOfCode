@@ -328,6 +328,11 @@ public:
 
 		reference operator*() const { return _current; }
 
+		ConstIterator& operator++()
+		{
+			++_current;
+			return *this;
+		}
 
 	private:
 		value_type _current;

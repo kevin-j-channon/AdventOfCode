@@ -78,5 +78,17 @@ public:
 		std::stringstream data("target area: x=244..303, y=-91..4294967296");
 		Assert::ExpectException<aoc::IOException>([&data]() { aoc::science::ProbeLauncher{}.read_target(data); });
 	}
+
+	TEST_METHOD(RectangleHasTheExpectedValues)
+	{
+		std::stringstream data("target area: x=244..303, y=-91..-54");
+
+		const auto launcher = aoc::science::ProbeLauncher{}.read_target(data);
+
+		Assert::AreEqual(244, launcher.target().top_left().x);
+		Assert::AreEqual(-54, launcher.target().top_left().y);
+		Assert::AreEqual(303, launcher.target().bottom_right().x);
+		Assert::AreEqual(-91, launcher.target().bottom_right().y);
+	}
 };
 }

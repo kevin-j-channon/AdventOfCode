@@ -97,6 +97,7 @@
             </Rule>
             <Property Name="Namespace" Value="test_common" />
             <Property Name="Namespace" Value="test_probe_launcher" />
+            <Property Name="Namespace" Value="day_17" />
           </Rule>
         </Rule>
       </Rule>

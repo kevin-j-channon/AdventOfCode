@@ -10,7 +10,7 @@ namespace science
 
 class ProbeLauncher
 {
-	using Target_t = Rectangle<uint32_t>;
+	using Target_t = Rectangle<int32_t>;
 public:
 	ProbeLauncher& read_target(std::istream& is)
 	{
@@ -22,11 +22,16 @@ public:
 		const auto x_range = _get_range_for_dimension(x_range_str, "x");
 		const auto y_range = _get_range_for_dimension(y_range_str, "y");
 
-		top_left = { x_range.min(), y_range.min() };
-		bottom_right = { x_range.max(), y_range.max() };
-
+		_target = Target_t{ { x_range.min(), y_range.max() }, { x_range.max(), y_range.min() } };
 
 		return *this;
+	}
+
+	const Target_t& target() const { return _target; }
+
+	uint32_t max_y() const
+	{
+		return (-_target.bottom_right().y) * ((-_target.bottom_right().y) - 1) / 2;
 	}
 
 private:
@@ -60,7 +65,7 @@ private:
 			throw IOException(std::format("Invalid target area input: Invalid dimension label '{}'", strip(parts[0])));
 		}
 
-		return ValueRange<typename Target_t::Point_t::Value_t>{}.from_string(strip(str));
+		return ValueRange<typename Target_t::Point_t::Value_t>{}.from_string(strip(parts[1]));
 	}
 
 	Target_t _target;

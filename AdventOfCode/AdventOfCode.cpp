@@ -15,6 +15,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "Polymerizer.hpp"
 #include "CavernPathFinder.hpp"
 #include "PacketDecoder.hpp"
+#include "ProbeLauncher.hpp"
 
 using namespace std::string_literals;
 using namespace std::chrono_literals;
@@ -473,6 +474,21 @@ public:
 				bits >> packet;
 
 				Logger::WriteMessage(std::format("\tAll packets evaluate to: {}\n", packet.value()).c_str());
+			}
+		}
+
+		// Day 17
+		{
+			Logger::WriteMessage("Day 17:\n");
+
+			// Part 1
+			{
+				std::ifstream data_file(DATA_DIR / "Day17_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto max_height = aoc::science::ProbeLauncher{}.read_target(data_file).max_y();
+
+				Logger::WriteMessage(std::format("\tMax probe launch height: {}\n", max_height).c_str());
 			}
 		}
 	}
@@ -1235,6 +1251,23 @@ public:
 		bits >> packet;
 
 		Assert::AreEqual(uint64_t{ 1510977819698 }, packet.value());
+	}
+};
+}
+
+namespace day_17
+{
+TEST_CLASS(TestDay17)
+{
+public:
+	TEST_METHOD(Part1)
+	{
+		std::ifstream data_file(DATA_DIR / "Day17_input.txt");
+		Assert::IsTrue(data_file.is_open());
+		
+		const auto max_height = aoc::science::ProbeLauncher{}.read_target(data_file).max_y();
+
+		Assert::AreEqual(uint32_t{ 913 }, max_height);
 	}
 };
 }

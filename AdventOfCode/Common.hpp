@@ -247,6 +247,11 @@ public:
 		, _bottom_right{0, 0}
 	{}
 
+	Rectangle(Point_t top_left, Point_t bottom_right)
+		: _top_left{std::move(top_left)}
+		, _bottom_right{std::move(bottom_right)}
+	{}
+
 	Rectangle(const Rectangle&) = default;
 	Rectangle& operator=(const Rectangle&) = default;
 

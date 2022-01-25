@@ -341,6 +341,19 @@ public:
 			return out;
 		}
 
+		ConstIterator& operator--()
+		{
+			--_current;
+			return *this;
+		}
+
+		ConstIterator operator--(int)
+		{
+			ConstIterator out = *this;
+			--(*this);
+			return out;
+		}
+
 	private:
 		value_type _current;
 	};

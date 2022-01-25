@@ -342,6 +342,30 @@ public:
 			Assert::AreEqual(range.min() + step, *it++);
 		}
 	}
+
+	TEST_METHOD(PrefixDecrementOperatorWorksOnIterator)
+	{
+		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
+		auto it = range.begin();
+
+		for (auto step = 0; step < 10; ++step, ++it);
+
+		for (auto step = 10; step != 0; --step, --it) {
+			Assert::AreEqual(range.min() + step, *it);
+		}
+	}
+
+	TEST_METHOD(PostfixDecrementOperatorWorksOnIterator)
+	{
+		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
+		auto it = range.begin();
+
+		for (auto step = 0; step < 10; ++step, ++it);
+
+		for (auto step = 10; step != 0; --step) {
+			Assert::AreEqual(range.min() + step, *it--);
+		}
+	}
 };
 
 TEST_CLASS(TestExp)

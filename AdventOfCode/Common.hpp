@@ -317,8 +317,8 @@ public:
 	struct ConstIterator
 	{
 		using iterator_category = std::random_access_iterator_tag;
-		using difference_type = std::ptrdiff_t;
 		using value_type = Value_t;
+		using difference_type = std::make_signed_t<value_type>;
 		using pointer = const value_type*;
 		using reference = const value_type&;
 
@@ -352,6 +352,11 @@ public:
 			ConstIterator out = *this;
 			--(*this);
 			return out;
+		}
+
+		friend ConstIterator operator+(const ConstIterator& it_1, difference_type increment)
+		{
+			return ConstIterator{ static_cast<value_type>(it_1._current + increment) };
 		}
 
 	private:

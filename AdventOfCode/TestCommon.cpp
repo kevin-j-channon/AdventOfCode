@@ -366,6 +366,14 @@ public:
 			Assert::AreEqual(range.min() + step, *it--);
 		}
 	}
+
+	TEST_METHOD(AdditionOfRandomAccessWorks)
+	{
+		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
+		auto it = range.begin();
+
+		Assert::AreEqual(range.min() + 5, *(it + 5));
+	}
 };
 
 TEST_CLASS(TestExp)

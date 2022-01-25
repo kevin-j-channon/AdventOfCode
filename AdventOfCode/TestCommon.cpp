@@ -316,6 +316,12 @@ public:
 
 		Assert::IsTrue(ss.fail());
 	}
+
+	TEST_METHOD(BeginIteratorIsMin)
+	{
+		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
+		Assert::AreEqual(uint32_t{ 123 }, *range.begin());
+	}
 };
 
 TEST_CLASS(TestExp)

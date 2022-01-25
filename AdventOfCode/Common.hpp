@@ -314,6 +314,25 @@ public:
 	using Value_t = Value_T;
 	using This_t = ValueRange<Value_t>;
 
+	struct ConstIterator
+	{
+		using iterator_category = std::random_access_iterator_tag;
+		using difference_type = std::ptrdiff_t;
+		using value_type = Value_t;
+		using pointer = const value_type*;
+		using reference = const value_type&;
+
+		explicit ConstIterator(value_type begin)
+			: _current{ begin }
+		{}
+
+		reference operator*() const { return _current; }
+
+
+	private:
+		value_type _current;
+	};
+
 	ValueRange() : _min{ 0 }, _max{ 0 } {}
 
 	constexpr ValueRange(Value_t x_, Value_t y_)
@@ -401,6 +420,8 @@ public:
 
 	const Value_t& min() const { return _min; }
 	const Value_t& max() const { return _max; }
+
+	auto begin() const { return ConstIterator{ _min }; }
 
 private:
 	Value_T _max;

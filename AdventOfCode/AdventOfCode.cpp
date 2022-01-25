@@ -1267,7 +1267,7 @@ public:
 		
 		const auto max_height = aoc::science::ProbeLauncher{}.read_target(data_file).max_y();
 
-		Assert::AreEqual(uint32_t{ 913 }, max_height);
+		Assert::AreEqual(uint32_t{ 4095 }, max_height);
 	}
 };
 }

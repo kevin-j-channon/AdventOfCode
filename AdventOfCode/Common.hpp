@@ -359,6 +359,11 @@ public:
 			return ConstIterator{ static_cast<value_type>(it_1._current + increment) };
 		}
 
+		friend ConstIterator operator-(const ConstIterator& it_1, difference_type increment)
+		{
+			return ConstIterator{ static_cast<value_type>(it_1._current - increment) };
+		}
+
 	private:
 		value_type _current;
 	};

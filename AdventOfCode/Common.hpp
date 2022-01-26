@@ -380,6 +380,11 @@ public:
 			return it_1;
 		}
 
+		friend difference_type operator-(const ConstIterator& it_1, const ConstIterator& it_2)
+		{
+			return it_1._current - it_2._current;
+		}
+
 	private:
 		value_type _current;
 	};

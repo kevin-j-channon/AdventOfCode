@@ -445,6 +445,20 @@ public:
 		Assert::IsTrue(it_3 > it_1);
 		Assert::IsTrue(it_3 >= it_1);
 	}
+
+	TEST_METHOD(StlIncrementAndComparisonFunctionsWork)
+	{
+		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
+		const auto it_1 = range.begin();
+
+		Assert::AreEqual(range.min() + 4, *std::next(it_1, 4));
+		
+		auto it_2 = it_1;
+		std::advance(it_2, 3);
+		Assert::AreEqual(range.min() + 3, *it_2);
+		Assert::AreEqual(0, std::distance(range.begin(), it_1));
+		Assert::AreEqual(3, std::distance(it_1, it_2));
+	}
 };
 
 TEST_CLASS(TestExp)

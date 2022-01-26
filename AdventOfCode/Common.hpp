@@ -326,6 +326,8 @@ public:
 			: _current{ begin }
 		{}
 
+		auto operator<=>(const ConstIterator&) const = default;
+
 		reference operator*() const { return _current; }
 
 		ConstIterator& operator++()

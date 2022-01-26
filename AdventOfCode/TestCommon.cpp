@@ -316,8 +316,12 @@ public:
 
 		Assert::IsTrue(ss.fail());
 	}
+};
 
-	TEST_METHOD(BeginIteratorIsMin)
+TEST_CLASS(TestValueRangeIterator)
+{
+public:
+	TEST_METHOD(BeginIsMin)
 	{
 		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
 		Assert::AreEqual(uint32_t{ 123 }, *range.begin());
@@ -401,6 +405,45 @@ public:
 
 		it += 8;
 		Assert::AreEqual(range.min() + 8, *it);
+	}
+
+	TEST_METHOD(EqualityComparisonWorks)
+	{
+		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
+		const auto it_1 = range.begin();
+		const auto it_2 = range.begin();
+		Assert::IsTrue(it_1 == it_2);
+
+		const auto it_3 = range.begin() + 2;
+		Assert::IsTrue(it_1 != it_3);
+	}
+
+	TEST_METHOD(LessThanComparisonWorks)
+	{
+		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
+		const auto it_1 = range.begin();
+		const auto it_2 = range.begin();
+		Assert::IsFalse(it_1 < it_2);
+		Assert::IsTrue(it_1 <= it_2);
+
+		const auto it_3 = range.begin() + 2;
+		Assert::IsTrue(it_1 < it_3);
+		Assert::IsFalse(it_3 < it_1);
+		Assert::IsFalse(it_3 <= it_1);
+	}
+
+	TEST_METHOD(GreaterThanComparisonWorks)
+	{
+		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
+		const auto it_1 = range.begin();
+		const auto it_2 = range.begin();
+		Assert::IsFalse(it_1 > it_2);
+		Assert::IsTrue(it_1 >= it_2);
+
+		const auto it_3 = range.begin() + 2;
+		Assert::IsFalse(it_1 > it_3);
+		Assert::IsTrue(it_3 > it_1);
+		Assert::IsTrue(it_3 >= it_1);
 	}
 };
 

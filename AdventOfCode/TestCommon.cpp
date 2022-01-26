@@ -384,6 +384,24 @@ public:
 
 		Assert::AreEqual(range.min() + 7, *(it - 3));
 	}
+
+	TEST_METHOD(CompoundAssignmentIncrementOperatorWorks)
+	{
+		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
+		auto it = range.begin();
+
+		it += 8;
+		Assert::AreEqual(range.min() + 8, *it);
+	}
+
+	TEST_METHOD(CompoundAssignmentDecrementOperatorWorks)
+	{
+		const auto range = aoc::ValueRange<uint32_t>{ 123, 456 };
+		auto it = range.begin();
+
+		it += 8;
+		Assert::AreEqual(range.min() + 8, *it);
+	}
 };
 
 TEST_CLASS(TestExp)

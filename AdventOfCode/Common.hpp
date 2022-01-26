@@ -354,14 +354,28 @@ public:
 			return out;
 		}
 
-		friend ConstIterator operator+(const ConstIterator& it_1, difference_type increment)
+		ConstIterator& operator+=(difference_type increment)
 		{
-			return ConstIterator{ static_cast<value_type>(it_1._current + increment) };
+			_current += increment;
+			return *this;
 		}
 
-		friend ConstIterator operator-(const ConstIterator& it_1, difference_type increment)
+		ConstIterator& operator-=(difference_type increment)
 		{
-			return ConstIterator{ static_cast<value_type>(it_1._current - increment) };
+			_current -= increment;
+			return *this;
+		}
+
+		friend ConstIterator operator+(ConstIterator it_1, difference_type increment)
+		{
+			it_1 += increment;
+			return it_1;
+		}
+
+		friend ConstIterator operator-(ConstIterator it_1, difference_type decrement)
+		{
+			it_1 -= decrement;
+			return it_1;
 		}
 
 	private:

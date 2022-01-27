@@ -125,5 +125,39 @@ public:
 		}
 	}
 
+	TEST_METHOD(TrajectoryWithZeroYVelocity)
+	{
+		const auto trajectory = Ballistics{ Ballistics::Arena_t{{0, 10}, {20, -10}} }.trajectory({ 0, 0 }, { 2, 0 });
+		const auto expected_trajectory = std::array{
+			Ballistics::Position_t{0,  0},
+			Ballistics::Position_t{2,  0},
+			Ballistics::Position_t{3, -1},
+			Ballistics::Position_t{3, -3},
+			Ballistics::Position_t{3, -6},
+			Ballistics::Position_t{3,-10}
+		};
+
+		Assert::AreEqual(expected_trajectory.size(), trajectory.size());
+		for (auto i : aoc::ValueRange<size_t>(trajectory.size() - 1)) {
+			Assert::IsTrue(expected_trajectory[i] == trajectory[i]);
+		}
+	}
+
+	TEST_METHOD(TrajectoryWithNegativeYVelocity)
+	{
+		const auto trajectory = Ballistics{ Ballistics::Arena_t{{0, 10}, {20, -10}} }.trajectory({ 0, 0 }, { 2, -2 });
+		const auto expected_trajectory = std::array{
+			Ballistics::Position_t{0, 0},
+			Ballistics::Position_t{2,-2},
+			Ballistics::Position_t{3,-5},
+			Ballistics::Position_t{3,-9}
+		};
+
+		Assert::AreEqual(expected_trajectory.size(), trajectory.size());
+		for (auto i : aoc::ValueRange<size_t>(trajectory.size() - 1)) {
+			Assert::IsTrue(expected_trajectory[i] == trajectory[i]);
+		}
+	}
+
 };
 }

@@ -261,6 +261,27 @@ public:
 	const Point_t& top_left() const { return _top_left; }
 	const Point_t& bottom_right() const { return _bottom_right; }
 
+	bool contains(const Point_t& p) const
+	{
+		if (p.x < _top_left.x) {
+			return false;
+		}
+
+		if (p.x > _bottom_right.x) {
+			return false;
+		}
+
+		if (p.y > _top_left.y) {
+			return false;
+		}
+
+		if (p.y < _bottom_right.y) {
+			return false;
+		}
+
+		return true;
+	}
+
 private:
 	Point_t _top_left;
 	Point_t _bottom_right;
@@ -478,6 +499,7 @@ public:
 	const Value_t& max() const { return _max; }
 
 	auto begin() const { return ConstIterator{ _min }; }
+	auto end() const { return ConstIterator{ _max + 1 }; }
 
 private:
 	Value_T _max;

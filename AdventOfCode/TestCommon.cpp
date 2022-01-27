@@ -253,6 +253,17 @@ public:
 		Assert::AreEqual(size_t{ 0 }, rect.bottom_right().x);
 		Assert::AreEqual(size_t{ 0 }, rect.bottom_right().y);
 	}
+
+	TEST_METHOD(ContainsReturnsTrueForPointInsideIt)
+	{
+		const auto rect = aoc::Rectangle<int>{ {-10, 10}, {10, -10} };
+
+		for (auto x : aoc::ValueRange<int>(-10, 10)) {
+			for (auto y : aoc::ValueRange<int>(-10, 10)) {
+				Assert::IsTrue(rect.contains({ x, y }));
+			}
+		}
+	}
 };
 TEST_CLASS(TestValueRange)
 {

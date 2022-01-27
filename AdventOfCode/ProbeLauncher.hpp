@@ -81,6 +81,10 @@ public:
 
 	Trajectory_t trajectory(const Position_t& origin, const Velocity_t& launch_velocity) const
 	{
+		if (!_arena.contains(origin)) {
+			throw OutOfRangeException("Origin is out of range for trajectory calculation");
+		}
+
 		auto out = Trajectory_t{{origin}};
 
 

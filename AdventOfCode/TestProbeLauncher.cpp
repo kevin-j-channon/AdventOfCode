@@ -98,13 +98,11 @@ TEST_CLASS(TestBalistics)
 {
 public:
 
-	TEST_METHOD(DefaultConstructsWithOriginAtZero)
+	TEST_METHOD(OutOfRangeOriginCausesException)
 	{
-
-		const auto ballistics = Ballistics{Ballistics::Arena_t{{0, 10}, {20, -10}}};
-		const auto trajectory = ballistics.trajectory({0, 0}, {1, 1});
-
-		// Assert::AreEqual(size_t{ 5 }, trajectory.size());
+		Assert::ExpectException<aoc::OutOfRangeException>([]() {
+			Ballistics{ Ballistics::Arena_t{{0, 10}, {20, -10}} }.trajectory({ -10, 0 }, { 1, 1 });
+			});
 	}
 
 };

@@ -79,20 +79,55 @@ public:
 		: _arena{ std::move(arena) }
 	{}
 
-	Trajectory_t trajectory(const Position_t& origin, const Velocity_t& launch_velocity) const
+	Trajectory_t trajectory(Position_t p, Velocity_t v) const
 	{
-		if (!_arena.contains(origin)) {
+		if (!_arena.contains(p)) {
 			throw OutOfRangeException("Origin is out of range for trajectory calculation");
 		}
 
-		auto out = Trajectory_t{{origin}};
+		auto out = Trajectory_t{{p}};
 
-
+		while (true) {
+			std::tie(p, v) = _next_position(std::move(p), std::move(v));
+			if (_arena.contains(p)) {
+				out.push_back(p);
+			}
+			else {
+				break;
+			}
+		}
 
 		return std::move(out);
 	}
 
 private:
+
+	static std::pair<Position_t, Velocity_t> _next_position(Position_t p, Velocity_t v)
+	{
+		_update_x(p, v);
+		_update_y(p, v);
+
+		return {std::move(p), std::move(v)};
+	}
+
+	static void _update_x(Position_t& p, Velocity_t& v)
+	{
+		p.x += v.x;
+
+		if (v.x > 0) {
+			--v.x;
+		}
+		else if (v.x < 0) {
+			++v.x;
+		}
+	}
+
+	static void _update_y(Position_t& p, Velocity_t& v)
+	{
+		p.y += v.y;
+		--v.y;
+	}
+
 	Arena_t _arena;
 };
 

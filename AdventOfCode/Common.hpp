@@ -411,10 +411,19 @@ public:
 	};
 
 	ValueRange() : _min{ 0 }, _max{ 0 } {}
+	
+	constexpr ValueRange(Value_t max_)
+		: _min{ 0 }
+		, _max{ std::move(max_) }
+	{
+		if (_min > _max) {
+			throw InvalidArgException("Range min is greater than max");
+		}
+	}
 
-	constexpr ValueRange(Value_t x_, Value_t y_)
-		: _min{ std::move(x_) }
-		, _max{ std::move(y_) }
+	constexpr ValueRange(Value_t min_, Value_t max_)
+		: _min{ std::move(min_) }
+		, _max{ std::move(max_) }
 	{
 		if (_min > _max) {
 			throw InvalidArgException("Range min is greater than max");

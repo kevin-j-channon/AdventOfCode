@@ -3,10 +3,20 @@
 #include "Common.hpp"
 #include "StringOperations.hpp"
 
+///////////////////////////////////////////////////////////////////////////////
+
 namespace aoc
 {
 namespace science
 {
+
+///////////////////////////////////////////////////////////////////////////////
+
+using Position_t = Point2D<int32_t>;
+using Velocity_t = Point2D<int32_t>;
+
+///////////////////////////////////////////////////////////////////////////////
+
 class Target
 {
 	using Area_t = Rectangle<int32_t>;
@@ -71,8 +81,6 @@ class Ballistics
 {
 public:
 	using Arena_t = Rectangle<int32_t>;
-	using Position_t = Point2D<int32_t>;
-	using Velocity_t = Point2D<int32_t>;
 	using Trajectory_t = std::vector<Position_t>;
 	
 	Ballistics(Arena_t arena)
@@ -131,8 +139,87 @@ private:
 class ProbeLauncher
 {
 public:
-	
+
 	static uint32_t max_y(const Target& target)
+	{
+		return (-target.area().bottom_right().y) * ((-target.area().bottom_right().y) - 1) / 2;
+	}
+
+	static std::vector<Velocity_t> find_launch_velocities(const Target& target)
+	{
+		const auto calculator = Ballistics{ _get_arena(target) };
+	
+		auto out = std::vector<Velocity_t>{};
+
+		const auto [x_velocity_range, y_velocity_range] = _calculate_velocity_ranges(target);
+		for (auto v_x : x_velocity_range) {
+			for (auto v_y : y_velocity_range) {
+				const auto trajectory = calculator.trajectory({ 0, 0 }, { v_x, v_y });
+				if (_trajectory_intersects_target(trajectory, target) ) {
+					out.emplace_back(v_x, v_y);
+				}
+			}
+		}
+
+		return std::move(out);
+	}
+
+private:
+
+	static bool _trajectory_intersects_target(const Ballistics::Trajectory_t& trajectory, const Target& target)
+	{
+		return trajectory.rend() != std::find_if(trajectory.rbegin(), trajectory.rend(),
+			[&target](const auto& p) {
+				return target.area().contains(p);
+			});
+	}
+
+	static Ballistics::Arena_t _get_arena(const Target& target)
+	{
+		const auto [x_position_range, y_position_range] = _calculate_arena_size(target);
+		return {
+			{x_position_range.min(), y_position_range.max()},
+			{x_position_range.max(), y_position_range.min()}
+		};
+	}
+
+	static std::pair<ValueRange<int32_t>, ValueRange<int32_t>> _calculate_arena_size(const Target& target)
+	{
+		return {
+			{0, target.area().bottom_right().x},
+			{target.area().bottom_right().y, _position_y_max(target)}
+		};
+	}
+
+	static std::pair<ValueRange<int32_t>, ValueRange<int32_t>> _calculate_velocity_ranges(const Target& target)
+	{
+		return {
+			{ _velocity_x_min(target), _velocity_x_max(target) },
+			{ _velocity_y_min(target), _velocity_y_min(target) }
+		};
+	}
+
+	static int32_t _velocity_x_min(const Target& target)
+	{
+		return static_cast<int32_t>(std::ceil((std::sqrt(1.0 + 4 * target.area().top_left().x) - 1) / 2));
+	}
+
+	static int32_t _velocity_x_max(const Target& target)
+	{
+		return target.area().bottom_right().x;
+	}
+
+	static int32_t _velocity_y_min(const Target& target)
+	{
+		return target.area().bottom_right().y;
+	}
+
+	static int32_t _velocity_y_max(const Target& target)
+	{
+		return 1 - target.area().bottom_right().y;
+	}
+
+	static int32_t _position_y_max(const Target& target)
 	{
 		return (-target.area().bottom_right().y) * ((-target.area().bottom_right().y) - 1) / 2;
 	}

@@ -1273,5 +1273,17 @@ public:
 
 		Assert::AreEqual(uint32_t{ 4095 }, max_height);
 	}
+
+	TEST_METHOD(Part2)
+	{
+		using namespace aoc::science;
+
+		std::ifstream data_file(DATA_DIR / "Day17_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto trajectory_count = ProbeLauncher::find_launch_velocities(Target{}.from_stream(data_file)).size();
+
+		Assert::AreEqual(size_t{ 0 }, trajectory_count);
+	}
 };
 }

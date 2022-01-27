@@ -109,14 +109,14 @@ public:
 	{
 		const auto trajectory = Ballistics{ Ballistics::Arena_t{{0, 10}, {20, -10}} }.trajectory({ 0, 0 }, { 2, 2 });
 		const auto expected_trajectory = std::array{
-			Ballistics::Position_t{0, 0},
-			Ballistics::Position_t{2, 2},
-			Ballistics::Position_t{3, 3},
-			Ballistics::Position_t{3, 3},
-			Ballistics::Position_t{3, 2},
-			Ballistics::Position_t{3, 0},
-			Ballistics::Position_t{3,-3},
-			Ballistics::Position_t{3,-7}
+			Position_t{0, 0},
+			Position_t{2, 2},
+			Position_t{3, 3},
+			Position_t{3, 3},
+			Position_t{3, 2},
+			Position_t{3, 0},
+			Position_t{3,-3},
+			Position_t{3,-7}
 		};
 
 		Assert::AreEqual(expected_trajectory.size(), trajectory.size());
@@ -129,12 +129,12 @@ public:
 	{
 		const auto trajectory = Ballistics{ Ballistics::Arena_t{{0, 10}, {20, -10}} }.trajectory({ 0, 0 }, { 2, 0 });
 		const auto expected_trajectory = std::array{
-			Ballistics::Position_t{0,  0},
-			Ballistics::Position_t{2,  0},
-			Ballistics::Position_t{3, -1},
-			Ballistics::Position_t{3, -3},
-			Ballistics::Position_t{3, -6},
-			Ballistics::Position_t{3,-10}
+			Position_t{0,  0},
+			Position_t{2,  0},
+			Position_t{3, -1},
+			Position_t{3, -3},
+			Position_t{3, -6},
+			Position_t{3,-10}
 		};
 
 		Assert::AreEqual(expected_trajectory.size(), trajectory.size());
@@ -147,10 +147,10 @@ public:
 	{
 		const auto trajectory = Ballistics{ Ballistics::Arena_t{{0, 10}, {20, -10}} }.trajectory({ 0, 0 }, { 2, -2 });
 		const auto expected_trajectory = std::array{
-			Ballistics::Position_t{0, 0},
-			Ballistics::Position_t{2,-2},
-			Ballistics::Position_t{3,-5},
-			Ballistics::Position_t{3,-9}
+			Position_t{0, 0},
+			Position_t{2,-2},
+			Position_t{3,-5},
+			Position_t{3,-9}
 		};
 
 		Assert::AreEqual(expected_trajectory.size(), trajectory.size());
@@ -158,6 +158,14 @@ public:
 			Assert::IsTrue(expected_trajectory[i] == trajectory[i]);
 		}
 	}
+};
 
+TEST_CLASS(TestProbeLauncher)
+{
+public:
+	TEST_METHOD(PossibleVelocitiesAreCalculated)
+	{
+
+	}
 };
 }

@@ -7,31 +7,30 @@ namespace aoc
 {
 namespace science
 {
-
-class ProbeLauncher
+class Target
 {
-	using Target_t = Rectangle<int32_t>;
+	using Area_t = Rectangle<int32_t>;
 public:
-	ProbeLauncher& read_target(std::istream& is)
+	Target& from_stream(std::istream& is)
 	{
 		const auto [x_range_str, y_range_str] = _get_x_and_y_range_strings(is);
 
-		auto top_left = Target_t::Point_t{};
-		auto bottom_right = Target_t::Point_t{};
+		auto top_left = Area_t::Point_t{};
+		auto bottom_right = Area_t::Point_t{};
 
 		const auto x_range = _get_range_for_dimension(x_range_str, "x");
 		const auto y_range = _get_range_for_dimension(y_range_str, "y");
 
-		_target = Target_t{ { x_range.min(), y_range.max() }, { x_range.max(), y_range.min() } };
+		_area = Area_t{ { x_range.min(), y_range.max() }, { x_range.max(), y_range.min() } };
 
 		return *this;
 	}
 
-	const Target_t& target() const { return _target; }
+	const Area_t& area() const { return _area; }
 
 	uint32_t max_y() const
 	{
-		return (-_target.bottom_right().y) * ((-_target.bottom_right().y) - 1) / 2;
+		return (-_area.bottom_right().y) * ((-_area.bottom_right().y) - 1) / 2;
 	}
 
 private:
@@ -54,7 +53,7 @@ private:
 		return { std::move(parts[0]), std::move(parts[1]) };
 	}
 
-	static ValueRange<typename Target_t::Point_t::Value_t> _get_range_for_dimension(const std::string& str, const std::string& dimension)
+	static ValueRange<typename Area_t::Point_t::Value_t> _get_range_for_dimension(const std::string& str, const std::string& dimension)
 	{
 		const auto parts = split(str, '=');
 		if (parts.size() != 2) {
@@ -65,11 +64,13 @@ private:
 			throw IOException(std::format("Invalid target area input: Invalid dimension label '{}'", strip(parts[0])));
 		}
 
-		return ValueRange<typename Target_t::Point_t::Value_t>{}.from_string(strip(parts[1]));
+		return ValueRange<typename Area_t::Point_t::Value_t>{}.from_string(strip(parts[1]));
 	}
 
-	Target_t _target;
+	Area_t _area;
 };
+
+///////////////////////////////////////////////////////////////////////////////
 
 }
 }

@@ -67,6 +67,33 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class Ballistics
+{
+public:
+	using Arena_t = Rectangle<int32_t>;
+	using Position_t = Point2D<int32_t>;
+	using Velocity_t = Point2D<int32_t>;
+	using Trajectory_t = std::vector<Position_t>;
+	
+	Ballistics(Arena_t arena)
+		: _arena{ std::move(arena) }
+	{}
+
+	Trajectory_t trajectory(const Position_t& origin, const Velocity_t& launch_velocity) const
+	{
+		auto out = Trajectory_t{{origin}};
+
+
+
+		return std::move(out);
+	}
+
+private:
+	Arena_t _arena;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 class ProbeLauncher
 {
 public:

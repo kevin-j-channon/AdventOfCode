@@ -483,10 +483,12 @@ public:
 
 			// Part 1
 			{
+				using namespace aoc::science;
+
 				std::ifstream data_file(DATA_DIR / "Day17_input.txt");
 				Assert::IsTrue(data_file.is_open());
 
-				const auto max_height = aoc::science::Target{}.from_stream(data_file).max_y();
+				const auto max_height = ProbeLauncher::max_y(Target{}.from_stream(data_file));
 
 				Logger::WriteMessage(std::format("\tMax probe launch height: {}\n", max_height).c_str());
 			}
@@ -1262,10 +1264,12 @@ TEST_CLASS(TestDay17)
 public:
 	TEST_METHOD(Part1)
 	{
+		using namespace aoc::science;
+
 		std::ifstream data_file(DATA_DIR / "Day17_input.txt");
 		Assert::IsTrue(data_file.is_open());
-		
-		const auto max_height = aoc::science::Target{}.from_stream(data_file).max_y();
+
+		const auto max_height = ProbeLauncher::max_y(Target{}.from_stream(data_file));
 
 		Assert::AreEqual(uint32_t{ 4095 }, max_height);
 	}

@@ -28,11 +28,6 @@ public:
 
 	const Area_t& area() const { return _area; }
 
-	uint32_t max_y() const
-	{
-		return (-_area.bottom_right().y) * ((-_area.bottom_right().y) - 1) / 2;
-	}
-
 private:
 
 	static std::pair<std::string, std::string> _get_x_and_y_range_strings(std::istream& is)
@@ -68,6 +63,18 @@ private:
 	}
 
 	Area_t _area;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class ProbeLauncher
+{
+public:
+	
+	static uint32_t max_y(const Target& target)
+	{
+		return (-target.area().bottom_right().y) * ((-target.area().bottom_right().y) - 1) / 2;
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

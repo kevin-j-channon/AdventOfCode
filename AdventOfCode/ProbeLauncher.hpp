@@ -85,17 +85,12 @@ public:
 			throw OutOfRangeException("Origin is out of range for trajectory calculation");
 		}
 
-		auto out = Trajectory_t{{p}};
+		auto out = Trajectory_t{};
 
-		while (true) {
+		do {
+			out.push_back(p);
 			std::tie(p, v) = _next_position(std::move(p), std::move(v));
-			if (_arena.contains(p)) {
-				out.push_back(p);
-			}
-			else {
-				break;
-			}
-		}
+		} while (_arena.contains(p));
 
 		return std::move(out);
 	}

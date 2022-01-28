@@ -177,6 +177,7 @@ private:
 	static Ballistics::Arena_t _get_arena(const Target& target)
 	{
 		const auto [x_position_range, y_position_range] = _calculate_arena_size(target);
+
 		return {
 			{x_position_range.min(), y_position_range.max()},
 			{x_position_range.max(), y_position_range.min()}
@@ -195,7 +196,7 @@ private:
 	{
 		return {
 			{ _velocity_x_min(target), _velocity_x_max(target) },
-			{ _velocity_y_min(target), _velocity_y_min(target) }
+			{ _velocity_y_min(target), _velocity_y_max(target) }
 		};
 	}
 

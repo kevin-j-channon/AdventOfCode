@@ -1283,7 +1283,7 @@ public:
 
 		const auto trajectory_count = ProbeLauncher::find_launch_velocities(Target{}.from_stream(data_file)).size();
 
-		Assert::AreEqual(size_t{ 0 }, trajectory_count);
+		Assert::AreEqual(size_t{ 3773 }, trajectory_count);
 	}
 };
 }

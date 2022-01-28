@@ -165,7 +165,10 @@ TEST_CLASS(TestProbeLauncher)
 public:
 	TEST_METHOD(PossibleVelocitiesAreCalculated)
 	{
+		std::stringstream data("target area: x=20..30, y=-10..-5");
+		const auto trajectory_count = ProbeLauncher::find_launch_velocities(Target{}.from_stream(data)).size();
 
+		Assert::AreEqual(size_t{ 112 }, trajectory_count);
 	}
 };
 }

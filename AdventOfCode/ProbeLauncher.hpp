@@ -199,9 +199,29 @@ private:
 		};
 	}
 
+	/*
+	x_1 = x_0 + v_0
+	x_2 = x_1 + (v_0 - 1)		=  x_0 + v_0 + (v_0 - 1)
+	x_3 = x_2 + (v_0 - 2)		=  x_0 + v_0 + (v_0 - 1) + (v_0 - 2)
+	
+	...
+
+	x_N = x_0 + v_0 + (v_0 - 1) + (v_0 - 2) + ... + (v_0 - N + 1), x_0 == 0
+	    = Nv_0 - \Sum_{i=1}^{N-1}{v_0 - i}
+	    = Nv_0 - (N - 1)v_0 + \Sum_{i=1}^{N-1}{i}
+	    = v_0 + \frac{N(N - 1)}{2}
+
+	=>     2x_N = 2v_0 + N(N - 1), N == v_0 at max x
+	   2x_{max} = 2v_0 + v_0(v_0 - 1)
+	            = 2v_0 + v_0^2 - v_0
+				= v_0^2 + v_0
+              0 = v_0^2 + v_0 - 2x
+
+			 v_0 = \frac{-1 +/- \sqrt{1 + 8x}}{2}
+	*/
 	static int32_t _velocity_x_min(const Target& target)
 	{
-		return static_cast<int32_t>(std::ceil((std::sqrt(1.0 + 4 * target.area().top_left().x) - 1) / 2));
+		return static_cast<int32_t>(std::ceil(0.5 * (std::sqrt(1 + 8 * target.area().top_left().x) - 1)));
 	}
 
 	static int32_t _velocity_x_max(const Target& target)

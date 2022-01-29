@@ -444,11 +444,12 @@ public:
 
 		// Day 16
 		{
+			using namespace aoc::comms;
+
 			Logger::WriteMessage("Day 16:\n");
 
 			// Part 1
 			{
-				using namespace aoc::comms;
 				std::ifstream data_file(DATA_DIR / "Day16_input.txt");
 				Assert::IsTrue(data_file.is_open());
 				BITS::IStream bits{ data_file };
@@ -464,8 +465,6 @@ public:
 
 			// Part 2
 			{
-				using namespace aoc::comms;
-
 				std::ifstream data_file(DATA_DIR / "Day16_input.txt");
 				Assert::IsTrue(data_file.is_open());
 				BITS::IStream bits{ data_file };
@@ -479,18 +478,28 @@ public:
 
 		// Day 17
 		{
+			using namespace aoc::science;
+
 			Logger::WriteMessage("Day 17:\n");
 
 			// Part 1
 			{
-				using namespace aoc::science;
-
 				std::ifstream data_file(DATA_DIR / "Day17_input.txt");
 				Assert::IsTrue(data_file.is_open());
 
 				const auto max_height = ProbeLauncher::max_y(Target{}.from_stream(data_file));
 
 				Logger::WriteMessage(std::format("\tMax probe launch height: {}\n", max_height).c_str());
+			}
+
+			// Part 2
+			{
+				std::ifstream data_file(DATA_DIR / "Day17_input.txt");
+				Assert::IsTrue(data_file.is_open());
+
+				const auto trajectory_count = ProbeLauncher::find_launch_velocities(Target{}.from_stream(data_file)).size();
+
+				Logger::WriteMessage(std::format("\tTotal possible trajectories: {}\n", trajectory_count).c_str());
 			}
 		}
 	}

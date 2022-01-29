@@ -182,6 +182,7 @@
     <ClCompile Include="TestPaperfolder.cpp" />
     <ClCompile Include="TestPolymerizer.cpp" />
     <ClCompile Include="TestProbeLauncher.cpp" />
+    <ClCompile Include="TestSnailfishNumbers.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AdventOfCode.hpp" />
@@ -202,6 +203,7 @@
     <ClInclude Include="pch.hpp" />
     <ClInclude Include="Polymerizer.hpp" />
     <ClInclude Include="ProbeLauncher.hpp" />
+    <ClInclude Include="SnailfishNumbers.hpp" />
     <ClInclude Include="StaticMap.hpp" />
     <ClInclude Include="StringOperations.hpp" />
     <ClInclude Include="SyntaxChecker.hpp" />

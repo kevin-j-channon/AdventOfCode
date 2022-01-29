@@ -98,6 +98,7 @@
             <Property Name="Namespace" Value="test_common" />
             <Property Name="Namespace" Value="test_probe_launcher" />
             <Property Name="Namespace" Value="day_17" />
+            <Property Name="Namespace" Value="test_snailfish_numbers" />
           </Rule>
         </Rule>
       </Rule>

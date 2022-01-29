@@ -40,6 +40,12 @@ public:
 		std::stringstream data{ "{1,2]" };
 		Assert::ExpectException<aoc::IOException>([&data]() {aoc::snailfish::Value{}.from_stream(data); });
 	}
+
+	TEST_METHOD(FailsIfStreamDoesntEndWithSquareBracket)
+	{
+		std::stringstream data{ "[1,2" };
+		Assert::ExpectException<aoc::IOException>([&data]() {aoc::snailfish::Value{}.from_stream(data); });
+	}
 };
 
 }

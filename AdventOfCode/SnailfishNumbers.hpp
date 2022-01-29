@@ -28,11 +28,11 @@ public:
 		auto openning_bracket = char{};
 		is.read(&openning_bracket, 1);
 		if (is.fail()) {
-			throw IOException("Failed to read snailfish value from stream");
+			throw IOException("Failed to read snailfish value: Empty stream");
 		}
 
 		if (openning_bracket != '[') {
-			throw IOException("Failed to read snailfish value from stream");
+			throw IOException("Failed to read snailfish value: No start brakcet");
 		}
 
 		std::stringstream details;
@@ -45,6 +45,10 @@ public:
 
 				return true;
 			});
+
+		if (it == std::istreambuf_iterator<char>()) {
+			throw IOException("Failed to read snailfish value from stream: No end bracket");
+		}
 
 		const auto parts = split(details.str(), ',');
 		_left = string_to<uint32_t>(parts[0]);

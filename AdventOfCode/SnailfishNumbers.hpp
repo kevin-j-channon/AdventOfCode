@@ -27,8 +27,11 @@ public:
 	{
 		auto openning_bracket = char{};
 		is.read(&openning_bracket, 1);
-		if (is.fail())
-		{
+		if (is.fail()) {
+			throw IOException("Failed to read snailfish value from stream");
+		}
+
+		if (openning_bracket != '[') {
 			throw IOException("Failed to read snailfish value from stream");
 		}
 

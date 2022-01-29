@@ -51,6 +51,10 @@ public:
 		}
 
 		const auto parts = split(details.str(), ',');
+		if (parts.size() != 2) {
+			throw IOException("Failed to read snailfish value from stream: invalid number of elements");
+		}
+
 		_left = string_to<uint32_t>(parts[0]);
 		_right = string_to<uint32_t>(parts[1]);
 

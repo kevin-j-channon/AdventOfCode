@@ -46,6 +46,19 @@ public:
 		std::stringstream data{ "[1,2" };
 		Assert::ExpectException<aoc::IOException>([&data]() {aoc::snailfish::Value{}.from_stream(data); });
 	}
+
+	TEST_METHOD(FailsIfThereAreNotTwoValues)
+	{
+		{
+			std::stringstream data{ "[1]" };
+			Assert::ExpectException<aoc::IOException>([&data]() {aoc::snailfish::Value{}.from_stream(data); });
+		}
+
+		{
+			std::stringstream data{ "[1,2,3]" };
+			Assert::ExpectException<aoc::IOException>([&data]() {aoc::snailfish::Value{}.from_stream(data); });
+		}
+	}
 };
 
 }

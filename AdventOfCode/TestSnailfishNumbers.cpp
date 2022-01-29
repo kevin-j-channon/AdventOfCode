@@ -20,13 +20,19 @@ namespace test_snailfish_numbers
 TEST_CLASS(TestInitialisation)
 {
 public:
-	TEST_METHOD(FromStream)
+	TEST_METHOD(FromStreamSucceedsForSimplestGoodStream)
 	{
 		std::stringstream data{ "[1,2]" };
 		const auto n1 = aoc::snailfish::Value{}.from_stream(data);
 		const auto n2 = aoc::snailfish::Value{ 1, 2 };
 
 		Assert::AreEqual(n2, n1);
+	}
+
+	TEST_METHOD(FailsIfStreamIsEmpty)
+	{
+		std::stringstream data{ "" };
+		Assert::ExpectException<aoc::IOException>([&data]() {aoc::snailfish::Value{}.from_stream(data); });
 	}
 };
 

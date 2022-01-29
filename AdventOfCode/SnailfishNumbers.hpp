@@ -1,6 +1,7 @@
 #pragma once
 
 #include "StringOperations.hpp"
+#include "Exception.hpp"
 
 namespace aoc
 {
@@ -26,6 +27,10 @@ public:
 	{
 		auto openning_bracket = char{};
 		is.read(&openning_bracket, 1);
+		if (is.fail())
+		{
+			throw IOException("Failed to read snailfish value from stream");
+		}
 
 		std::stringstream details;
 		const auto it = std::find_if(std::istreambuf_iterator<char>(is), std::istreambuf_iterator<char>(),

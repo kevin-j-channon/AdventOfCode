@@ -129,17 +129,6 @@ private:
 		return { string_to<uint32_t>(digits.str()), current };
 	}
 
-	static bool _is_valid_value_terminator(char c)
-	{
-		switch (c) {
-		case ',':
-			return true;
-		default:;
-		}
-
-		return false;
-	}
-
 	std::pair<Child, Child> _children;
 };
 

@@ -17,7 +17,7 @@ class Value
 		using std::variant<uint32_t, std::shared_ptr<Value>>::operator=;
 
 		template<typename Char_T>
-		std::basic_string<Char_T> to_string() const
+		std::basic_string<Char_T> as_string() const
 		{
 			return std::visit(
 				[](auto&& arg) -> std::basic_string<Char_T> {
@@ -96,10 +96,10 @@ public:
 	std::basic_string<Char_T> as_string() const
 	{
 		if constexpr (std::is_same_v<Char_T, char>) {
-			return std::format("[{},{}]", _children.first.to_string<Char_T>(), _children.second.to_string<Char_T>());
+			return std::format("[{},{}]", _children.first.as_string<Char_T>(), _children.second.as_string<Char_T>());
 		}
 		else if constexpr (std::is_same_v<Char_T, wchar_t>) {
-			return std::format(L"[{},{}]", _children.first.to_string<Char_T>(), _children.second.to_string<Char_T>());
+			return std::format(L"[{},{}]", _children.first.as_string<Char_T>(), _children.second.as_string<Char_T>());
 		}
 	}
 

@@ -66,9 +66,7 @@ public:
 	template<typename Iter_T>
 	static std::pair<std::shared_ptr<Value>, Iter_T> create(Iter_T current, Iter_T end)
 	{
-		if (*current != '[') {
-			throw IOException("Failed to creaate snailfish Value - invalid openning");
-		}
+		_validate_number_opening(current);
 
 		auto out = std::make_unique<Value>();
 
@@ -104,6 +102,14 @@ public:
 	}
 
 private:
+
+	template<typename Iter_T>
+	static void _validate_number_opening(const Iter_T& current)
+	{
+		if (*current != '[') {
+			throw IOException("Failed to creaate snailfish Value - invalid openning");
+		}
+	}
 
 	template<typename Iter_T>
 	static std::pair<Child, Iter_T> _read_value_or_digits(Iter_T current, Iter_T end)

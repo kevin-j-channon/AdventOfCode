@@ -12,8 +12,32 @@ namespace snailfish
 
 class Value
 {
+	struct Child : public std::variant<uint32_t, std::shared_ptr<Value>>
+	{
+		using std::variant<uint32_t, std::shared_ptr<Value>>::operator=;
 
-	using Child = std::variant<uint32_t, std::shared_ptr<Value>>;
+		template<typename Char_T>
+		std::basic_string<Char_T> to_string() const
+		{
+			return std::visit(
+				[](auto&& arg) -> std::basic_string<Char_T> {
+					using Arg_t = std::decay_t<decltype(arg)>;
+					if constexpr (std::is_same_v<Arg_t, uint32_t>) {
+						if constexpr (std::is_same_v<Char_T, char>) {
+							return std::to_string(arg);
+						}
+						else if constexpr (std::is_same_v<Char_T, wchar_t>) {
+							return std::to_wstring(arg);
+						}
+					}
+					else if constexpr (std::is_same_v<Arg_t, std::shared_ptr<Value>>) {
+						return arg->as_string<Char_T>();
+					}
+				},
+				*this
+			);
+		}
+	};
 
 public:
 
@@ -68,14 +92,15 @@ public:
 		return { std::move(out), std::move(current) };
 	}
 
-	std::wstring as_wstring() const
+	template<typename Char_T>
+	std::basic_string<Char_T> as_string() const
 	{
-		return std::format(L"[{},{}]", _child_to_wstring(_children.first), _child_to_wstring(_children.second));
-	}
-
-	std::string as_string() const
-	{
-		return std::format("[{},{}]", _child_to_string(_children.first), _child_to_string(_children.second));
+		if constexpr (std::is_same_v<Char_T, char>) {
+			return std::format("[{},{}]", _children.first.to_string<Char_T>(), _children.second.to_string<Char_T>());
+		}
+		else if constexpr (std::is_same_v<Char_T, wchar_t>) {
+			return std::format(L"[{},{}]", _children.first.to_string<Char_T>(), _children.second.to_string<Char_T>());
+		}
 	}
 
 private:
@@ -113,32 +138,6 @@ private:
 		}
 
 		return false;
-	}
-
-	static std::wstring _child_to_wstring(const Child& child)
-	{
-		return std::visit([](auto&& arg) -> std::wstring {
-			using Arg_t = std::decay_t<decltype(arg)>;
-			if constexpr (std::is_same_v<Arg_t, uint32_t>) {
-				return std::to_wstring(arg);
-			}
-			else if constexpr (std::is_same_v<Arg_t, std::shared_ptr<Value>>) {
-				return arg->as_wstring();
-			}
-			}, child);
-	}
-
-	static std::string _child_to_string(const Child& child)
-	{
-		return std::visit([](auto&& arg) -> std::string {
-			using Arg_t = std::decay_t<decltype(arg)>;
-			if constexpr (std::is_same_v<Arg_t, uint32_t>) {
-				return std::to_string(arg);
-			}
-			else if constexpr (std::is_same_v<Arg_t, std::shared_ptr<Value>>) {
-				return arg->as_string();
-			}
-			}, child);
 	}
 
 	std::pair<Child, Child> _children;

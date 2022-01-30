@@ -11,7 +11,7 @@ const auto DATA_DIR = std::filesystem::path(R"(..\..\AdventOfCode\Data)"s);
 template<>
 std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString<aoc::snailfish::Value>(const aoc::snailfish::Value& value)
 {
-	return value.as_wstring();
+	return value.as_string<wchar_t>();
 }
 
 namespace test_snailfish_numbers
@@ -67,7 +67,7 @@ public:
 		std::stringstream data{ data_str };
 		const auto n = aoc::snailfish::Value::from_stream(data);
 
-		Assert::AreEqual(data_str, n->as_string());
+		Assert::AreEqual(data_str, n->as_string<char>());
 	}
 
 	TEST_METHOD(FromStreamSucceedsForNestedValue_2)
@@ -77,7 +77,7 @@ public:
 		std::stringstream data{ data_str };
 		const auto n = aoc::snailfish::Value::from_stream(data);
 
-		Assert::AreEqual(data_str, n->as_string());
+		Assert::AreEqual(data_str, n->as_string<char>()		);
 	}
 
 	TEST_METHOD(FromStreamSucceedsForNestedValue_3)
@@ -87,7 +87,7 @@ public:
 		std::stringstream data{ data_str };
 		const auto n = aoc::snailfish::Value::from_stream(data);
 
-		Assert::AreEqual(data_str, n->as_string());
+		Assert::AreEqual(data_str, n->as_string<char>());
 	}
 
 	TEST_METHOD(FromStreamSucceedsForNestedValue_4)
@@ -97,7 +97,7 @@ public:
 		std::stringstream data{ data_str };
 		const auto n = aoc::snailfish::Value::from_stream(data);
 
-		Assert::AreEqual(data_str, n->as_string());
+		Assert::AreEqual(data_str, n->as_string<char>());
 	}
 
 	TEST_METHOD(SampleValues)
@@ -115,7 +115,7 @@ public:
 			std::stringstream data{ data_str };
 			const auto n = aoc::snailfish::Value::from_stream(data);
 
-			Assert::AreEqual(data_str, n->as_string());
+			Assert::AreEqual(data_str, n->as_string<char>());
 		}
 	}
 };

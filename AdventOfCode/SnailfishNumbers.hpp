@@ -86,19 +86,12 @@ public:
 		auto second_child = Child{};
 
 		std::tie(first_child, current) = _recursively_read_child(std::move(current), end);
-
-		if (current == end || *current != ',') {
-			throw IOException("Failed to create snailfish value - Unexpected non-numeric value");
-		}
-
+		
+		_validate_second_value_is_present(current, end);
+		
 		std::tie(second_child, current) = _recursively_read_child(std::move(current), end);
-
-		if (current == end || *current != ']') {
-			throw IOException("Failed to create snailfish value - Unexpected value termination");
-		}
-
-		// Consume the closing bracket at the end of the number.
-		std::advance(current, 1);
+		
+		current = _complete_value_read(std::move(current), end);
 		
 		auto out = std::make_shared<Value>();
 		out->_children.first = std::move(first_child);
@@ -129,14 +122,35 @@ private:
 	}
 
 	template<typename Iter_T>
-	static std::pair<Child, Iter_T> _recursively_read_child(Iter_T current, Iter_T end)
+	static std::pair<Child, Iter_T> _recursively_read_child(Iter_T current, const Iter_T& end)
 	{
 		std::advance(current, 1);
 		return _read_value_or_digits(std::move(current), end);
 	}
 
 	template<typename Iter_T>
-	static std::pair<Child, Iter_T> _read_value_or_digits(Iter_T current, Iter_T end)
+	static void _validate_second_value_is_present(const Iter_T& current, const Iter_T& end)
+	{
+		if (current == end || *current != ',') {
+			throw IOException("Failed to create snailfish value - Unexpected non-numeric value");
+		}
+	}
+
+	template<typename Iter_T>
+	static Iter_T _complete_value_read(Iter_T current, const Iter_T& end)
+	{
+		if (current == end || *current != ']') {
+			throw IOException("Failed to create snailfish value - Unexpected value termination");
+		}
+
+		// Consume the closing bracket at the end of the number.
+		std::advance(current, 1);
+
+		return current;
+	}
+
+	template<typename Iter_T>
+	static std::pair<Child, Iter_T> _read_value_or_digits(Iter_T current, const Iter_T& end)
 	{
 		if (*current == '[') {
 			const auto [out, current] = Value::create(current, end);
@@ -149,7 +163,7 @@ private:
 	}
 
 	template<typename Iter_T>
-	static std::pair<uint32_t, Iter_T> _read_digits(Iter_T current, Iter_T end)
+	static std::pair<uint32_t, Iter_T> _read_digits(Iter_T current, const Iter_T& end)
 	{
 		std::stringstream digits;
 		for (; current != end && std::isdigit(*current); ++current) {

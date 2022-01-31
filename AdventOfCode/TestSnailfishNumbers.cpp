@@ -17,6 +17,8 @@ std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString<aoc::snailf
 namespace test_snailfish_numbers
 {
 
+using namespace aoc::snailfish;
+
 TEST_CLASS(TestInitialisation)
 {
 public:
@@ -26,7 +28,7 @@ public:
 		const auto n1 = aoc::snailfish::Value::from_stream(data);
 		const auto n2 = aoc::snailfish::Value{ 1, 2 };
 
-		Assert::AreEqual(n2, *n1);
+		Assert::AreEqual(n2, n1);
 	}
 
 	TEST_METHOD(FailsIfStreamIsEmpty)
@@ -67,7 +69,7 @@ public:
 		std::stringstream data{ data_str };
 		const auto n = aoc::snailfish::Value::from_stream(data);
 
-		Assert::AreEqual(data_str, n->as_string<char>());
+		Assert::AreEqual(data_str, n.as_string<char>());
 	}
 
 	TEST_METHOD(FromStreamSucceedsForNestedValue_2)
@@ -77,7 +79,7 @@ public:
 		std::stringstream data{ data_str };
 		const auto n = aoc::snailfish::Value::from_stream(data);
 
-		Assert::AreEqual(data_str, n->as_string<char>()		);
+		Assert::AreEqual(data_str, n.as_string<char>()		);
 	}
 
 	TEST_METHOD(FromStreamSucceedsForNestedValue_3)
@@ -87,7 +89,7 @@ public:
 		std::stringstream data{ data_str };
 		const auto n = aoc::snailfish::Value::from_stream(data);
 
-		Assert::AreEqual(data_str, n->as_string<char>());
+		Assert::AreEqual(data_str, n.as_string<char>());
 	}
 
 	TEST_METHOD(FromStreamSucceedsForNestedValue_4)
@@ -97,7 +99,7 @@ public:
 		std::stringstream data{ data_str };
 		const auto n = aoc::snailfish::Value::from_stream(data);
 
-		Assert::AreEqual(data_str, n->as_string<char>());
+		Assert::AreEqual(data_str, n.as_string<char>());
 	}
 
 	TEST_METHOD(SampleValues)
@@ -115,9 +117,8 @@ public:
 			std::stringstream data{ data_str };
 			const auto n = aoc::snailfish::Value::from_stream(data);
 
-			Assert::AreEqual(data_str, n->as_string<char>());
+			Assert::AreEqual(data_str, n.as_string<char>());
 		}
 	}
 };
-
 }

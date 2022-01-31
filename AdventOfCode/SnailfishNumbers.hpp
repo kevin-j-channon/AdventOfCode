@@ -65,7 +65,7 @@ public:
 
 	auto operator<=>(const Value&) const = default;
 
-	static Ptr_t from_stream(std::istream& is)
+	static Value from_stream(std::istream& is)
 	{
 		auto line = std::string{};
 		std::getline(is, line);
@@ -74,7 +74,7 @@ public:
 			throw IOException("Failed to create snailfish Value - empty line");
 		}
 
-		return create(line.begin(), line.end()).first;
+		return *create(line.begin(), line.end()).first;
 	}
 
 	template<typename Iter_T>

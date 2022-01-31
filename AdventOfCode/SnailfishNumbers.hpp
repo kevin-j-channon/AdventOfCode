@@ -12,9 +12,11 @@ namespace snailfish
 
 class Value
 {
-	struct Child : public std::variant<uint32_t, std::shared_ptr<Value>>
+	using Ptr_t = std::shared_ptr<Value>;
+
+	struct Child : public std::variant<uint32_t, Ptr_t>
 	{
-		using std::variant<uint32_t, std::shared_ptr<Value>>::operator=;
+		using std::variant<uint32_t, Ptr_t>::operator=;
 
 		template<typename Char_T>
 		std::basic_string<Char_T> as_string() const
@@ -30,7 +32,7 @@ class Value
 							return std::to_wstring(arg);
 						}
 					}
-					else if constexpr (std::is_same_v<Arg_t, std::shared_ptr<Value>>) {
+					else if constexpr (std::is_same_v<Arg_t, Ptr_t>) {
 						return arg->as_string<Char_T>();
 					}
 				},
@@ -45,13 +47,25 @@ public:
 		: _children{ uint32_t{0}, uint32_t{0} }
 	{}
 
-	Value(uint32_t left, uint32_t right) 
-		: _children{ left, right }
+	Value(uint32_t first, uint32_t second) 
+		: _children{ first, second }
+	{}
+
+	Value(Ptr_t&& first, Ptr_t&& second)
+		: _children{ first, second }
+	{}
+
+	Value(uint32_t first, Ptr_t && second)
+		: _children{ first, second }
+	{}
+
+	Value(Ptr_t&& first, uint32_t second)
+		: _children{ first, second }
 	{}
 
 	auto operator<=>(const Value&) const = default;
 
-	static std::shared_ptr<Value> from_stream(std::istream& is)
+	static Ptr_t from_stream(std::istream& is)
 	{
 		auto line = std::string{};
 		std::getline(is, line);
@@ -64,21 +78,20 @@ public:
 	}
 
 	template<typename Iter_T>
-	static std::pair<std::shared_ptr<Value>, Iter_T> create(Iter_T current, Iter_T end)
+	static std::pair<Ptr_t, Iter_T> create(Iter_T current, Iter_T end)
 	{
 		_validate_number_opening(current);
 
-		auto out = std::make_unique<Value>();
+		auto first_child = Child{};
+		auto second_child = Child{};
 
-		std::advance(current, 1);
-		std::tie(out->_children.first, current) = _read_value_or_digits(std::move(current), end);
+		std::tie(first_child, current) = _recursively_read_child(std::move(current), end);
 
 		if (current == end || *current != ',') {
 			throw IOException("Failed to create snailfish value - Unexpected non-numeric value");
 		}
 
-		std::advance(current, 1);
-		std::tie(out->_children.second, current) = _read_value_or_digits(std::move(current), end);
+		std::tie(second_child, current) = _recursively_read_child(std::move(current), end);
 
 		if (current == end || *current != ']') {
 			throw IOException("Failed to create snailfish value - Unexpected value termination");
@@ -86,6 +99,10 @@ public:
 
 		// Consume the closing bracket at the end of the number.
 		std::advance(current, 1);
+		
+		auto out = std::make_shared<Value>();
+		out->_children.first = std::move(first_child);
+		out->_children.second = std::move(second_child);
 
 		return { std::move(out), std::move(current) };
 	}
@@ -109,6 +126,13 @@ private:
 		if (*current != '[') {
 			throw IOException("Failed to creaate snailfish Value - invalid openning");
 		}
+	}
+
+	template<typename Iter_T>
+	static std::pair<Child, Iter_T> _recursively_read_child(Iter_T current, Iter_T end)
+	{
+		std::advance(current, 1);
+		return _read_value_or_digits(std::move(current), end);
 	}
 
 	template<typename Iter_T>

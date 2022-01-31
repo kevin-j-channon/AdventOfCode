@@ -39,6 +39,29 @@ class Value
 				*this
 			);
 		}
+
+		Child clone() const
+		{
+			return std::visit([](auto&& arg) -> Child {
+					using Arg_t = std::decay_t<decltype(arg)>;
+					if constexpr (std::is_same_v<Arg_t, uint32_t>) {
+						return { arg };
+					}
+					else if constexpr (std::is_same_v<Arg_t, Ptr_t>) {
+						auto out = std::make_shared<Value>();
+						out->_children.first = arg->_children.first.clone();
+						out->_children.second = arg->_children.second.clone();
+						return { std::move(out)};
+					}
+				}, *this);
+		}
+
+		friend void swap(Child& a, Child& b)
+		{
+			using std::swap;
+
+			swap(a, b);
+		}
 	};
 
 public:
@@ -64,6 +87,25 @@ public:
 	{}
 
 	auto operator<=>(const Value&) const = default;
+
+	Value(const Value& other)
+		: _children{ other._children.first.clone(), other._children.second.clone() }
+	{}
+
+	Value& operator=(const Value& other)
+	{
+		Value temp{ other };
+		swap(temp, *this);
+
+		return *this;
+	}
+
+	friend void swap(Value& a, Value& b)
+	{
+		using std::swap;
+		swap(a._children.first, b._children.first);
+		swap(a._children.second, b._children.second);
+	}
 
 	static Value from_stream(std::istream& is)
 	{

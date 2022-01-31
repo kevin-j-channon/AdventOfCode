@@ -120,5 +120,33 @@ public:
 			Assert::AreEqual(data_str, n.as_string<char>());
 		}
 	}
+
+	TEST_METHOD(CopyConstructSimple)
+	{
+		const Value v1{ 1, 3 };
+		const auto v2{ v1 };
+
+		Assert::AreEqual(v1, v2);
+	}
+
+	TEST_METHOD(AssignmentOperatorSimple)
+	{
+		const Value v1{ 1, 3 };
+		const auto v2 = v1;
+
+		Assert::AreEqual(v1, v2);
+	}
+};
+
+TEST_CLASS(TestAlgebra)
+{
+public:
+	/*
+	TEST_METHOD(AddTwoValues)
+	{
+		const auto sum = Value{ 1, 2 } + Value{ 3, 4 };
+		Assert::AreEqual("[[1,2],[3,4]]", sum.as_string<char>());
+	}
+	*/
 };
 }

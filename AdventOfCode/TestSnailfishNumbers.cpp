@@ -129,12 +129,52 @@ public:
 		Assert::AreEqual(v1, v2);
 	}
 
+	TEST_METHOD(CopyConstructSamples)
+	{
+		const auto data_strs = std::array{
+			"[[[[[9,8],1],2],3],4]"s,
+			"[7,[6,[5,[4,[3,2]]]]]"s,
+			"[[6,[5,[4,[3,2]]]],1]"s,
+			"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"s,
+			"[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"s,
+			"[[[[1,1],[2,2]],[3,3]],[4,4]]"s
+		};
+
+		for (const auto& data_str : data_strs) {
+			std::stringstream data{ data_str };
+			const auto v1 = aoc::snailfish::Value::from_stream(data);
+			const auto v2{ v1 };
+
+			Assert::AreEqual(v1, v2);
+		}
+	}
+
 	TEST_METHOD(AssignmentOperatorSimple)
 	{
 		const Value v1{ 1, 3 };
 		const auto v2 = v1;
 
 		Assert::AreEqual(v1, v2);
+	}
+
+	TEST_METHOD(AssignmentOperatorSamples)
+	{
+		const auto data_strs = std::array{
+			"[[[[[9,8],1],2],3],4]"s,
+			"[7,[6,[5,[4,[3,2]]]]]"s,
+			"[[6,[5,[4,[3,2]]]],1]"s,
+			"[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]"s,
+			"[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"s,
+			"[[[[1,1],[2,2]],[3,3]],[4,4]]"s
+		};
+
+		for (const auto& data_str : data_strs) {
+			std::stringstream data{ data_str };
+			const auto v1 = aoc::snailfish::Value::from_stream(data);
+			const auto v2 = v1;
+
+			Assert::AreEqual(v1, v2);
+		}
 	}
 };
 

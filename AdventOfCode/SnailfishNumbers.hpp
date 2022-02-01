@@ -14,8 +14,9 @@ class Value
 {
 	using Ptr_t = std::shared_ptr<Value>;
 
-	struct Child : public std::variant<uint32_t, Ptr_t>
+	class Child : public std::variant<uint32_t, Ptr_t>
 	{
+	public:
 		using std::variant<uint32_t, Ptr_t>::operator=;
 
 		template<typename Char_T>
@@ -62,6 +63,38 @@ class Value
 
 			swap(a, b);
 		}
+
+		bool operator==(const Child& other) const
+		{
+			return std::visit([&other](auto&& arg_outer) -> bool {
+				using ArgOuter_t = std::decay_t<decltype(arg_outer)>;
+				if constexpr (std::is_same_v<ArgOuter_t, uint32_t>) {
+					
+					return std::visit([&arg_outer](auto&& arg_inner) -> bool {
+						using ArgInner_t = std::decay_t<decltype(arg_inner)>;
+						if constexpr (std::is_same_v<ArgInner_t, uint32_t>) {
+							return arg_outer == arg_inner;
+						}
+						else {
+							return false;
+						}
+						}, other);
+				
+				}
+				else if constexpr (std::is_same_v<ArgOuter_t, Ptr_t>) {
+
+					return std::visit([&arg_outer](auto&& arg_inner) -> bool {
+						using ArgInner_t = std::decay_t<decltype(arg_inner)>;
+						if constexpr (std::is_same_v<ArgInner_t, Ptr_t>) {
+							return *arg_outer == *arg_inner;
+						}
+						else {
+							return false;
+						}
+						}, other);
+				}
+			}, *this);
+		}
 	};
 
 public:
@@ -86,8 +119,6 @@ public:
 		: _children{ first, second }
 	{}
 
-	auto operator<=>(const Value&) const = default;
-
 	Value(const Value& other)
 		: _children{ other._children.first.clone(), other._children.second.clone() }
 	{}
@@ -105,6 +136,24 @@ public:
 		using std::swap;
 		swap(a._children.first, b._children.first);
 		swap(a._children.second, b._children.second);
+	}
+
+	bool operator==(const Value& other) const
+	{
+		if (_children.first != other._children.first) {
+			return false;
+		}
+
+		if (_children.second != other._children.second) {
+			return false;
+		}
+
+		return true;
+	}
+
+	bool operator!=(const Value& other) const
+	{
+		return !(*this == other);
 	}
 
 	static Value from_stream(std::istream& is)

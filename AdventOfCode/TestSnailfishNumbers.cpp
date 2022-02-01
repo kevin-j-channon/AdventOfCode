@@ -181,12 +181,21 @@ public:
 TEST_CLASS(TestAlgebra)
 {
 public:
-	/*
-	TEST_METHOD(AddTwoValues)
+	
+	TEST_METHOD(CompoundAssignmentIncrementSimple)
 	{
-		const auto sum = Value{ 1, 2 } + Value{ 3, 4 };
-		Assert::AreEqual("[[1,2],[3,4]]", sum.as_string<char>());
+		auto sum = Value{ 1, 2 };
+		sum += Value{ 3, 4 };
+
+		Assert::AreEqual("[[1,2],[3,4]]"s, sum.as_string<char>());
 	}
-	*/
+
+	TEST_METHOD(CompoundAssignmentIncrementComplex)
+	{
+		auto sum = Value::from_string("[[1,2],[[3,4],[5,6]]]"s);
+		sum += Value::from_string("[1,[2,[[3,4],5]]]"s);
+
+		Assert::AreEqual("[[[1,2],[[3,4],[5,6]]],[1,[2,[[3,4],5]]]]"s, sum.as_string<char>());
+	}
 };
 }

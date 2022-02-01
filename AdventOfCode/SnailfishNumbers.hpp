@@ -156,16 +156,31 @@ public:
 		return !(*this == other);
 	}
 
+	Value& operator+=(const Value& other)
+	{
+		auto new_first_child = std::make_shared<Value>(*this);
+		auto new_second_child = std::make_shared<Value>(other);
+
+		_children.first = std::move(new_first_child);
+		_children.second = std::move(new_second_child);
+
+		return *this;
+	}
+
 	static Value from_stream(std::istream& is)
 	{
 		auto line = std::string{};
 		std::getline(is, line);
+		return from_string(line);
+	}
 
-		if (line.empty()) {
+	static Value from_string(const std::string& str)
+	{
+		if (str.empty()) {
 			throw IOException("Failed to create snailfish Value - empty line");
 		}
 
-		return *create(line.begin(), line.end()).first;
+		return *create(str.begin(), str.end()).first;
 	}
 
 	template<typename Iter_T>

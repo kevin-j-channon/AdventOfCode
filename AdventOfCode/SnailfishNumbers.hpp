@@ -97,6 +97,8 @@ class Value
 		}
 	};
 
+	using Children_t = std::pair<Child, Child>;
+
 public:
 
 	Value()
@@ -131,11 +133,13 @@ public:
 		return *this;
 	}
 
+	Value(Value&&) = default;
+	Value& operator=(Value&&) = default;
+
 	friend void swap(Value& a, Value& b)
 	{
 		using std::swap;
-		swap(a._children.first, b._children.first);
-		swap(a._children.second, b._children.second);
+		swap(a._children, b._children);
 	}
 
 	bool operator==(const Value& other) const
@@ -158,11 +162,12 @@ public:
 
 	Value& operator+=(const Value& other)
 	{
-		auto new_first_child = std::make_shared<Value>(*this);
-		auto new_second_child = std::make_shared<Value>(other);
+		auto new_children = Children_t{};
 
-		_children.first = std::move(new_first_child);
-		_children.second = std::move(new_second_child);
+		new_children.first = _move_children_into_new_value();
+		new_children.second = std::make_shared<Value>(other);
+
+		_children = std::move(new_children);
 
 		return *this;
 	}
@@ -277,6 +282,14 @@ private:
 		}
 
 		return { string_to<uint32_t>(digits.str()), current };
+	}
+
+	Ptr_t _move_children_into_new_value()
+	{
+		auto value = std::make_shared<Value>();
+		value->_children = std::move(_children);
+
+		return std::move(value);
 	}
 
 	std::pair<Child, Child> _children;

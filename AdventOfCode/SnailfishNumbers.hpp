@@ -172,6 +172,14 @@ public:
 		return *this;
 	}
 
+	Value operator+(const Value& other)
+	{
+		auto out = *this;
+		out += other;
+
+		return std::move(out);
+	}
+
 	static Value from_stream(std::istream& is)
 	{
 		auto line = std::string{};

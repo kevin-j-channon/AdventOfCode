@@ -209,5 +209,11 @@ public:
 		auto sum = Value::from_string("[[1,2],[[3,4],[5,6]]]"s) + Value::from_string("[1,[2,[[3,4],5]]]"s);
 		Assert::AreEqual("[[[1,2],[[3,4],[5,6]]],[1,[2,[[3,4],5]]]]"s, sum.as_string<char>());
 	}
+
+	TEST_METHOD(ReduceSample1)
+	{
+		auto v = Value::from_string("[[[[[9,8],1],2],3],4]");
+		Assert::AreEqual("[[[[0,9],2],3],4]"s, v.reduce().as_string<char>());
+	}
 };
 }

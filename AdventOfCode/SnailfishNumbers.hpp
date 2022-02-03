@@ -10,6 +10,26 @@ namespace aoc
 namespace snailfish
 {
 
+class Value;
+
+class ValueExploder
+{
+public:
+	ValueExploder(Value& v)
+		: _value{ v }
+	{}
+
+	bool explode();
+
+private:
+
+	std::optional<std::pair<Value*, size_t>> _find_first_child_to_explode();
+
+	static std::optional<std::pair<Value*, size_t>> _recursively_find_child_to_explode(Value& val, size_t depth, std::optional<size_t> child_idx = std::nullopt);
+
+	Value& _value;
+};
+
 class Value
 {
 	using Ptr_t = std::shared_ptr<Value>;
@@ -19,23 +39,16 @@ class Value
 		using Base_t = std::variant<uint32_t, Ptr_t>;
 	public:
 
-		Child(Value* const parent)
-			: _parent{ parent }
-		{}
+		using Base_t::operator=;
+
+		Child() : Base_t{} {}
 
 		Child(Base_t value)
 			: Base_t{ std::move(value) }
-			, _parent{ nullptr }
-		{}
-
-		Child(Base_t value, Value* const parent)
-			: Base_t{std::move(value)}
-			, _parent{ parent }
 		{}
 
 		Child(const Child& other)
 			: Base_t{ other }
-			, _parent{ other._parent }
 		{
 		}
 
@@ -93,8 +106,6 @@ class Value
 			using std::swap;
 
 			a.swap(b);
-
-			swap(a._parent, b._parent);
 		}
 
 		bool operator==(const Child& other) const
@@ -143,7 +154,17 @@ class Value
 				}, _as_variant());
 		}
 
-		Value* const parent() const { return _parent; }
+		template<typename Result_T>
+		const Result_T& as() const
+		{
+			return std::get<Result_T>(_as_variant());
+		}
+
+		template<typename Result_T>
+		Result_T& as()
+		{
+			return std::get<Result_T>(_as_variant());
+		}
 	private:
 
 		Base_t& _as_variant()
@@ -155,8 +176,6 @@ class Value
 		{
 			return static_cast<const Base_t&>(*this);
 		}
-
-		Value* _parent;
 	};
 
 	using Children_t = std::pair<Child, Child>;
@@ -164,27 +183,33 @@ class Value
 public:
 
 	Value()
-		: _children{ uint32_t{0}, uint32_t{0} }
+		: _parent{ nullptr }
+		, _children{ uint32_t{0}, uint32_t{0} }
 	{}
 
-	Value(uint32_t first, uint32_t second) 
-		: _children{ first, second }
+	Value(uint32_t first, uint32_t second, Value* parent = nullptr) 
+		: _parent{ parent }
+		, _children{ first, second }
 	{}
 
-	Value(Ptr_t&& first, Ptr_t&& second)
-		: _children{ first, second }
+	Value(Ptr_t&& first, Ptr_t&& second, Value* parent = nullptr)
+		: _parent{ parent }
+		, _children{ first, second }
 	{}
 
-	Value(uint32_t first, Ptr_t && second)
-		: _children{ first, second }
+	Value(uint32_t first, Ptr_t && second, Value* parent = nullptr)
+		: _parent{ parent }
+		, _children{ first, second }
 	{}
 
-	Value(Ptr_t&& first, uint32_t second)
-		: _children{ first, second }
+	Value(Ptr_t&& first, uint32_t second, Value* parent = nullptr)
+		: _parent{ parent }
+		, _children{ first, second }
 	{}
 
 	Value(const Value& other)
-		: _children{ other._children.first.clone(), other._children.second.clone() }
+		: _parent{ other._parent }
+		, _children{ other._children.first.clone(), other._children.second.clone() }
 	{}
 
 	Value& operator=(const Value& other)
@@ -201,11 +226,16 @@ public:
 	friend void swap(Value& a, Value& b)
 	{
 		using std::swap;
+		swap(a._parent, b._parent);
 		swap(a._children, b._children);
 	}
 
 	bool operator==(const Value& other) const
 	{
+		if (_parent != other._parent) {
+			return false;
+		}
+
 		if (_children.first != other._children.first) {
 			return false;
 		}
@@ -224,12 +254,9 @@ public:
 
 	Value& operator+=(const Value& other)
 	{
-		auto new_children = Children_t{ this, this };
-
-		new_children.first = Child{ _move_children_into_new_value() };
-		new_children.second = Child{ std::make_shared<Value>(other) };
-
-		_children = std::move(new_children);
+		auto new_child = std::make_shared<Value>(other);
+		new_child->_parent = this;
+		_children = Children_t{ _move_children_into_new_value() , std::move(new_child) };
 
 		return *this;
 	}
@@ -266,27 +293,28 @@ public:
 	}
 
 	template<typename Iter_T>
-	static std::pair<Ptr_t, Iter_T> create(Iter_T current, Iter_T end)
+	static std::pair<Ptr_t, Iter_T> create(Iter_T current, Iter_T end, Value* parent = nullptr)
 	{
 		_validate_number_opening(current);
 
-		auto parent = std::make_shared<Value>();
+		auto out = std::make_shared<Value>();
+		out->_parent = parent;
 
-		auto first_child = Child{ parent.get() };
-		auto second_child = Child{ parent.get() };
+		auto first_child = Child{};
+		auto second_child = Child{};
 
-		std::tie(first_child, current) = _recursively_read_child(*parent, std::move(current), end);
+		std::tie(first_child, current) = _recursively_read_child(*out, std::move(current), end);
 		
 		_validate_second_value_is_present(current, end);
 		
-		std::tie(second_child, current) = _recursively_read_child(*parent, std::move(current), end);
+		std::tie(second_child, current) = _recursively_read_child(*out, std::move(current), end);
 		
 		current = _complete_value_read(std::move(current), end);
 		
-		parent->_children.first = std::move(first_child);
-		parent->_children.second = std::move(second_child);
+		out->_children.first = std::move(first_child);
+		out->_children.second = std::move(second_child);
 
-		return { std::move(parent), std::move(current) };
+		return { std::move(out), std::move(current) };
 	}
 
 	template<typename Char_T>
@@ -300,7 +328,11 @@ public:
 		}
 	}
 
+	Value* const parent() const { return _parent; }
+
 private:
+
+	friend class ValueExploder;
 
 	template<typename Iter_T>
 	static void _validate_number_opening(const Iter_T& current)
@@ -342,12 +374,12 @@ private:
 	static std::pair<Child, Iter_T> _read_value_or_digits(Value& parent, Iter_T current, const Iter_T& end)
 	{
 		if (*current == '[') {
-			const auto [out, current] = Value::create(current, end);
-			return { Child(std::move(out), &parent), std::move(current) };
+			auto [out, current] = Value::create(current, end, &parent);
+			return std::pair<Child, Iter_T>{ Child(std::move(out)), std::move(current) };
 		}
 		else {
 			const auto [out, current] = _read_digits(current, end);
-			return { Child(std::move(out), &parent), std::move(current) };
+			return std::pair<Child, Iter_T>{ Child(std::move(out)), std::move(current) };
 		}
 	}
 
@@ -366,53 +398,69 @@ private:
 	{
 		auto value = std::make_shared<Value>();
 		value->_children = std::move(_children);
+		value->_parent = this;
 
 		return std::move(value);
 	}
 
 	bool _explode()
 	{
-		auto to_explode = _find_first_child_to_explode();
-		if (!to_explode) {
-			return false;
-		}
-
-
-
-		return true;
+		return ValueExploder{ *this }.explode();
 	}
 
-	Ptr_t _find_first_child_to_explode() const
-	{
-		if (_has_child_value<0>()) {
-
-		}
-
-		if (_has_child_value<1>()) {
-
-		}
-
-		return Ptr_t{};
-	}
-
-	static Ptr_t _recursively_find_child_to_explode(const Child& child)
-	{
-		return Ptr_t{};
-	}
-
-	template<size_t CHILD_IDX>
-	bool _has_child_value() const
-	{
-		return std::get<CHILD_IDX>(_children).is<Ptr_t>();
-	}
+	
 
 	bool _split()
 	{
 		return false;
 	}
 
+	Value* _parent;
 	std::pair<Child, Child> _children;
 };
+
+bool ValueExploder::explode()
+{
+	auto explode_details = _find_first_child_to_explode();
+	if (!explode_details) {
+		return false;
+	}
+
+	assert(explode_details->first != nullptr);
+
+
+
+	return true;
+}
+
+std::optional<std::pair<Value*, size_t>> ValueExploder::_find_first_child_to_explode()
+{
+	return _recursively_find_child_to_explode(_value, 0);
+}
+
+std::optional<std::pair<Value*, size_t>> ValueExploder::_recursively_find_child_to_explode(Value& val, size_t depth, std::optional<size_t> child_idx)
+{
+	if (val._children.first.is<Value::Ptr_t>()) {
+		auto explode_details = _recursively_find_child_to_explode(*val._children.first.as<Value::Ptr_t>(), depth + 1, 0);
+		if (explode_details) {
+			return explode_details;
+		}
+	}
+
+	if (val._children.second.is<Value::Ptr_t>()) {
+		auto explode_details = _recursively_find_child_to_explode(*val._children.second.as < Value::Ptr_t > (), depth + 1, 1);
+		if (explode_details) {
+			return explode_details;
+		}
+	}
+
+	if (depth > 3 && child_idx != std::nullopt) {
+		return { { &val, *child_idx } };
+	}
+	else {
+		return std::nullopt;
+	}
+}
 
 }
 }

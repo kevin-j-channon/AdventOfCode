@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <array>
 #include <bitset>
+#include <cassert>
 #include <cctype>
 #include <chrono>
 #include <cstdint>

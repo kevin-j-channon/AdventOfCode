@@ -98,7 +98,49 @@
             <Property Name="Namespace" Value="test_common" />
             <Property Name="Namespace" Value="test_probe_launcher" />
             <Property Name="Namespace" Value="day_17" />
-            <Property Name="Namespace" Value="test_snailfish_numbers" />
+            <Rule Match="All">
+              <Property Name="Namespace" Value="test_snailfish_numbers" />
+              <Rule Match="Any">
+                <Property Name="Class" Value="TestParentsAndChildren" />
+                <Property Name="Class" Value="TestInitialisation" />
+                <Property Name="Class" Value="TestAccessors" />
+                <Rule Match="All">
+                  <Property Name="Class" Value="TestAlgebra" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="test_snailfish_numbers::TestAlgebra::ExplodeSample1" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="ExplodeSample1" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="test_snailfish_numbers::TestAlgebra::CompoundAssignmentIncrementSimple" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CompoundAssignmentIncrementSimple" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="test_snailfish_numbers::TestAlgebra::CompoundAssignmentIncrementComplex" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="CompoundAssignmentIncrementComplex" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="test_snailfish_numbers::TestAlgebra::AdditionSimple" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="AdditionSimple" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="test_snailfish_numbers::TestAlgebra::AdditionComplex" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="AdditionComplex" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
           </Rule>
         </Rule>
       </Rule>

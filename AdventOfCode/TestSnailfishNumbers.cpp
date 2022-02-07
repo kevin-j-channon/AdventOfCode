@@ -178,6 +178,85 @@ public:
 	}
 };
 
+TEST_CLASS(TestParentsAndChildren)
+{
+public:
+	TEST_METHOD(ChildrenAreCorrect)
+	{
+		const auto value = Value::from_string("[[1,2],[3,4]]");
+		Assert::AreEqual("[1,2]"s, value.child<ChildPosition::first>().as_string<char>());
+		Assert::AreEqual("[3,4]"s, value.child<ChildPosition::second>().as_string<char>());
+	}
+
+	TEST_METHOD(NestedChildIsCorrect)
+	{
+		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
+		const auto child_str = value
+			.child<ChildPosition::first>()
+			.as<Value::Ptr_t>()
+			->child<ChildPosition::second>()
+			.as_string<char>();
+
+		Assert::AreEqual("[5,6]"s, child_str);
+	}
+
+	TEST_METHOD(ParentIsNulByDefault)
+	{
+		const auto value = Value::from_string("[8,9]");
+		Assert::IsNull(value.parent());
+	}
+
+	TEST_METHOD(ParentIsCorrect)
+	{
+		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
+		const auto& grand_child = value
+			.child<ChildPosition::first>()
+			.as<Value>()
+			.child<ChildPosition::second>()
+			.as<Value>();
+
+		Logger::WriteMessage(std::format("Child value: {}\n", value.child<ChildPosition::first>().as<Value>().as_string<char>()).c_str());
+		Logger::WriteMessage(std::format("Child's parent: {}\n", value.child<ChildPosition::first>().as<Value>().parent()->as_string<char>()).c_str());
+
+		Logger::WriteMessage(std::format("Grandchild value: {}\n", value.child<ChildPosition::first>().as<Value>().child<ChildPosition::second>().as<Value>().as_string<char>()).c_str());
+		Logger::WriteMessage(std::format("Grandchild's parent: {}\n", value.child<ChildPosition::first>().as<Value>().child<ChildPosition::second>().as<Value>().parent()->parent()->as_string<char>()).c_str());
+
+		auto* p = grand_child.parent();
+		auto* gp = p->parent();
+
+		Assert::AreEqual("[1,[5,6]]"s, grand_child.parent()->as_string<char>());
+		Assert::AreEqual(value.as_string<char>(), grand_child.parent()->parent()->as_string<char>());
+	}
+};
+
+TEST_CLASS(TestAccessors)
+{
+public:
+	TEST_METHOD(AsValuePtr)
+	{
+		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
+		const auto child = value.child<ChildPosition::first>().as<Value::Ptr_t>();
+
+		Assert::AreEqual("[1,[5,6]]"s, child->as_string<char>());
+	}
+
+	TEST_METHOD(AsValueRef)
+	{
+		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
+		const auto& child = value.child<ChildPosition::first>().as<Value>();
+
+		Assert::AreEqual("[1,[5,6]]"s, child.as_string<char>());
+	}
+
+	TEST_METHOD(AsInt)
+	{
+		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
+		const auto child = value.child<ChildPosition::first>().as<Value>().child<ChildPosition::first>().as<uint32_t>();
+
+		Assert::AreEqual(uint32_t{ 1 }, child);
+	}
+};
+
 TEST_CLASS(TestAlgebra)
 {
 public:
@@ -210,10 +289,13 @@ public:
 		Assert::AreEqual("[[[1,2],[[3,4],[5,6]]],[1,[2,[[3,4],5]]]]"s, sum.as_string<char>());
 	}
 
-	TEST_METHOD(ReduceSample1)
+	TEST_METHOD(ExplodeSample1)
 	{
 		auto v = Value::from_string("[[[[[9,8],1],2],3],4]");
-		Assert::AreEqual("[[[[0,9],2],3],4]"s, v.reduce().as_string<char>());
+
+		Assert::IsTrue(ValueExploder{ v }.explode());
+		
+		// Assert::AreEqual("[[[[0,9],2],3],4]"s, v.as_string<char>());
 	}
 };
 }

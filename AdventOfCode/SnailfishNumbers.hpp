@@ -43,9 +43,9 @@ public:
 
 private:
 
-	std::optional<std::pair<Value*, size_t>> _find_first_child_to_explode();
+	std::optional<std::pair<Value*, ChildPosition>> _find_first_child_to_explode();
 
-	static std::optional<std::pair<Value*, size_t>> _recursively_find_child_to_explode(Value& val, size_t depth, std::optional<size_t> child_idx = std::nullopt);
+	static std::optional<std::pair<Value*, ChildPosition>> _recursively_find_child_to_explode(Value& val, size_t depth, std::optional<ChildPosition> child_idx = std::nullopt);
 
 	Value& _value;
 };
@@ -145,6 +145,9 @@ public:
 
 	template<ChildPosition POSITION>
 	const detail::Child& child() const;
+
+	template<ChildPosition POSITION>
+	detail::Child& child();
 
 private:
 
@@ -323,6 +326,14 @@ const detail::Child& Value::child() const
 	else {
 		static_assert(std::false_type::value, "Invalid child position");
 	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<ChildPosition POSITION>
+detail::Child& Value::child()
+{
+	return const_cast<detail::Child&>(const_cast<const Value*>(this)->child<POSITION>());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

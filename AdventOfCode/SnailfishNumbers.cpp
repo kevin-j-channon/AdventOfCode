@@ -1,3 +1,6 @@
+#include "CppUnitTest.h"
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
 #include "SnailfishNumbers.hpp"
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -336,10 +339,80 @@ bool ValueExploder::explode()
 		return false;
 	}
 
-	assert(explode_details->first != nullptr);
+	auto [to_explode, position] = *explode_details;
 
-	auto& to_explode = *explode_details->first;
-	if (explode_details->second == 0) {
+	Logger::WriteMessage(std::format("To explode: {}\n", to_explode->as_string<char>()).c_str());
+
+	assert(to_explode != nullptr);
+
+	//
+	// Handle the first child of the value to be exploded.
+	// 
+	// Find the first second child of a predecessor.
+	{
+		auto predecessor = to_explode->parent();
+		while (predecessor && predecessor->position() == ChildPosition::first) {
+			predecessor = predecessor->parent();
+		}
+
+		if (predecessor && predecessor->parent()) {
+			Logger::WriteMessage(std::format("Left predecessor: {}\n", predecessor->as_string<char>()).c_str());
+
+			// We found a suitable value to the left of the value to explode. Now need to traverse as far down and to the right as possible.
+			auto* child = &predecessor->child<ChildPosition::second>();
+			while (child->is<ValuePtr_t>()) {
+				child = &child->as<Value>().child<ChildPosition::second>();
+			}
+
+			// Now the child is the one that will receive the left value from the exploded value.
+			*child = child->as<uint32_t>() + to_explode->child<ChildPosition::first>().as<uint32_t>();
+		}
+		else
+		{
+			Logger::WriteMessage("No predecessor found\n");
+		}
+	}
+
+	//
+	// Handle the second child of the value to be exploded.
+	//
+	{
+		auto predecessor = to_explode->parent();
+		while (predecessor && predecessor->position() == ChildPosition::second) {
+			predecessor = predecessor->parent();
+		}
+
+		if (predecessor && predecessor->parent()) {
+			Logger::WriteMessage(std::format("Right predecessor: {}\n", predecessor->as_string<char>()).c_str());
+
+
+			// We found a suitable value to the right of the value to explode. Now need to traverse as far down and to the left as possible.
+			auto* child = &predecessor->child<ChildPosition::first>();
+			while (child->is<ValuePtr_t>()) {
+				child = &child->as<Value>().child<ChildPosition::first>();
+			}
+
+			// Now the child is the one that will receive the right value from the exploded value.
+			*child = child->as<uint32_t>() + to_explode->child<ChildPosition::second>().as<uint32_t>();
+		}
+	}
+
+	//
+	// Replace the exploded child with a '0' value
+	//
+	{
+		auto parent = to_explode->parent();
+		switch (position) {
+		case ChildPosition::first: {
+			parent->child<ChildPosition::first>() = detail::Child(uint32_t{ 0 }, parent, position);
+			break;
+		}
+		case ChildPosition::second: {
+			parent->child<ChildPosition::second>() = detail::Child(uint32_t{ 0 }, parent, position);
+			break;
+		}
+		default:;
+		}
 	}
 
 	return true;
@@ -347,24 +420,24 @@ bool ValueExploder::explode()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-std::optional<std::pair<Value*, size_t>> ValueExploder::_find_first_child_to_explode()
+std::optional<std::pair<Value*, ChildPosition>> ValueExploder::_find_first_child_to_explode()
 {
 	return _recursively_find_child_to_explode(_value, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-std::optional<std::pair<Value*, size_t>> ValueExploder::_recursively_find_child_to_explode(Value& val, size_t depth, std::optional<size_t> child_idx)
+std::optional<std::pair<Value*, ChildPosition>> ValueExploder::_recursively_find_child_to_explode(Value& val, size_t depth, std::optional<ChildPosition> child_idx)
 {
 	if (val._children.first.is<ValuePtr_t>()) {
-		auto explode_details = _recursively_find_child_to_explode(val._children.first.as<Value>(), depth + 1, 0);
+		auto explode_details = _recursively_find_child_to_explode(val._children.first.as<Value>(), depth + 1, ChildPosition::first);
 		if (explode_details) {
 			return explode_details;
 		}
 	}
 
 	if (val._children.second.is<ValuePtr_t>()) {
-		auto explode_details = _recursively_find_child_to_explode(val._children.second.as <Value>(), depth + 1, 1);
+		auto explode_details = _recursively_find_child_to_explode(val._children.second.as <Value>(), depth + 1, ChildPosition::second);
 		if (explode_details) {
 			return explode_details;
 		}

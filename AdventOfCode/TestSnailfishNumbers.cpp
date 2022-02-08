@@ -295,7 +295,7 @@ public:
 
 		Assert::IsTrue(ValueExploder{ v }.explode());
 		
-		// Assert::AreEqual("[[[[0,9],2],3],4]"s, v.as_string<char>());
+		Assert::AreEqual("[[[[0,9],2],3],4]"s, v.as_string<char>());
 	}
 };
 }

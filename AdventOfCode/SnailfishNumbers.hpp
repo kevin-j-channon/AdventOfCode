@@ -36,6 +36,11 @@ private:
 	Value& _value;
 };
 
+namespace detail
+{
+
+}
+
 class Value
 {
 public:
@@ -46,134 +51,28 @@ private:
 	{
 		using Base_t = std::variant<uint32_t, Ptr_t>;
 	public:
-		Child() : Base_t{}
-		{
-		}
-
-		Child(uint32_t value)
-			: Base_t{ value }
-		{
-		}
-
-		Child(Ptr_t value, Value* parent, ChildPosition position)
-			: Base_t{ std::move(value) }
-		{
-			set_parent_and_position(parent, position);
-		}
-
-		Child(const Child& other, Value* parent, ChildPosition position)
-			: Base_t{ other }
-		{
-			set_parent_and_position(parent, position);
-		}
+		Child();
+		Child(uint32_t value);
+		Child(Ptr_t value, Value* parent, ChildPosition position);
+		Child(const Child& other, Value* parent, ChildPosition position);
 
 		Child(const Child&) = delete;
 		Child& operator=(const Child&) = delete;
 
-		Child(Child&& other)
-			: Base_t{ std::forward<Child>(other) }
-		{
-			if (this->is<Ptr_t>()) {
-				this->as<Value>()._children.first.set_parent_and_position(&this->as<Value>(), ChildPosition::first);
-				this->as<Value>()._children.second.set_parent_and_position(&this->as<Value>(), ChildPosition::second);
-			}
-		}
+		Child(Child&& other);
 
-		Child& operator=(Child&& other)
-		{
-			Child temp{ std::forward<Child>(other) };
-			this->swap(temp);
+		Child& operator=(Child&& other);
 
-			return *this;
-		}
+		bool operator==(const Child& other) const;
 
-		template<typename Char_T>
-		std::basic_string<Char_T> as_string() const
-		{
-			return std::visit(
-				[](auto&& arg) -> std::basic_string<Char_T> {
-					using Arg_t = std::decay_t<decltype(arg)>;
-					if constexpr (std::is_same_v<Arg_t, uint32_t>) {
-						if constexpr (std::is_same_v<Char_T, char>) {
-							return std::to_string(arg);
-						}
-						else if constexpr (std::is_same_v<Char_T, wchar_t>) {
-							return std::to_wstring(arg);
-						}
-					}
-					else if constexpr (std::is_same_v<Arg_t, Ptr_t>) {
-						return arg->as_string<Char_T>();
-					}
-				},
-				_as_variant()
-					);
-		}
-
-		void set_parent_and_position(Value* parent, ChildPosition position)
-		{
-			std::visit([parent, position](auto&& arg) {
-				using Arg_t = std::decay_t<decltype(arg)>;
-				if constexpr (std::is_same_v<Arg_t, Ptr_t>) {
-					arg->_parent_and_position = { parent, position };
-				}
-				}, _as_variant());
-		}
-
-		Child clone() const
-		{
-			return std::visit([](auto&& arg) -> Child {
-				using Arg_t = std::decay_t<decltype(arg)>;
-				if constexpr (std::is_same_v<Arg_t, uint32_t>) {
-					return { arg };
-				}
-				else if constexpr (std::is_same_v<Arg_t, Ptr_t>) {
-					auto out = std::make_shared<Value>();
-
-					out->_children.first = _clone_child_at<ChildPosition::first>(arg.get());
-					out->_children.second = _clone_child_at<ChildPosition::second>(arg.get());
-
-					return { std::move(out), arg.get(), *arg->position() };
-				}
-				}, _as_variant());
-		}
+		void set_parent_and_position(Value* parent, ChildPosition position);
+		Child clone() const;
 
 		friend void swap(Child& a, Child& b)
 		{
 			using std::swap;
 
 			a.swap(b);
-		}
-
-		bool operator==(const Child& other) const
-		{
-			return std::visit([&other](auto&& arg_outer) -> bool {
-				using ArgOuter_t = std::decay_t<decltype(arg_outer)>;
-				if constexpr (std::is_same_v<ArgOuter_t, uint32_t>) {
-
-					return std::visit([&arg_outer](auto&& arg_inner) -> bool {
-						using ArgInner_t = std::decay_t<decltype(arg_inner)>;
-						if constexpr (std::is_same_v<ArgInner_t, uint32_t>) {
-							return arg_outer == arg_inner;
-						}
-						else {
-							return false;
-						}
-						}, other._as_variant());
-
-				}
-				else if constexpr (std::is_same_v<ArgOuter_t, Ptr_t>) {
-
-					return std::visit([&arg_outer](auto&& arg_inner) -> bool {
-						using ArgInner_t = std::decay_t<decltype(arg_inner)>;
-						if constexpr (std::is_same_v<ArgInner_t, Ptr_t>) {
-							return *arg_outer == *arg_inner;
-						}
-						else {
-							return false;
-						}
-						}, other._as_variant());
-				}
-				}, _as_variant());
 		}
 
 		template<typename T>
@@ -214,17 +113,32 @@ private:
 			}
 		}
 
+		template<typename Char_T>
+		std::basic_string<Char_T> as_string() const
+		{
+			return std::visit(
+				[](auto&& arg) -> std::basic_string<Char_T> {
+					using Arg_t = std::decay_t<decltype(arg)>;
+					if constexpr (std::is_same_v<Arg_t, uint32_t>) {
+						if constexpr (std::is_same_v<Char_T, char>) {
+							return std::to_string(arg);
+						}
+						else if constexpr (std::is_same_v<Char_T, wchar_t>) {
+							return std::to_wstring(arg);
+						}
+					}
+					else if constexpr (std::is_same_v<Arg_t, Ptr_t>) {
+						return arg->as_string<Char_T>();
+					}
+				},
+				_as_variant()
+					);
+		}
+
 	private:
 
-		Base_t& _as_variant()
-		{
-			return static_cast<Base_t&>(*this);
-		}
-
-		const Base_t& _as_variant() const
-		{
-			return static_cast<const Base_t&>(*this);
-		}
+		Base_t& _as_variant() { return static_cast<Base_t&>(*this); }
+		const Base_t& _as_variant() const { return static_cast<const Base_t&>(*this); }
 
 		template<ChildPosition POSITION>
 		static Child _clone_child_at(Ptr_t::element_type* value)
@@ -514,51 +428,6 @@ private:
 	std::optional<std::pair<Value*, ChildPosition>> _parent_and_position;
 	Children_t _children;
 };
-
-bool ValueExploder::explode()
-{
-	auto explode_details = _find_first_child_to_explode();
-	if (!explode_details) {
-		return false;
-	}
-
-	assert(explode_details->first != nullptr);
-
-	auto& to_explode = *explode_details->first;
-	if (explode_details->second == 0) {
-	}
-
-	return true;
-}
-
-std::optional<std::pair<Value*, size_t>> ValueExploder::_find_first_child_to_explode()
-{
-	return _recursively_find_child_to_explode(_value, 0);
-}
-
-std::optional<std::pair<Value*, size_t>> ValueExploder::_recursively_find_child_to_explode(Value& val, size_t depth, std::optional<size_t> child_idx)
-{
-	if (val._children.first.is<Value::Ptr_t>()) {
-		auto explode_details = _recursively_find_child_to_explode(val._children.first.as<Value>(), depth + 1, 0);
-		if (explode_details) {
-			return explode_details;
-		}
-	}
-
-	if (val._children.second.is<Value::Ptr_t>()) {
-		auto explode_details = _recursively_find_child_to_explode(val._children.second.as <Value> (), depth + 1, 1);
-		if (explode_details) {
-			return explode_details;
-		}
-	}
-
-	if (depth > 3 && child_idx != std::nullopt) {
-		return { { &val, *child_idx } };
-	}
-	else {
-		return std::nullopt;
-	}
-}
 
 }
 }

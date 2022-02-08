@@ -134,6 +134,201 @@ void detail::swap(Child& a, Child& b)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void swap(Value& a, Value& b)
+{
+	using std::swap;
+	swap(a._parent_and_position, b._parent_and_position);
+	swap(a._children, b._children);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value::Value()
+	: _parent_and_position{ std::nullopt }
+	, _children{}
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value::Value(uint32_t first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos)
+	: _parent_and_position{ parent_and_pos }
+	, _children{ first, second }
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value::Value(ValuePtr_t&& first, ValuePtr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos)
+	: _parent_and_position{ parent_and_pos }
+	, _children{ {first, this, ChildPosition::first}, {second, this, ChildPosition::second} }
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value::Value(uint32_t first, ValuePtr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos)
+	: _parent_and_position{ parent_and_pos }
+	, _children{ first, {second, this, ChildPosition::second} }
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value::Value(ValuePtr_t&& first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos)
+	: _parent_and_position{ parent_and_pos }
+	, _children{ {first, this, ChildPosition::first}, second }
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value::Value(const Value& other)
+	: _parent_and_position{ other._parent_and_position }
+	, _children{ {other._children.first.clone(), this, ChildPosition::first}, {other._children.second.clone(), this, ChildPosition::second} }
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value& Value::operator=(const Value& other)
+{
+	Value temp{ other };
+	swap(temp, *this);
+
+	return *this;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value::Value(Value&& other)
+	: _parent_and_position{ std::move(other._parent_and_position) }
+	, _children{ std::move(other._children) }
+{
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value& Value::operator=(Value&& other)
+{
+	Value temp{ std::forward<Value>(other) };
+	swap(temp, *this);
+
+	return *this;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool Value::operator==(const Value& other) const
+{
+	if (_children.first != other._children.first) {
+		return false;
+	}
+
+	if (_children.second != other._children.second) {
+		return false;
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool Value::operator!=(const Value& other) const
+{
+	return !(*this == other);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value& Value::operator+=(const Value& other)
+{
+	auto new_child = std::make_shared<Value>(other);
+	_children = Children_t{ {_move_children_into_new_value(), this, ChildPosition::first }, { std::move(new_child), this, ChildPosition::second } };
+
+	return *this;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value Value::operator+(const Value& other)
+{
+	auto out = *this;
+	out += other;
+
+	return std::move(out);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value& Value::reduce()
+{
+	while (_explode() || _split());
+
+	return *this;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value Value::from_stream(std::istream& is)
+{
+	auto line = std::string{};
+	std::getline(is, line);
+	return from_string(line);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value Value::from_string(const std::string& str)
+{
+	if (str.empty()) {
+		throw IOException("Failed to create snailfish Value - empty line");
+	}
+
+	return *create(str.begin(), str.end()).first;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Value* const Value::parent() const
+{
+	return _parent_and_position ? _parent_and_position->first : nullptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+std::optional<ChildPosition> Value::position() const
+{
+	return _parent_and_position ? std::optional<ChildPosition>{_parent_and_position->second} : std::nullopt;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+ValuePtr_t Value::_move_children_into_new_value()
+{
+	auto value = std::make_shared<Value>();
+	value->_children = std::move(_children);
+	value->_parent_and_position = { {this, ChildPosition::first} };
+
+	return std::move(value);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool Value::_explode()
+{
+	return ValueExploder{ *this }.explode();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool Value::_split()
+{
+	return false;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 bool ValueExploder::explode()
 {
 	auto explode_details = _find_first_child_to_explode();

@@ -28,6 +28,10 @@ using ValuePtr_t = std::shared_ptr<Value>;
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void swap(Value& a, Value& b);
+
+///////////////////////////////////////////////////////////////////////////////
+
 class ValueExploder
 {
 public:
@@ -105,275 +109,67 @@ class Value
 {
 	friend class detail::Child;
 	friend class ValueExploder;
+	friend void swap(Value& a, Value& b);
 
 	using Children_t = std::pair<detail::Child, detail::Child>;
 public:
-	Value()
-		: _parent_and_position{ std::nullopt }
-		, _children{}
-	{
-	}
+	Value();
+	Value(uint32_t first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt);
+	Value(ValuePtr_t&& first, ValuePtr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt);
+	Value(uint32_t first, ValuePtr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt);
+	Value(ValuePtr_t&& first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt);
+	Value(const Value& other);
 
-	Value(uint32_t first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)
-		: _parent_and_position{ parent_and_pos }
-		, _children{ first, second }
-	{
-	}
+	Value& operator=(const Value& other);
+	Value(Value&& other);
 
-	Value(ValuePtr_t&& first, ValuePtr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)
-		: _parent_and_position{ parent_and_pos }
-		, _children{ {first, this, ChildPosition::first}, {second, this, ChildPosition::second} }
-	{
-	}
+	Value& operator=(Value&& other);
+	bool operator==(const Value& other) const;
+	bool operator!=(const Value& other) const;
+	Value& operator+=(const Value& other);
+	Value operator+(const Value& other);
 
-	Value(uint32_t first, ValuePtr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)
-		: _parent_and_position{ parent_and_pos }
-		, _children{ first, {second, this, ChildPosition::second} }
-	{
-	}
+	Value& reduce();
 
-	Value(ValuePtr_t&& first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)
-		: _parent_and_position{ parent_and_pos }
-		, _children{ {first, this, ChildPosition::first}, second }
-	{
-	}
+	Value* const parent() const;
+	std::optional<ChildPosition> position() const;
 
-	Value(const Value& other)
-		: _parent_and_position{ other._parent_and_position }
-		, _children{ {other._children.first.clone(), this, ChildPosition::first}, {other._children.second.clone(), this, ChildPosition::second} }
-	{
-	}
-
-	Value& operator=(const Value& other)
-	{
-		Value temp{ other };
-		swap(temp, *this);
-
-		return *this;
-	}
-
-	Value(Value&& other)
-		: _parent_and_position{ std::move(other._parent_and_position) }
-		, _children{ std::move(other._children) }
-	{
-	}
-
-	Value& operator=(Value&& other)
-	{
-		Value temp{ std::forward<Value>(other) };
-		swap(temp, *this);
-
-		return *this;
-	}
-
-	friend void swap(Value& a, Value& b)
-	{
-		using std::swap;
-		swap(a._parent_and_position, b._parent_and_position);
-		swap(a._children, b._children);
-	}
-
-	bool operator==(const Value& other) const
-	{
-		if (_children.first != other._children.first) {
-			return false;
-		}
-
-		if (_children.second != other._children.second) {
-			return false;
-		}
-
-		return true;
-	}
-
-	bool operator!=(const Value& other) const
-	{
-		return !(*this == other);
-	}
-
-	Value& operator+=(const Value& other)
-	{
-		auto new_child = std::make_shared<Value>(other);
-		_children = Children_t{ {_move_children_into_new_value(), this, ChildPosition::first }, { std::move(new_child), this, ChildPosition::second } };
-
-		return *this;
-	}
-
-	Value operator+(const Value& other)
-	{
-		auto out = *this;
-		out += other;
-
-		return std::move(out);
-	}
-
-	Value& reduce()
-	{
-		while (_explode() || _split());
-
-		return *this;
-	}
-
-	static Value from_stream(std::istream& is)
-	{
-		auto line = std::string{};
-		std::getline(is, line);
-		return from_string(line);
-	}
-
-	static Value from_string(const std::string& str)
-	{
-		if (str.empty()) {
-			throw IOException("Failed to create snailfish Value - empty line");
-		}
-
-		return *create(str.begin(), str.end()).first;
-	}
+	static Value from_stream(std::istream& is);
+	static Value from_string(const std::string& str);
 
 	template<typename Iter_T>
-	static std::pair<ValuePtr_t, Iter_T> create(Iter_T current, Iter_T end, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)
-	{
-		_validate_number_opening(current);
-
-		auto out = std::make_shared<Value>();
-		out->_parent_and_position = parent_and_pos;
-
-		auto first_child = detail::Child{};
-		auto second_child = detail::Child{};
-
-		std::tie(first_child, current) = _recursively_read_child(*out, ChildPosition::first, std::move(current), end);
-
-		_validate_second_value_is_present(current, end);
-
-		std::tie(second_child, current) = _recursively_read_child(*out, ChildPosition::second, std::move(current), end);
-
-		current = _complete_value_read(std::move(current), end);
-
-		out->_children.first = std::move(first_child);
-		out->_children.second = std::move(second_child);
-
-		return { std::move(out), std::move(current) };
-	}
+	static std::pair<ValuePtr_t, Iter_T> create(Iter_T current, Iter_T end, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt);
 
 	template<typename Char_T>
-	std::basic_string<Char_T> as_string() const
-	{
-		auto get_fmt = []() {
-			if constexpr (std::is_same_v<Char_T, char>) {
-				return "[{},{}]";
-			}
-			else if constexpr (std::is_same_v<Char_T, wchar_t>) {
-				return L"[{},{}]";
-			}
-		};
-
-		return std::format(get_fmt(), _children.first.as_string<Char_T>(), _children.second.as_string<Char_T>());
-	}
-
-	Value* const parent() const
-	{
-		return _parent_and_position ? _parent_and_position->first : nullptr;
-	}
-
-	std::optional<ChildPosition> position() const
-	{
-		return _parent_and_position ? std::optional<ChildPosition>{_parent_and_position->second} : std::nullopt;
-	}
+	std::basic_string<Char_T> as_string() const;
 
 	template<ChildPosition POSITION>
-	const detail::Child& child() const
-	{
-		if constexpr (POSITION == ChildPosition::first) {
-			return _children.first;
-		}
-		else if constexpr (POSITION == ChildPosition::second) {
-			return _children.second;
-		}
-		else {
-			static_assert(std::false_type::value, "Invalid child position");
-		}
-	}
+	const detail::Child& child() const;
 
 private:
 
 	template<typename Iter_T>
-	static void _validate_number_opening(const Iter_T& current)
-	{
-		if (*current != '[') {
-			throw IOException("Failed to creaate snailfish Value - invalid openning");
-		}
-	}
+	static void _validate_number_opening(const Iter_T& current);
 
 	template<typename Iter_T>
-	static std::pair<detail::Child, Iter_T> _recursively_read_child(Value& parent, ChildPosition position, Iter_T current, const Iter_T& end)
-	{
-		std::advance(current, 1);
-		return _read_value_or_digits(parent, position, std::move(current), end);
-	}
+	static std::pair<detail::Child, Iter_T> _recursively_read_child(Value& parent, ChildPosition position, Iter_T current, const Iter_T& end);
 
 	template<typename Iter_T>
-	static void _validate_second_value_is_present(const Iter_T& current, const Iter_T& end)
-	{
-		if (current == end || *current != ',') {
-			throw IOException("Failed to create snailfish value - Unexpected non-numeric value");
-		}
-	}
+	static void _validate_second_value_is_present(const Iter_T& current, const Iter_T& end);
 
 	template<typename Iter_T>
-	static Iter_T _complete_value_read(Iter_T current, const Iter_T& end)
-	{
-		if (current == end || *current != ']') {
-			throw IOException("Failed to create snailfish value - Unexpected value termination");
-		}
-
-		// Consume the closing bracket at the end of the number.
-		std::advance(current, 1);
-
-		return current;
-	}
+	static Iter_T _complete_value_read(Iter_T current, const Iter_T& end);
 
 	template<typename Iter_T>
-	static std::pair<detail::Child, Iter_T> _read_value_or_digits(Value& parent, ChildPosition position, Iter_T current, const Iter_T& end)
-	{
-		if (*current == '[') {
-			auto [out, current] = Value::create(current, end, { {&parent, position} });
-			return std::pair<detail::Child, Iter_T>{ detail::Child{ std::move(out), &parent, position }, std::move(current) };
-		}
-		else {
-			const auto [out, current] = _read_digits(current, end);
-			return std::pair<detail::Child, Iter_T>{ detail::Child{ std::move(out), &parent, position }, std::move(current) };
-		}
-	}
+	static std::pair<detail::Child, Iter_T> _read_value_or_digits(Value& parent, ChildPosition position, Iter_T current, const Iter_T& end);
 
 	template<typename Iter_T>
-	static std::pair<uint32_t, Iter_T> _read_digits(Iter_T current, const Iter_T& end)
-	{
-		std::stringstream digits;
-		for (; current != end && std::isdigit(*current); ++current) {
-			digits << *current;
-		}
+	static std::pair<uint32_t, Iter_T> _read_digits(Iter_T current, const Iter_T& end);
 
-		return { string_to<uint32_t>(digits.str()), current };
-	}
+	ValuePtr_t _move_children_into_new_value();
 
-	ValuePtr_t _move_children_into_new_value()
-	{
-		auto value = std::make_shared<Value>();
-		value->_children = std::move(_children);
-		value->_parent_and_position = { {this, ChildPosition::first} };
-
-		return std::move(value);
-	}
-
-	bool _explode()
-	{
-		return ValueExploder{ *this }.explode();
-	}
-
-	bool _split()
-	{
-		return false;
-	}
+	bool _explode();
+	bool _split();
 
 	std::optional<std::pair<Value*, ChildPosition>> _parent_and_position;
 	Children_t _children;
@@ -468,6 +264,141 @@ detail::Child Child::_clone_child_at(ValuePtr_t::element_type* value)
 ///////////////////////////////////////////////////////////////////////////////
 
 }	// namespace: detail
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Iter_T>
+static std::pair<ValuePtr_t, Iter_T> Value::create(Iter_T current, Iter_T end, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos)
+{
+	_validate_number_opening(current);
+
+	auto out = std::make_shared<Value>();
+	out->_parent_and_position = parent_and_pos;
+
+	auto first_child = detail::Child{};
+	auto second_child = detail::Child{};
+
+	std::tie(first_child, current) = _recursively_read_child(*out, ChildPosition::first, std::move(current), end);
+
+	_validate_second_value_is_present(current, end);
+
+	std::tie(second_child, current) = _recursively_read_child(*out, ChildPosition::second, std::move(current), end);
+
+	current = _complete_value_read(std::move(current), end);
+
+	out->_children.first = std::move(first_child);
+	out->_children.second = std::move(second_child);
+
+	return { std::move(out), std::move(current) };
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Char_T>
+std::basic_string<Char_T> Value::as_string() const
+{
+	auto get_fmt = []() {
+		if constexpr (std::is_same_v<Char_T, char>) {
+			return "[{},{}]";
+		}
+		else if constexpr (std::is_same_v<Char_T, wchar_t>) {
+			return L"[{},{}]";
+		}
+	};
+
+	return std::format(get_fmt(), _children.first.as_string<Char_T>(), _children.second.as_string<Char_T>());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<ChildPosition POSITION>
+const detail::Child& Value::child() const
+{
+	if constexpr (POSITION == ChildPosition::first) {
+		return _children.first;
+	}
+	else if constexpr (POSITION == ChildPosition::second) {
+		return _children.second;
+	}
+	else {
+		static_assert(std::false_type::value, "Invalid child position");
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Iter_T>
+void Value::_validate_number_opening(const Iter_T& current)
+{
+	if (*current != '[') {
+		throw IOException("Failed to creaate snailfish Value - invalid openning");
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Iter_T>
+std::pair<detail::Child, Iter_T> Value::_recursively_read_child(Value& parent, ChildPosition position, Iter_T current, const Iter_T& end)
+{
+	std::advance(current, 1);
+	return _read_value_or_digits(parent, position, std::move(current), end);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Iter_T>
+void Value::_validate_second_value_is_present(const Iter_T& current, const Iter_T& end)
+{
+	if (current == end || *current != ',') {
+		throw IOException("Failed to create snailfish value - Unexpected non-numeric value");
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Iter_T>
+Iter_T Value::_complete_value_read(Iter_T current, const Iter_T& end)
+{
+	if (current == end || *current != ']') {
+		throw IOException("Failed to create snailfish value - Unexpected value termination");
+	}
+
+	// Consume the closing bracket at the end of the number.
+	std::advance(current, 1);
+
+	return current;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Iter_T>
+std::pair<detail::Child, Iter_T> Value::_read_value_or_digits(Value& parent, ChildPosition position, Iter_T current, const Iter_T& end)
+{
+	if (*current == '[') {
+		auto [out, current] = Value::create(current, end, { {&parent, position} });
+		return std::pair<detail::Child, Iter_T>{ detail::Child{ std::move(out), &parent, position }, std::move(current) };
+	}
+	else {
+		const auto [out, current] = _read_digits(current, end);
+		return std::pair<detail::Child, Iter_T>{ detail::Child{ std::move(out), &parent, position }, std::move(current) };
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Iter_T>
+std::pair<uint32_t, Iter_T> Value::_read_digits(Iter_T current, const Iter_T& end)
+{
+	std::stringstream digits;
+	for (; current != end && std::isdigit(*current); ++current) {
+		digits << *current;
+	}
+
+	return { string_to<uint32_t>(digits.str()), current };
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 }	// namespace: snailfish
 }	// namespace: aoc
 

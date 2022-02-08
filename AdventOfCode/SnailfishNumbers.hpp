@@ -48,42 +48,24 @@ private:
 	public:
 		Child() : Base_t{}
 		{
-			Logger::WriteMessage("Child()\n");
 		}
 
 		Child(uint32_t value)
 			: Base_t{ value }
 		{
-			Logger::WriteMessage(std::format("Child(uint32_t {})\n", value).c_str());
 		}
 
 		Child(Ptr_t value, Value* parent, ChildPosition position)
 			: Base_t{ std::move(value) }
 		{
 			set_parent_and_position(parent, position);
-
-			//Logger::WriteMessage(std::format("Child(Ptr_t value={}, Value* parrent={}, ChildPosition position={})\n",
-				//value->as_string<char>(), (uint64_t)parent, static_cast<int>(position)).c_str());
 		}
 
 		Child(const Child& other, Value* parent, ChildPosition position)
 			: Base_t{ other }
 		{
-			//Logger::WriteMessage(std::format("Child(const Child& value={}, Value* parent={}, ChildPosition position={})\n",
-			//	other.as_string<char>(), (uint64_t)parent, static_cast<int>(position)).c_str());
 			set_parent_and_position(parent, position);
 		}
-
-		/*
-
-		Child& operator=(const Child& other)
-		{
-			Child temp{ other };
-			swap(temp);
-
-			return *this;
-		}
-		*/
 
 		Child(const Child&) = delete;
 		Child& operator=(const Child&) = delete;
@@ -264,51 +246,40 @@ public:
 		: _parent_and_position{ std::nullopt }
 		, _children{}
 	{
-		Logger::WriteMessage("Default-constructed a value\n");
 	}
 
 	Value(uint32_t first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)
 		: _parent_and_position{ parent_and_pos }
 		, _children{ first, second }
 	{
-		Logger::WriteMessage("Created a value with Value(uint32_t first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)\n");
 	}
 
 	Value(Ptr_t&& first, Ptr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)
 		: _parent_and_position{ parent_and_pos }
 		, _children{ {first, this, ChildPosition::first}, {second, this, ChildPosition::second} }
 	{
-		Logger::WriteMessage("Created a value with Value(Ptr_t&& first, Ptr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)\n");
 	}
 
 	Value(uint32_t first, Ptr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)
 		: _parent_and_position{ parent_and_pos }
 		, _children{ first, {second, this, ChildPosition::second} }
 	{
-		Logger::WriteMessage("Created a value with Value(uint32_t first, Ptr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)\n");
 	}
 
 	Value(Ptr_t&& first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)
 		: _parent_and_position{ parent_and_pos }
 		, _children{ {first, this, ChildPosition::first}, second }
 	{
-		Logger::WriteMessage("Created a value with Value(Ptr_t&& first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt)\n");
 	}
 
 	Value(const Value& other)
 		: _parent_and_position{ other._parent_and_position }
 		, _children{ {other._children.first.clone(), this, ChildPosition::first}, {other._children.second.clone(), this, ChildPosition::second} }
 	{
-		Logger::WriteMessage("Copying value\n");
-
-		Logger::WriteMessage(std::format("   Child 0: {}\n", _children.first.as_string<char>()).c_str());
-		Logger::WriteMessage(std::format("   Child 1: {}\n", _children.second.as_string<char>()).c_str());
 	}
 
 	Value& operator=(const Value& other)
 	{
-		Logger::WriteMessage("Copy-assigning value\n");
-
 		Value temp{ other };
 		swap(temp, *this);
 
@@ -319,13 +290,10 @@ public:
 		: _parent_and_position{ std::move(other._parent_and_position) }
 		, _children{ std::move(other._children) }
 	{
-		Logger::WriteMessage("Moving value\n");
 	}
 
 	Value& operator=(Value&& other)
 	{
-		Logger::WriteMessage("Move-assigning value\n");
-
 		Value temp{ std::forward<Value>(other) };
 		swap(temp, *this);
 
@@ -404,7 +372,6 @@ public:
 		auto out = std::make_shared<Value>();
 		out->_parent_and_position = parent_and_pos;
 
-		Logger::WriteMessage("Creating two children\n");
 		auto first_child = Child{};
 		auto second_child = Child{};
 

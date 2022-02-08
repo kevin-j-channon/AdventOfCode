@@ -9,20 +9,20 @@ namespace snailfish
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Value::Child::Child() : Base_t{}
+detail::Child::Child() : Base_t{}
 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Value::Child::Child(uint32_t value)
+detail::Child::Child(uint32_t value)
 	: Base_t{ value }
 {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Value::Child::Child(Ptr_t value, Value* parent, ChildPosition position)
+detail::Child::Child(ValuePtr_t value, Value* parent, ChildPosition position)
 	: Base_t{ std::move(value) }
 {
 	set_parent_and_position(parent, position);
@@ -30,7 +30,7 @@ Value::Child::Child(Ptr_t value, Value* parent, ChildPosition position)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Value::Child::Child(const Child& other, Value* parent, ChildPosition position)
+detail::Child::Child(const Child& other, Value* parent, ChildPosition position)
 	: Base_t{ other }
 {
 	set_parent_and_position(parent, position);
@@ -38,10 +38,10 @@ Value::Child::Child(const Child& other, Value* parent, ChildPosition position)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Value::Child::Child(Child&& other)
+detail::Child::Child(Child&& other)
 	: Base_t{ std::forward<Child>(other) }
 {
-	if (this->is<Ptr_t>()) {
+	if (this->is<ValuePtr_t>()) {
 		this->as<Value>()._children.first.set_parent_and_position(&this->as<Value>(), ChildPosition::first);
 		this->as<Value>()._children.second.set_parent_and_position(&this->as<Value>(), ChildPosition::second);
 	}
@@ -49,7 +49,7 @@ Value::Child::Child(Child&& other)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Value::Child& Value::Child::operator=(Child&& other)
+detail::Child& detail::Child::operator=(Child&& other)
 {
 	Child temp{ std::forward<Child>(other) };
 	this->swap(temp);
@@ -59,11 +59,11 @@ Value::Child& Value::Child::operator=(Child&& other)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void Value::Child::set_parent_and_position(Value* parent, ChildPosition position)
+void detail::Child::set_parent_and_position(Value* parent, ChildPosition position)
 {
 	std::visit([parent, position](auto&& arg) {
 		using Arg_t = std::decay_t<decltype(arg)>;
-		if constexpr (std::is_same_v<Arg_t, Ptr_t>) {
+		if constexpr (std::is_same_v<Arg_t, ValuePtr_t>) {
 			arg->_parent_and_position = { parent, position };
 		}
 		}, _as_variant());
@@ -71,14 +71,14 @@ void Value::Child::set_parent_and_position(Value* parent, ChildPosition position
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Value::Child Value::Child::clone() const
+detail::Child detail::Child::clone() const
 {
 	return std::visit([](auto&& arg) -> Child {
 		using Arg_t = std::decay_t<decltype(arg)>;
 		if constexpr (std::is_same_v<Arg_t, uint32_t>) {
 			return { arg };
 		}
-		else if constexpr (std::is_same_v<Arg_t, Ptr_t>) {
+		else if constexpr (std::is_same_v<Arg_t, ValuePtr_t>) {
 			auto out = std::make_shared<Value>();
 
 			out->_children.first = _clone_child_at<ChildPosition::first>(arg.get());
@@ -91,7 +91,7 @@ Value::Child Value::Child::clone() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool Value::Child::operator==(const Child& other) const
+bool detail::Child::operator==(const Child& other) const
 {
 	return std::visit([&other](auto&& arg_outer) -> bool {
 		using ArgOuter_t = std::decay_t<decltype(arg_outer)>;
@@ -108,11 +108,11 @@ bool Value::Child::operator==(const Child& other) const
 				}, other._as_variant());
 
 		}
-		else if constexpr (std::is_same_v<ArgOuter_t, Ptr_t>) {
+		else if constexpr (std::is_same_v<ArgOuter_t, ValuePtr_t>) {
 
 			return std::visit([&arg_outer](auto&& arg_inner) -> bool {
 				using ArgInner_t = std::decay_t<decltype(arg_inner)>;
-				if constexpr (std::is_same_v<ArgInner_t, Ptr_t>) {
+				if constexpr (std::is_same_v<ArgInner_t, ValuePtr_t>) {
 					return *arg_outer == *arg_inner;
 				}
 				else {
@@ -121,6 +121,15 @@ bool Value::Child::operator==(const Child& other) const
 				}, other._as_variant());
 		}
 		}, _as_variant());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void detail::swap(Child& a, Child& b)
+{
+	using std::swap;
+
+	swap(static_cast<Child::Base_t&>(a), static_cast<Child::Base_t&>(b));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -152,14 +161,14 @@ std::optional<std::pair<Value*, size_t>> ValueExploder::_find_first_child_to_exp
 
 std::optional<std::pair<Value*, size_t>> ValueExploder::_recursively_find_child_to_explode(Value& val, size_t depth, std::optional<size_t> child_idx)
 {
-	if (val._children.first.is<Value::Ptr_t>()) {
+	if (val._children.first.is<ValuePtr_t>()) {
 		auto explode_details = _recursively_find_child_to_explode(val._children.first.as<Value>(), depth + 1, 0);
 		if (explode_details) {
 			return explode_details;
 		}
 	}
 
-	if (val._children.second.is<Value::Ptr_t>()) {
+	if (val._children.second.is<ValuePtr_t>()) {
 		auto explode_details = _recursively_find_child_to_explode(val._children.second.as <Value>(), depth + 1, 1);
 		if (explode_details) {
 			return explode_details;

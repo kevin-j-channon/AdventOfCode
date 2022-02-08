@@ -193,7 +193,7 @@ public:
 		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
 		const auto child_str = value
 			.child<ChildPosition::first>()
-			.as<Value::Ptr_t>()
+			.as<ValuePtr_t>()
 			->child<ChildPosition::second>()
 			.as_string<char>();
 
@@ -235,7 +235,7 @@ public:
 	TEST_METHOD(AsValuePtr)
 	{
 		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
-		const auto child = value.child<ChildPosition::first>().as<Value::Ptr_t>();
+		const auto child = value.child<ChildPosition::first>().as<ValuePtr_t>();
 
 		Assert::AreEqual("[1,[5,6]]"s, child->as_string<char>());
 	}

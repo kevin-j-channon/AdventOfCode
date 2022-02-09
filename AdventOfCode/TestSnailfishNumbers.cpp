@@ -297,5 +297,16 @@ public:
 		
 		Assert::AreEqual("[[[[0,9],2],3],4]"s, v.as_string<char>());
 	}
+
+	TEST_METHOD(ExplodeSample2)
+	{
+		auto v = Value::from_string("[7,[6,[5,[4,[3,2]]]]]");
+
+		Logger::WriteMessage(std::format("Original value: {}\n", v.as_string<char>()).c_str());
+
+		Assert::IsTrue(ValueExploder{ v }.explode());
+
+		Assert::AreEqual("[7,[6,[5,[7,0]]]]"s, v.as_string<char>());
+	}
 };
 }

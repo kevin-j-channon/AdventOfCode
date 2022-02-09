@@ -350,19 +350,28 @@ bool ValueExploder::explode()
 	// 
 	// Find the first second child of a predecessor.
 	{
+		Logger::WriteMessage("Looking for value to the left\n");
 		auto predecessor = to_explode->parent();
+		Logger::WriteMessage(std::format("First preddecessor, {}, has position {}\n", predecessor->as_string<char>(), (int)*predecessor->position()).c_str());
+
 		while (predecessor && predecessor->position() == ChildPosition::first) {
 			predecessor = predecessor->parent();
+			Logger::WriteMessage(std::format("Moved to preddecessor, {}, with position {}\n",
+				predecessor->as_string<char>(), predecessor->position() ? (int)*predecessor->position() : -1).c_str());
 		}
 
 		if (predecessor && predecessor->parent()) {
 			Logger::WriteMessage(std::format("Left predecessor: {}\n", predecessor->as_string<char>()).c_str());
 
-			// We found a suitable value to the left of the value to explode. Now need to traverse as far down and to the right as possible.
-			auto* child = &predecessor->child<ChildPosition::second>();
+			// We found a suitable value to the left of the value to explode; step one child to the left.
+			auto* child = &predecessor->child<ChildPosition::first>();
+
+			// Now need to traverse as far down and to the right as possible.
 			while (child->is<ValuePtr_t>()) {
 				child = &child->as<Value>().child<ChildPosition::second>();
 			}
+
+			Logger::WriteMessage(std::format("Target child: {}\n", child->as_string<char>()).c_str());
 
 			// Now the child is the one that will receive the left value from the exploded value.
 			*child = child->as<uint32_t>() + to_explode->child<ChildPosition::first>().as<uint32_t>();
@@ -377,20 +386,27 @@ bool ValueExploder::explode()
 	// Handle the second child of the value to be exploded.
 	//
 	{
+		Logger::WriteMessage("Looking for value to the right\n");
 		auto predecessor = to_explode->parent();
+		Logger::WriteMessage(std::format("First preddecessor, {}, has position {}\n", predecessor->as_string<char>(), (int) * predecessor->position()).c_str());
 		while (predecessor && predecessor->position() == ChildPosition::second) {
 			predecessor = predecessor->parent();
+			Logger::WriteMessage(std::format("Moved to preddecessor, {}, with position {}\n",
+				predecessor->as_string<char>(), predecessor->position() ? (int)*predecessor->position() : -1).c_str());
 		}
 
 		if (predecessor && predecessor->parent()) {
 			Logger::WriteMessage(std::format("Right predecessor: {}\n", predecessor->as_string<char>()).c_str());
 
+			// We found a suitable value to the right of the value to explode; step one child to the right.
+			auto* child = &predecessor->child<ChildPosition::second>();
 
-			// We found a suitable value to the right of the value to explode. Now need to traverse as far down and to the left as possible.
-			auto* child = &predecessor->child<ChildPosition::first>();
+			// Now need to traverse as far down and to the left as possible.
 			while (child->is<ValuePtr_t>()) {
 				child = &child->as<Value>().child<ChildPosition::first>();
 			}
+
+			Logger::WriteMessage(std::format("Target child: {}\n", child->as_string<char>()).c_str());
 
 			// Now the child is the one that will receive the right value from the exploded value.
 			*child = child->as<uint32_t>() + to_explode->child<ChildPosition::second>().as<uint32_t>();

@@ -354,13 +354,20 @@ bool ValueExploder::explode()
 		auto predecessor = to_explode->parent();
 		Logger::WriteMessage(std::format("First preddecessor, {}, has position {}\n", predecessor->as_string<char>(), (int)*predecessor->position()).c_str());
 
-		while (predecessor && predecessor->position() == ChildPosition::first) {
+		auto pos = std::make_optional<ChildPosition>(position);
+		while (predecessor && pos == ChildPosition::first) {
+			pos = predecessor->position();
 			predecessor = predecessor->parent();
-			Logger::WriteMessage(std::format("Moved to preddecessor, {}, with position {}\n",
-				predecessor->as_string<char>(), predecessor->position() ? (int)*predecessor->position() : -1).c_str());
+			if (predecessor) {
+				Logger::WriteMessage(std::format("Moved to preddecessor, {}, with position {}\n",
+					predecessor->as_string<char>(), predecessor->position() ? (int)*predecessor->position() : -1).c_str());
+			}
+			else {
+				Logger::WriteMessage("Moved past root of number - no suitable predecessor found\n");
+			}
 		}
 
-		if (predecessor && predecessor->parent()) {
+		if (predecessor) {
 			Logger::WriteMessage(std::format("Left predecessor: {}\n", predecessor->as_string<char>()).c_str());
 
 			// We found a suitable value to the left of the value to explode; step one child to the left.
@@ -389,17 +396,28 @@ bool ValueExploder::explode()
 		Logger::WriteMessage("Looking for value to the right\n");
 		auto predecessor = to_explode->parent();
 		Logger::WriteMessage(std::format("First preddecessor, {}, has position {}\n", predecessor->as_string<char>(), (int) * predecessor->position()).c_str());
-		while (predecessor && predecessor->position() == ChildPosition::second) {
+
+		auto pos = std::make_optional<ChildPosition>(position);
+		while (predecessor && pos == ChildPosition::second) {
+			pos = predecessor->position();
 			predecessor = predecessor->parent();
-			Logger::WriteMessage(std::format("Moved to preddecessor, {}, with position {}\n",
-				predecessor->as_string<char>(), predecessor->position() ? (int)*predecessor->position() : -1).c_str());
+
+			if (predecessor) {
+				Logger::WriteMessage(std::format("Moved to preddecessor, {}, with position {}\n",
+					predecessor->as_string<char>(), predecessor->position() ? (int)*predecessor->position() : -1).c_str());
+			}
+			else {
+				Logger::WriteMessage("Moved past root of number - no suitable predecessor found\n");
+			}
 		}
 
-		if (predecessor && predecessor->parent()) {
+		if (predecessor) {
 			Logger::WriteMessage(std::format("Right predecessor: {}\n", predecessor->as_string<char>()).c_str());
 
 			// We found a suitable value to the right of the value to explode; step one child to the right.
 			auto* child = &predecessor->child<ChildPosition::second>();
+
+			Logger::WriteMessage(std::format("Stepped to the right and found child: {}\n", child->as_string<char>()).c_str());
 
 			// Now need to traverse as far down and to the left as possible.
 			while (child->is<ValuePtr_t>()) {

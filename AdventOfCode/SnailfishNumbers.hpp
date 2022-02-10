@@ -16,8 +16,8 @@ namespace snailfish
 
 enum class ChildPosition
 {
-	first,
-	second
+	left,
+	right
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -281,11 +281,11 @@ static std::pair<ValuePtr_t, Iter_T> Value::create(Iter_T current, Iter_T end, s
 	auto first_child = detail::Child{};
 	auto second_child = detail::Child{};
 
-	std::tie(first_child, current) = _recursively_read_child(*out, ChildPosition::first, std::move(current), end);
+	std::tie(first_child, current) = _recursively_read_child(*out, ChildPosition::left, std::move(current), end);
 
 	_validate_second_value_is_present(current, end);
 
-	std::tie(second_child, current) = _recursively_read_child(*out, ChildPosition::second, std::move(current), end);
+	std::tie(second_child, current) = _recursively_read_child(*out, ChildPosition::right, std::move(current), end);
 
 	current = _complete_value_read(std::move(current), end);
 
@@ -317,10 +317,10 @@ std::basic_string<Char_T> Value::as_string() const
 template<ChildPosition POSITION>
 const detail::Child& Value::child() const
 {
-	if constexpr (POSITION == ChildPosition::first) {
+	if constexpr (POSITION == ChildPosition::left) {
 		return _children.first;
 	}
-	else if constexpr (POSITION == ChildPosition::second) {
+	else if constexpr (POSITION == ChildPosition::right) {
 		return _children.second;
 	}
 	else {

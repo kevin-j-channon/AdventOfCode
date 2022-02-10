@@ -184,17 +184,17 @@ public:
 	TEST_METHOD(ChildrenAreCorrect)
 	{
 		const auto value = Value::from_string("[[1,2],[3,4]]");
-		Assert::AreEqual("[1,2]"s, value.child<ChildPosition::first>().as_string<char>());
-		Assert::AreEqual("[3,4]"s, value.child<ChildPosition::second>().as_string<char>());
+		Assert::AreEqual("[1,2]"s, value.child<ChildPosition::left>().as_string<char>());
+		Assert::AreEqual("[3,4]"s, value.child<ChildPosition::right>().as_string<char>());
 	}
 
 	TEST_METHOD(NestedChildIsCorrect)
 	{
 		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
 		const auto child_str = value
-			.child<ChildPosition::first>()
+			.child<ChildPosition::left>()
 			.as<ValuePtr_t>()
-			->child<ChildPosition::second>()
+			->child<ChildPosition::right>()
 			.as_string<char>();
 
 		Assert::AreEqual("[5,6]"s, child_str);
@@ -210,16 +210,16 @@ public:
 	{
 		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
 		const auto& grand_child = value
-			.child<ChildPosition::first>()
+			.child<ChildPosition::left>()
 			.as<Value>()
-			.child<ChildPosition::second>()
+			.child<ChildPosition::right>()
 			.as<Value>();
 
-		Logger::WriteMessage(std::format("Child value: {}\n", value.child<ChildPosition::first>().as<Value>().as_string<char>()).c_str());
-		Logger::WriteMessage(std::format("Child's parent: {}\n", value.child<ChildPosition::first>().as<Value>().parent()->as_string<char>()).c_str());
+		Logger::WriteMessage(std::format("Child value: {}\n", value.child<ChildPosition::left>().as<Value>().as_string<char>()).c_str());
+		Logger::WriteMessage(std::format("Child's parent: {}\n", value.child<ChildPosition::left>().as<Value>().parent()->as_string<char>()).c_str());
 
-		Logger::WriteMessage(std::format("Grandchild value: {}\n", value.child<ChildPosition::first>().as<Value>().child<ChildPosition::second>().as<Value>().as_string<char>()).c_str());
-		Logger::WriteMessage(std::format("Grandchild's parent: {}\n", value.child<ChildPosition::first>().as<Value>().child<ChildPosition::second>().as<Value>().parent()->parent()->as_string<char>()).c_str());
+		Logger::WriteMessage(std::format("Grandchild value: {}\n", value.child<ChildPosition::left>().as<Value>().child<ChildPosition::right>().as<Value>().as_string<char>()).c_str());
+		Logger::WriteMessage(std::format("Grandchild's parent: {}\n", value.child<ChildPosition::left>().as<Value>().child<ChildPosition::right>().as<Value>().parent()->parent()->as_string<char>()).c_str());
 
 		auto* p = grand_child.parent();
 		auto* gp = p->parent();
@@ -235,7 +235,7 @@ public:
 	TEST_METHOD(AsValuePtr)
 	{
 		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
-		const auto child = value.child<ChildPosition::first>().as<ValuePtr_t>();
+		const auto child = value.child<ChildPosition::left>().as<ValuePtr_t>();
 
 		Assert::AreEqual("[1,[5,6]]"s, child->as_string<char>());
 	}
@@ -243,7 +243,7 @@ public:
 	TEST_METHOD(AsValueRef)
 	{
 		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
-		const auto& child = value.child<ChildPosition::first>().as<Value>();
+		const auto& child = value.child<ChildPosition::left>().as<Value>();
 
 		Assert::AreEqual("[1,[5,6]]"s, child.as_string<char>());
 	}
@@ -251,7 +251,7 @@ public:
 	TEST_METHOD(AsInt)
 	{
 		const auto value = Value::from_string("[[1,[5,6]],[3,4]]");
-		const auto child = value.child<ChildPosition::first>().as<Value>().child<ChildPosition::first>().as<uint32_t>();
+		const auto child = value.child<ChildPosition::left>().as<Value>().child<ChildPosition::left>().as<uint32_t>();
 
 		Assert::AreEqual(uint32_t{ 1 }, child);
 	}

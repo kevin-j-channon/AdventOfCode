@@ -45,8 +45,8 @@ detail::Child::Child(Child&& other)
 	: Base_t{ std::forward<Child>(other) }
 {
 	if (this->is<ValuePtr_t>()) {
-		this->as<Value>()._children.first.set_parent_and_position(&this->as<Value>(), ChildPosition::first);
-		this->as<Value>()._children.second.set_parent_and_position(&this->as<Value>(), ChildPosition::second);
+		this->as<Value>()._children.first.set_parent_and_position(&this->as<Value>(), ChildPosition::left);
+		this->as<Value>()._children.second.set_parent_and_position(&this->as<Value>(), ChildPosition::right);
 	}
 }
 
@@ -84,8 +84,8 @@ detail::Child detail::Child::clone() const
 		else if constexpr (std::is_same_v<Arg_t, ValuePtr_t>) {
 			auto out = std::make_shared<Value>();
 
-			out->_children.first = _clone_child_at<ChildPosition::first>(arg.get());
-			out->_children.second = _clone_child_at<ChildPosition::second>(arg.get());
+			out->_children.first = _clone_child_at<ChildPosition::left>(arg.get());
+			out->_children.second = _clone_child_at<ChildPosition::right>(arg.get());
 
 			return { std::move(out), arg.get(), *arg->position() };
 		}
@@ -164,7 +164,7 @@ Value::Value(uint32_t first, uint32_t second, std::optional<std::pair<Value*, Ch
 
 Value::Value(ValuePtr_t&& first, ValuePtr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos)
 	: _parent_and_position{ parent_and_pos }
-	, _children{ {first, this, ChildPosition::first}, {second, this, ChildPosition::second} }
+	, _children{ {first, this, ChildPosition::left}, {second, this, ChildPosition::right} }
 {
 }
 
@@ -172,7 +172,7 @@ Value::Value(ValuePtr_t&& first, ValuePtr_t&& second, std::optional<std::pair<Va
 
 Value::Value(uint32_t first, ValuePtr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos)
 	: _parent_and_position{ parent_and_pos }
-	, _children{ first, {second, this, ChildPosition::second} }
+	, _children{ first, {second, this, ChildPosition::right} }
 {
 }
 
@@ -180,7 +180,7 @@ Value::Value(uint32_t first, ValuePtr_t&& second, std::optional<std::pair<Value*
 
 Value::Value(ValuePtr_t&& first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos)
 	: _parent_and_position{ parent_and_pos }
-	, _children{ {first, this, ChildPosition::first}, second }
+	, _children{ {first, this, ChildPosition::left}, second }
 {
 }
 
@@ -188,7 +188,7 @@ Value::Value(ValuePtr_t&& first, uint32_t second, std::optional<std::pair<Value*
 
 Value::Value(const Value& other)
 	: _parent_and_position{ other._parent_and_position }
-	, _children{ {other._children.first.clone(), this, ChildPosition::first}, {other._children.second.clone(), this, ChildPosition::second} }
+	, _children{ {other._children.first.clone(), this, ChildPosition::left}, {other._children.second.clone(), this, ChildPosition::right} }
 {
 }
 
@@ -247,7 +247,7 @@ bool Value::operator!=(const Value& other) const
 Value& Value::operator+=(const Value& other)
 {
 	auto new_child = std::make_shared<Value>(other);
-	_children = Children_t{ {_move_children_into_new_value(), this, ChildPosition::first }, { std::move(new_child), this, ChildPosition::second } };
+	_children = Children_t{ {_move_children_into_new_value(), this, ChildPosition::left }, { std::move(new_child), this, ChildPosition::right } };
 
 	return *this;
 }
@@ -311,7 +311,7 @@ ValuePtr_t Value::_move_children_into_new_value()
 {
 	auto value = std::make_shared<Value>();
 	value->_children = std::move(_children);
-	value->_parent_and_position = { {this, ChildPosition::first} };
+	value->_parent_and_position = { {this, ChildPosition::left} };
 
 	return std::move(value);
 }
@@ -355,7 +355,7 @@ bool ValueExploder::explode()
 		Logger::WriteMessage(std::format("First preddecessor, {}, has position {}\n", predecessor->as_string<char>(), (int)*predecessor->position()).c_str());
 
 		auto pos = std::make_optional<ChildPosition>(position);
-		while (predecessor && pos == ChildPosition::first) {
+		while (predecessor && pos == ChildPosition::left) {
 			pos = predecessor->position();
 			predecessor = predecessor->parent();
 			if (predecessor) {
@@ -371,17 +371,17 @@ bool ValueExploder::explode()
 			Logger::WriteMessage(std::format("Left predecessor: {}\n", predecessor->as_string<char>()).c_str());
 
 			// We found a suitable value to the left of the value to explode; step one child to the left.
-			auto* child = &predecessor->child<ChildPosition::first>();
+			auto* child = &predecessor->child<ChildPosition::left>();
 
 			// Now need to traverse as far down and to the right as possible.
 			while (child->is<ValuePtr_t>()) {
-				child = &child->as<Value>().child<ChildPosition::second>();
+				child = &child->as<Value>().child<ChildPosition::right>();
 			}
 
 			Logger::WriteMessage(std::format("Target child: {}\n", child->as_string<char>()).c_str());
 
 			// Now the child is the one that will receive the left value from the exploded value.
-			*child = child->as<uint32_t>() + to_explode->child<ChildPosition::first>().as<uint32_t>();
+			*child = child->as<uint32_t>() + to_explode->child<ChildPosition::left>().as<uint32_t>();
 		}
 		else
 		{
@@ -398,7 +398,7 @@ bool ValueExploder::explode()
 		Logger::WriteMessage(std::format("First preddecessor, {}, has position {}\n", predecessor->as_string<char>(), (int) * predecessor->position()).c_str());
 
 		auto pos = std::make_optional<ChildPosition>(position);
-		while (predecessor && pos == ChildPosition::second) {
+		while (predecessor && pos == ChildPosition::right) {
 			pos = predecessor->position();
 			predecessor = predecessor->parent();
 
@@ -415,19 +415,19 @@ bool ValueExploder::explode()
 			Logger::WriteMessage(std::format("Right predecessor: {}\n", predecessor->as_string<char>()).c_str());
 
 			// We found a suitable value to the right of the value to explode; step one child to the right.
-			auto* child = &predecessor->child<ChildPosition::second>();
+			auto* child = &predecessor->child<ChildPosition::right>();
 
 			Logger::WriteMessage(std::format("Stepped to the right and found child: {}\n", child->as_string<char>()).c_str());
 
 			// Now need to traverse as far down and to the left as possible.
 			while (child->is<ValuePtr_t>()) {
-				child = &child->as<Value>().child<ChildPosition::first>();
+				child = &child->as<Value>().child<ChildPosition::left>();
 			}
 
 			Logger::WriteMessage(std::format("Target child: {}\n", child->as_string<char>()).c_str());
 
 			// Now the child is the one that will receive the right value from the exploded value.
-			*child = child->as<uint32_t>() + to_explode->child<ChildPosition::second>().as<uint32_t>();
+			*child = child->as<uint32_t>() + to_explode->child<ChildPosition::right>().as<uint32_t>();
 		}
 	}
 
@@ -437,12 +437,12 @@ bool ValueExploder::explode()
 	{
 		auto parent = to_explode->parent();
 		switch (position) {
-		case ChildPosition::first: {
-			parent->child<ChildPosition::first>() = detail::Child(uint32_t{ 0 }, parent, position);
+		case ChildPosition::left: {
+			parent->child<ChildPosition::left>() = detail::Child(uint32_t{ 0 }, parent, position);
 			break;
 		}
-		case ChildPosition::second: {
-			parent->child<ChildPosition::second>() = detail::Child(uint32_t{ 0 }, parent, position);
+		case ChildPosition::right: {
+			parent->child<ChildPosition::right>() = detail::Child(uint32_t{ 0 }, parent, position);
 			break;
 		}
 		default:;
@@ -464,14 +464,14 @@ std::optional<std::pair<Value*, ChildPosition>> ValueExploder::_find_first_child
 std::optional<std::pair<Value*, ChildPosition>> ValueExploder::_recursively_find_child_to_explode(Value& val, size_t depth, std::optional<ChildPosition> child_idx)
 {
 	if (val._children.first.is<ValuePtr_t>()) {
-		auto explode_details = _recursively_find_child_to_explode(val._children.first.as<Value>(), depth + 1, ChildPosition::first);
+		auto explode_details = _recursively_find_child_to_explode(val._children.first.as<Value>(), depth + 1, ChildPosition::left);
 		if (explode_details) {
 			return explode_details;
 		}
 	}
 
 	if (val._children.second.is<ValuePtr_t>()) {
-		auto explode_details = _recursively_find_child_to_explode(val._children.second.as <Value>(), depth + 1, ChildPosition::second);
+		auto explode_details = _recursively_find_child_to_explode(val._children.second.as <Value>(), depth + 1, ChildPosition::right);
 		if (explode_details) {
 			return explode_details;
 		}

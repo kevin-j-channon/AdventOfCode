@@ -22,6 +22,31 @@ enum class ChildPosition
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<ChildPosition POSITION>
+constexpr ChildPosition complement()
+{
+	if constexpr (POSITION == ChildPosition::left) {
+		return ChildPosition::right;
+	}
+	else {
+		return ChildPosition::left;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+inline ChildPosition complement(ChildPosition p)
+{
+	if (p == ChildPosition::left) {
+		return complement<ChildPosition::left>();
+	}
+	else {
+		return complement<ChildPosition::right>();
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 class Value;
 
 using ValuePtr_t = std::shared_ptr<Value>;
@@ -46,6 +71,9 @@ private:
 	std::optional<std::pair<Value*, ChildPosition>> _find_first_child_to_explode();
 
 	static std::optional<std::pair<Value*, ChildPosition>> _recursively_find_child_to_explode(Value& val, size_t depth, std::optional<ChildPosition> child_idx = std::nullopt);
+
+	template<ChildPosition POSITION>
+	static void _half_explode(Value& to_explode, ChildPosition position);
 
 	Value& _value;
 };
@@ -406,6 +434,50 @@ std::pair<uint32_t, Iter_T> Value::_read_digits(Iter_T current, const Iter_T& en
 	}
 
 	return { string_to<uint32_t>(digits.str()), current };
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<ChildPosition POSITION>
+void ValueExploder::_half_explode(Value& to_explode, ChildPosition position)
+{
+	Logger::WriteMessage("Looking for value to the left\n");
+	auto predecessor = to_explode.parent();
+	Logger::WriteMessage(std::format("First preddecessor, {}, has position {}\n", predecessor->as_string<char>(), (int)*predecessor->position()).c_str());
+
+	auto pos = std::make_optional<ChildPosition>(position);
+	while (predecessor && pos == POSITION) {
+		pos = predecessor->position();
+		predecessor = predecessor->parent();
+		if (predecessor) {
+			Logger::WriteMessage(std::format("Moved to preddecessor, {}, with position {}\n",
+				predecessor->as_string<char>(), predecessor->position() ? (int)*predecessor->position() : -1).c_str());
+		}
+		else {
+			Logger::WriteMessage("Moved past root of number - no suitable predecessor found\n");
+		}
+	}
+
+	if (predecessor) {
+		Logger::WriteMessage(std::format("Left predecessor: {}\n", predecessor->as_string<char>()).c_str());
+
+		// We found a suitable value to the left of the value to explode; step one child to the left.
+		auto* child = &predecessor->child<POSITION>();
+
+		// Now need to traverse as far down and to the right as possible.
+		while (child->is<ValuePtr_t>()) {
+			child = &child->as<Value>().child<complement<POSITION>()>();
+		}
+
+		Logger::WriteMessage(std::format("Target child: {}\n", child->as_string<char>()).c_str());
+
+		// Now the child is the one that will receive the left value from the exploded value.
+		*child = child->as<uint32_t>() + to_explode.child<POSITION>().as<uint32_t>();
+	}
+	else
+	{
+		Logger::WriteMessage("No predecessor found\n");
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

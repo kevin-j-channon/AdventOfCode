@@ -51,6 +51,11 @@ class Value;
 
 using ValuePtr_t = std::shared_ptr<Value>;
 
+namespace detail
+{
+class Child;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 void swap(Value& a, Value& b);
@@ -74,6 +79,12 @@ private:
 
 	template<ChildPosition POSITION>
 	static void _half_explode(Value& to_explode, ChildPosition position);
+
+	template<ChildPosition POSITION>
+	static Value* _find_first_predecessor_not_in_position(Value& value, std::optional<ChildPosition> position);
+
+	template<ChildPosition POSITION>
+	static detail::Child* _find_last_child_in_compleent_position(Value* value);
 
 	Value& _value;
 };
@@ -439,15 +450,14 @@ std::pair<uint32_t, Iter_T> Value::_read_digits(Iter_T current, const Iter_T& en
 ///////////////////////////////////////////////////////////////////////////////
 
 template<ChildPosition POSITION>
-void ValueExploder::_half_explode(Value& to_explode, ChildPosition position)
+Value* ValueExploder::_find_first_predecessor_not_in_position(Value& value, std::optional<ChildPosition> position)
 {
 	Logger::WriteMessage("Looking for value to the left\n");
-	auto predecessor = to_explode.parent();
+	auto predecessor = value.parent();
 	Logger::WriteMessage(std::format("First preddecessor, {}, has position {}\n", predecessor->as_string<char>(), (int)*predecessor->position()).c_str());
 
-	auto pos = std::make_optional<ChildPosition>(position);
-	while (predecessor && pos == POSITION) {
-		pos = predecessor->position();
+	while (predecessor && position == POSITION) {
+		position = predecessor->position();
 		predecessor = predecessor->parent();
 		if (predecessor) {
 			Logger::WriteMessage(std::format("Moved to preddecessor, {}, with position {}\n",
@@ -458,26 +468,40 @@ void ValueExploder::_half_explode(Value& to_explode, ChildPosition position)
 		}
 	}
 
-	if (predecessor) {
-		Logger::WriteMessage(std::format("Left predecessor: {}\n", predecessor->as_string<char>()).c_str());
+	return predecessor;
+}
 
-		// We found a suitable value to the left of the value to explode; step one child to the left.
-		auto* child = &predecessor->child<POSITION>();
+///////////////////////////////////////////////////////////////////////////////
 
-		// Now need to traverse as far down and to the right as possible.
-		while (child->is<ValuePtr_t>()) {
-			child = &child->as<Value>().child<complement<POSITION>()>();
-		}
+template<ChildPosition POSITION>
+detail::Child* ValueExploder::_find_last_child_in_compleent_position(Value* value)
+{
+	auto* child = &value->child<POSITION>();
 
-		Logger::WriteMessage(std::format("Target child: {}\n", child->as_string<char>()).c_str());
-
-		// Now the child is the one that will receive the left value from the exploded value.
-		*child = child->as<uint32_t>() + to_explode.child<POSITION>().as<uint32_t>();
+	while (child->is<ValuePtr_t>()) {
+		child = &child->as<Value>().child<complement<POSITION>()>();
 	}
-	else
-	{
+
+	return child;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<ChildPosition POSITION>
+void ValueExploder::_half_explode(Value& to_explode, ChildPosition position)
+{
+	auto predecessor = _find_first_predecessor_not_in_position<POSITION>(to_explode, position);
+	if (!predecessor) {
 		Logger::WriteMessage("No predecessor found\n");
+		return;
 	}
+
+	Logger::WriteMessage(std::format("Left predecessor: {}\n", predecessor->as_string<char>()).c_str());
+
+	auto child = _find_last_child_in_compleent_position<POSITION>(predecessor);
+
+	// Now the child is the one that will receive the left value from the exploded value.
+	*child = child->as<uint32_t>() + to_explode.child<POSITION>().as<uint32_t>();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

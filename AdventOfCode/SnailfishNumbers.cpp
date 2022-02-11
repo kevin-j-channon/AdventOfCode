@@ -404,6 +404,13 @@ std::optional<std::pair<Value*, ChildPosition>> ValueExploder::_recursively_find
 
 ///////////////////////////////////////////////////////////////////////////////
 
+void ValueExploder::_apply_value_to_child(detail::Child& child, uint32_t value)
+{
+	child = child.as<uint32_t>() + value;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 }
 }
 

@@ -84,7 +84,9 @@ private:
 	static Value* _find_first_predecessor_not_in_position(Value& value, std::optional<ChildPosition> position);
 
 	template<ChildPosition POSITION>
-	static detail::Child* _find_last_child_in_compleent_position(Value* value);
+	static detail::Child* _find_last_child_in_complent_position(Value* value);
+
+	static void _apply_value_to_child(detail::Child& child, uint32_t value);
 
 	Value& _value;
 };
@@ -474,7 +476,7 @@ Value* ValueExploder::_find_first_predecessor_not_in_position(Value& value, std:
 ///////////////////////////////////////////////////////////////////////////////
 
 template<ChildPosition POSITION>
-detail::Child* ValueExploder::_find_last_child_in_compleent_position(Value* value)
+detail::Child* ValueExploder::_find_last_child_in_complent_position(Value* value)
 {
 	auto* child = &value->child<POSITION>();
 
@@ -498,10 +500,8 @@ void ValueExploder::_half_explode(Value& to_explode, ChildPosition position)
 
 	Logger::WriteMessage(std::format("Left predecessor: {}\n", predecessor->as_string<char>()).c_str());
 
-	auto child = _find_last_child_in_compleent_position<POSITION>(predecessor);
-
-	// Now the child is the one that will receive the left value from the exploded value.
-	*child = child->as<uint32_t>() + to_explode.child<POSITION>().as<uint32_t>();
+	auto child = _find_last_child_in_complent_position<POSITION>(predecessor);
+	_apply_value_to_child(*child, to_explode.child<POSITION>().as<uint32_t>());
 }
 
 ///////////////////////////////////////////////////////////////////////////////

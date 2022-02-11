@@ -340,9 +340,6 @@ bool ValueExploder::explode()
 	}
 
 	auto [to_explode, position] = *explode_details;
-
-	Logger::WriteMessage(std::format("To explode: {}\n", to_explode->as_string<char>()).c_str());
-
 	assert(to_explode != nullptr);
 
 	_half_explode<ChildPosition::left>(*to_explode, position);

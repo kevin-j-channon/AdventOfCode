@@ -455,20 +455,10 @@ std::pair<uint32_t, Iter_T> Value::_read_digits(Iter_T current, const Iter_T& en
 template<ChildPosition POSITION>
 Value* ValueExploder::_find_first_predecessor_not_in_position(Value& value, std::optional<ChildPosition> position)
 {
-	Logger::WriteMessage("Looking for value to the left\n");
 	auto predecessor = value.parent();
-	Logger::WriteMessage(std::format("First preddecessor, {}, has position {}\n", predecessor->as_string<char>(), (int)*predecessor->position()).c_str());
-
 	while (predecessor && position == POSITION) {
 		position = predecessor->position();
 		predecessor = predecessor->parent();
-		if (predecessor) {
-			Logger::WriteMessage(std::format("Moved to preddecessor, {}, with position {}\n",
-				predecessor->as_string<char>(), predecessor->position() ? (int)*predecessor->position() : -1).c_str());
-		}
-		else {
-			Logger::WriteMessage("Moved past root of number - no suitable predecessor found\n");
-		}
 	}
 
 	return predecessor;
@@ -495,11 +485,8 @@ void ValueExploder::_half_explode(Value& to_explode, ChildPosition position)
 {
 	auto predecessor = _find_first_predecessor_not_in_position<POSITION>(to_explode, position);
 	if (!predecessor) {
-		Logger::WriteMessage("No predecessor found\n");
 		return;
 	}
-
-	Logger::WriteMessage(std::format("Left predecessor: {}\n", predecessor->as_string<char>()).c_str());
 
 	auto child = _find_last_child_in_complent_position<POSITION>(predecessor);
 	_apply_value_to_child(*child, to_explode.child<POSITION>().as<uint32_t>());

@@ -347,26 +347,27 @@ bool ValueExploder::explode()
 
 	_half_explode<ChildPosition::left>(*to_explode, position);
 	_half_explode<ChildPosition::right>(*to_explode, position);
-
-	//
-	// Replace the exploded child with a '0' value
-	//
-	{
-		auto parent = to_explode->parent();
-		switch (position) {
-		case ChildPosition::left: {
-			parent->child<ChildPosition::left>() = detail::Child(uint32_t{ 0 }, parent, position);
-			break;
-		}
-		case ChildPosition::right: {
-			parent->child<ChildPosition::right>() = detail::Child(uint32_t{ 0 }, parent, position);
-			break;
-		}
-		default:;
-		}
-	}
+	_zero_exploded_child(*to_explode, position);
 
 	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ValueExploder::_zero_exploded_child(Value& value, ChildPosition position)
+{
+	auto parent = value.parent();
+	switch (position) {
+	case ChildPosition::left: {
+		parent->child<ChildPosition::left>() = detail::Child(uint32_t{ 0 }, parent, position);
+		break;
+	}
+	case ChildPosition::right: {
+		parent->child<ChildPosition::right>() = detail::Child(uint32_t{ 0 }, parent, position);
+		break;
+	}
+	default:;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////

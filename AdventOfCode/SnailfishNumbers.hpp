@@ -87,6 +87,7 @@ private:
 	static detail::Child* _find_last_child_in_complent_position(Value* value);
 
 	static void _apply_value_to_child(detail::Child& child, uint32_t value);
+	void _zero_exploded_child(Value& value, ChildPosition position);
 
 	Value& _value;
 };

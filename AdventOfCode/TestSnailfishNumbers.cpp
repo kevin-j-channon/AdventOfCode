@@ -331,5 +331,18 @@ public:
 
 		Assert::IsFalse(ValueExploder{ v }.explode());
 	}
+
+	TEST_METHOD(SplitSample1)
+	{
+		auto v = Value::from_string("[[[[0,7],4],[15,[0,13]]],[1,1]]");
+		
+		Assert::IsTrue(detail::ValueSplitter{ v }.split());
+		Assert::AreEqual("[[[[0,7],4],[[7,8],[0,13]]],[1,1]]"s, v.as_string<char>());
+
+		Assert::IsTrue(detail::ValueSplitter{ v }.split());
+		Assert::AreEqual("[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]"s, v.as_string<char>());
+
+		Assert::IsFalse(detail::ValueSplitter{ v }.split());
+	}
 };
 }

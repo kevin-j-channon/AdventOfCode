@@ -300,6 +300,20 @@ Value* const Value::parent() const
 
 ///////////////////////////////////////////////////////////////////////////////
 
+const detail::Child& Value::child(ChildPosition position) const
+{
+	return position == ChildPosition::left ? child<ChildPosition::left>() : child<ChildPosition::right>();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+detail::Child& Value::child(ChildPosition position)
+{
+	return position == ChildPosition::left ? child<ChildPosition::left>() : child<ChildPosition::right>();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 std::optional<ChildPosition> Value::position() const
 {
 	return _parent_and_position ? std::optional<ChildPosition>{_parent_and_position->second} : std::nullopt;
@@ -327,7 +341,60 @@ bool Value::_explode()
 
 bool Value::_split()
 {
-	return false;
+	return detail::ValueSplitter{ *this }.split();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool detail::ValueSplitter::split()
+{
+	auto split_details = _recursively_find_child_to_split(_value, std::nullopt);
+	if (!split_details) {
+		return false;
+	}
+
+	auto [value, position] = *split_details;
+	_split_child(*value, position);
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+std::optional<std::pair<Value*, ChildPosition>> detail::ValueSplitter::_recursively_find_child_to_split(Value& val, std::optional<ChildPosition> position)
+{
+	if (val._children.first.is<ValuePtr_t>()) {
+		auto explode_details = _recursively_find_child_to_split(val._children.first.as<Value>(), ChildPosition::left);
+		if (explode_details) {
+			return explode_details;
+		}
+	}
+
+	if (val.child<ChildPosition::left>().is<uint32_t>() && val.child<ChildPosition::left>().as<uint32_t>() > 9) {
+		return { {&val, ChildPosition::left } };
+	}
+
+	if (val._children.second.is<ValuePtr_t>()) {
+		auto explode_details = _recursively_find_child_to_split(val._children.second.as <Value>(), ChildPosition::right);
+		if (explode_details) {
+			return explode_details;
+		}
+	}
+
+	if (val.child<ChildPosition::right>().is<uint32_t>() && val.child<ChildPosition::right>().as<uint32_t>() > 9) {
+		return { {&val, ChildPosition::right } };
+	}
+
+	return std::nullopt;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void detail::ValueSplitter::_split_child(Value& value, ChildPosition position)
+{
+	auto& child = value.child(position);
+	const auto numerical_value = child.as<uint32_t>();
+	child = detail::Child{ std::make_shared<Value>(numerical_value / 2, numerical_value - (numerical_value / 2)), &value, position };
 }
 
 ///////////////////////////////////////////////////////////////////////////////

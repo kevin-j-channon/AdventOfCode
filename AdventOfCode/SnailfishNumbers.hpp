@@ -99,6 +99,25 @@ namespace detail
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class ValueSplitter
+{
+public:
+	ValueSplitter(Value& v)
+		: _value{ v }
+	{}
+
+	bool split();
+
+private:
+
+	static std::optional<std::pair<Value*, ChildPosition>> _recursively_find_child_to_split(Value& val, std::optional<ChildPosition> position);
+	void _split_child(Value& value, ChildPosition position);
+
+	Value& _value;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 class Child;
 
 void swap(Child& a, Child& b);
@@ -151,6 +170,7 @@ class Value
 {
 	friend class detail::Child;
 	friend class ValueExploder;
+	friend class detail::ValueSplitter;
 	friend void swap(Value& a, Value& b);
 
 	using Children_t = std::pair<detail::Child, detail::Child>;
@@ -190,6 +210,9 @@ public:
 
 	template<ChildPosition POSITION>
 	detail::Child& child();
+
+	const detail::Child& child(ChildPosition position) const;
+	detail::Child& child(ChildPosition position);
 
 private:
 

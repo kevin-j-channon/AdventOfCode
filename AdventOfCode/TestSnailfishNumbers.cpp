@@ -283,6 +283,16 @@ public:
 		Assert::AreEqual("[[1,2],[3,4]]"s, sum.as_string<char>());
 	}
 
+	TEST_METHOD(AdditionToDefaultConstructed)
+	{
+		auto val = Value{ 9,9 };
+		Assert::AreEqual(val, val + Value{});
+		Assert::AreEqual(val, Value{} + val);
+
+		val += Value{};
+		Assert::AreEqual(Value{9, 9}, val);
+	}
+
 	TEST_METHOD(AdditionComplex)
 	{
 		auto sum = Value::from_string("[[1,2],[[3,4],[5,6]]]"s) + Value::from_string("[1,[2,[[3,4],5]]]"s);
@@ -353,6 +363,35 @@ public:
 		const auto sum = v1 + v2;
 
 		Assert::AreEqual("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"s, sum.as_string<char>());
+	}
+
+	TEST_METHOD(SumSampleListOfNumbers1)
+	{
+		const auto numbers = {
+			Value{1, 1},
+			Value{2, 2},
+			Value{3, 3},
+			Value{4, 4}
+		};
+
+		const auto sum = std::accumulate(numbers.begin(), numbers.end(), Value{});
+
+		Assert::AreEqual(Value::from_string("[[[[1,1],[2,2]],[3,3]],[4,4]]"), sum);
+	}
+
+	TEST_METHOD(SumSampleListOfNumbers2)
+	{
+		const auto numbers = {
+			Value{1, 1},
+			Value{2, 2},
+			Value{3, 3},
+			Value{4, 4},
+			Value{5, 5}
+		};
+
+		const auto sum = std::accumulate(numbers.begin(), numbers.end(), Value{});
+
+		Assert::AreEqual(Value::from_string("[[[[3,0],[5,3]],[4,4]],[5,5]]"), sum);
 	}
 };
 }

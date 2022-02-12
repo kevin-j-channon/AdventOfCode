@@ -393,5 +393,41 @@ public:
 
 		Assert::AreEqual(Value::from_string("[[[[3,0],[5,3]],[4,4]],[5,5]]"), sum);
 	}
+
+	TEST_METHOD(SumSampleListOfNumbers3)
+	{
+		const auto numbers = {
+			Value{1, 1},
+			Value{2, 2},
+			Value{3, 3},
+			Value{4, 4},
+			Value{5, 5},
+			Value{6, 6}
+		};
+
+		const auto sum = std::accumulate(numbers.begin(), numbers.end(), Value{});
+
+		Assert::AreEqual(Value::from_string("[[[[5,0],[7,4]],[5,5]],[6,6]]"), sum);
+	}
+
+	TEST_METHOD(SumSampleListOfNumbers4)
+	{
+		const auto numbers = {
+			Value::from_string("[[[0,[4,5]],[0,0]],[[[4,5],[2,6]],[9,5]]]"),
+			Value::from_string("[7,[[[3,7],[4,3]],[[6,3],[8,8]]]]"),
+			Value::from_string("[[2,[[0,8],[3,4]]],[[[6,7],1],[7,[1,6]]]]"),
+			Value::from_string("[[[[2,4],7],[6,[0,5]]],[[[6,8],[2,8]],[[2,1],[4,5]]]]"),
+			Value::from_string("[7,[5,[[3,8],[1,4]]]]"),
+			Value::from_string("[[2,[2,2]],[8,[8,1]]]"),
+			Value::from_string("[2,9]"),
+			Value::from_string("[1,[[[9,3],9],[[9,0],[0,7]]]]"),
+			Value::from_string("[[[5,[7,4]],7],1]"),
+			Value::from_string("[[[[4,2],2],6],[8,7]]")
+		};
+
+		const auto sum = std::accumulate(numbers.begin(), numbers.end(), Value{});
+
+		Assert::AreEqual(Value::from_string("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]"), sum);
+	}
 };
 }

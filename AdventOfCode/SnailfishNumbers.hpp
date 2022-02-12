@@ -62,6 +62,11 @@ void swap(Value& a, Value& b);
 
 ///////////////////////////////////////////////////////////////////////////////
 
+namespace detail
+{
+
+///////////////////////////////////////////////////////////////////////////////
+
 class ValueExploder
 {
 public:
@@ -91,11 +96,6 @@ private:
 
 	Value& _value;
 };
-
-///////////////////////////////////////////////////////////////////////////////
-
-namespace detail
-{
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -173,8 +173,6 @@ private:
 class Value
 {
 	friend class detail::Child;
-	friend class ValueExploder;
-	friend class detail::ValueSplitter;
 	friend void swap(Value& a, Value& b);
 
 	using Children_t = std::pair<detail::Child, detail::Child>;
@@ -480,7 +478,7 @@ std::pair<uint32_t, Iter_T> Value::_read_digits(Iter_T current, const Iter_T& en
 ///////////////////////////////////////////////////////////////////////////////
 
 template<ChildPosition POSITION>
-Value* ValueExploder::_find_first_predecessor_not_in_position(Value& value, std::optional<ChildPosition> position)
+Value* detail::ValueExploder::_find_first_predecessor_not_in_position(Value& value, std::optional<ChildPosition> position)
 {
 	auto predecessor = value.parent();
 	while (predecessor && position == POSITION) {
@@ -494,7 +492,7 @@ Value* ValueExploder::_find_first_predecessor_not_in_position(Value& value, std:
 ///////////////////////////////////////////////////////////////////////////////
 
 template<ChildPosition POSITION>
-detail::Child* ValueExploder::_find_last_child_in_complent_position(Value* value)
+detail::Child* detail::ValueExploder::_find_last_child_in_complent_position(Value* value)
 {
 	auto* child = &value->child<POSITION>();
 
@@ -508,7 +506,7 @@ detail::Child* ValueExploder::_find_last_child_in_complent_position(Value* value
 ///////////////////////////////////////////////////////////////////////////////
 
 template<ChildPosition POSITION>
-void ValueExploder::_half_explode(Value& to_explode, ChildPosition position)
+void detail::ValueExploder::_half_explode(Value& to_explode, ChildPosition position)
 {
 	auto predecessor = _find_first_predecessor_not_in_position<POSITION>(to_explode, position);
 	if (!predecessor) {

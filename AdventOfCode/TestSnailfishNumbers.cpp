@@ -293,43 +293,43 @@ public:
 	{
 		auto v = Value::from_string("[[[[[9,8],1],2],3],4]");
 
-		Assert::IsTrue(ValueExploder{ v }.explode());
+		Assert::IsTrue(detail::ValueExploder{ v }.explode());
 		Assert::AreEqual("[[[[0,9],2],3],4]"s, v.as_string<char>());
 
-		Assert::IsFalse(ValueExploder{ v }.explode());
+		Assert::IsFalse(detail::ValueExploder{ v }.explode());
 	}
 
 	TEST_METHOD(ExplodeSample2)
 	{
 		auto v = Value::from_string("[7,[6,[5,[4,[3,2]]]]]");
 
-		Assert::IsTrue(ValueExploder{ v }.explode());
+		Assert::IsTrue(detail::ValueExploder{ v }.explode());
 		Assert::AreEqual("[7,[6,[5,[7,0]]]]"s, v.as_string<char>());
 
-		Assert::IsFalse(ValueExploder{ v }.explode());
+		Assert::IsFalse(detail::ValueExploder{ v }.explode());
 	}
 
 	TEST_METHOD(ExplodeSample3)
 	{
 		auto v = Value::from_string("[[6,[5,[4,[3,2]]]],1]");
 
-		Assert::IsTrue(ValueExploder{ v }.explode());
+		Assert::IsTrue(detail::ValueExploder{ v }.explode());
 		Assert::AreEqual("[[6,[5,[7,0]]],3]"s, v.as_string<char>());
 
-		Assert::IsFalse(ValueExploder{ v }.explode());
+		Assert::IsFalse(detail::ValueExploder{ v }.explode());
 	}
 
 	TEST_METHOD(ExplodeSample4)
 	{
 		auto v = Value::from_string("[[3,[2,[1,[7,3]]]],[6,[5,[4,[3,2]]]]]");
 
-		Assert::IsTrue(ValueExploder{ v }.explode());
+		Assert::IsTrue(detail::ValueExploder{ v }.explode());
 		Assert::AreEqual("[[3,[2,[8,0]]],[9,[5,[4,[3,2]]]]]"s, v.as_string<char>());
 
-		Assert::IsTrue(ValueExploder{ v }.explode());
+		Assert::IsTrue(detail::ValueExploder{ v }.explode());
 		Assert::AreEqual("[[3,[2,[8,0]]],[9,[5,[7,0]]]]"s, v.as_string<char>());
 
-		Assert::IsFalse(ValueExploder{ v }.explode());
+		Assert::IsFalse(detail::ValueExploder{ v }.explode());
 	}
 
 	TEST_METHOD(SplitSample1)

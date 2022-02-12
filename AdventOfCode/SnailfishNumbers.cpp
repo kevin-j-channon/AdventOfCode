@@ -334,7 +334,7 @@ ValuePtr_t Value::_move_children_into_new_value()
 
 bool Value::_explode()
 {
-	return ValueExploder{ *this }.explode();
+	return detail::ValueExploder{ *this }.explode();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -387,7 +387,7 @@ void detail::ValueSplitter::_split_child(Value& value, ChildPosition position)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool ValueExploder::explode()
+bool detail::ValueExploder::explode()
 {
 	auto explode_details = _find_first_child_to_explode();
 	if (!explode_details) {
@@ -406,7 +406,7 @@ bool ValueExploder::explode()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ValueExploder::_zero_exploded_child(Value& value, ChildPosition position)
+void detail::ValueExploder::_zero_exploded_child(Value& value, ChildPosition position)
 {
 	auto parent = value.parent();
 	switch (position) {
@@ -424,24 +424,24 @@ void ValueExploder::_zero_exploded_child(Value& value, ChildPosition position)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-std::optional<std::pair<Value*, ChildPosition>> ValueExploder::_find_first_child_to_explode()
+std::optional<std::pair<Value*, ChildPosition>> detail::ValueExploder::_find_first_child_to_explode()
 {
 	return _recursively_find_child_to_explode(_value, 0);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-std::optional<std::pair<Value*, ChildPosition>> ValueExploder::_recursively_find_child_to_explode(Value& val, size_t depth, std::optional<ChildPosition> child_idx)
+std::optional<std::pair<Value*, ChildPosition>> detail::ValueExploder::_recursively_find_child_to_explode(Value& val, size_t depth, std::optional<ChildPosition> child_idx)
 {
-	if (val._children.first.is<ValuePtr_t>()) {
-		auto explode_details = _recursively_find_child_to_explode(val._children.first.as<Value>(), depth + 1, ChildPosition::left);
+	if (val.child<ChildPosition::left>().is<ValuePtr_t>()) {
+		auto explode_details = _recursively_find_child_to_explode(val.child<ChildPosition::left>().as<Value>(), depth + 1, ChildPosition::left);
 		if (explode_details) {
 			return explode_details;
 		}
 	}
 
-	if (val._children.second.is<ValuePtr_t>()) {
-		auto explode_details = _recursively_find_child_to_explode(val._children.second.as <Value>(), depth + 1, ChildPosition::right);
+	if (val.child<ChildPosition::right>().is<ValuePtr_t>()) {
+		auto explode_details = _recursively_find_child_to_explode(val.child<ChildPosition::right>().as <Value>(), depth + 1, ChildPosition::right);
 		if (explode_details) {
 			return explode_details;
 		}
@@ -457,7 +457,7 @@ std::optional<std::pair<Value*, ChildPosition>> ValueExploder::_recursively_find
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void ValueExploder::_apply_value_to_child(detail::Child& child, uint32_t value)
+void detail::ValueExploder::_apply_value_to_child(detail::Child& child, uint32_t value)
 {
 	child = child.as<uint32_t>() + value;
 }

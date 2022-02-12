@@ -350,15 +350,14 @@ bool Value::_split()
 
 bool detail::ValueSplitter::split()
 {
-	auto split_details = _recursively_find_child_to_split(_value, std::nullopt);
-	if (!split_details) {
-		return false;
+	if (auto split_details = _recursively_find_child_to_split(_value, std::nullopt)) {
+		auto [value, position] = *split_details;
+		_split_child(*value, position);
+
+		return true;
 	}
 
-	auto [value, position] = *split_details;
-	_split_child(*value, position);
-
-	return true;
+	return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -391,19 +390,18 @@ void detail::ValueSplitter::_split_child(Value& value, ChildPosition position)
 
 bool detail::ValueExploder::explode()
 {
-	auto explode_details = _find_first_child_to_explode();
-	if (!explode_details) {
-		return false;
+	if (auto explode_details = _find_first_child_to_explode()) {
+		auto [to_explode, position] = *explode_details;
+		assert(to_explode != nullptr);
+
+		_half_explode<ChildPosition::left>(*to_explode, position);
+		_half_explode<ChildPosition::right>(*to_explode, position);
+		_zero_exploded_child(*to_explode, position);
+
+		return true;
 	}
 
-	auto [to_explode, position] = *explode_details;
-	assert(to_explode != nullptr);
-
-	_half_explode<ChildPosition::left>(*to_explode, position);
-	_half_explode<ChildPosition::right>(*to_explode, position);
-	_zero_exploded_child(*to_explode, position);
-
-	return true;
+	return false;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

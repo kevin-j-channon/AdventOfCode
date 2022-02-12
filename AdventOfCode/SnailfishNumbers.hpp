@@ -111,6 +111,10 @@ public:
 private:
 
 	static std::optional<std::pair<Value*, ChildPosition>> _recursively_find_child_to_split(Value& val, std::optional<ChildPosition> position);
+
+	template<ChildPosition POSITION>
+	static std::optional<std::pair<Value*, ChildPosition>> _recursively_find_child_to_split(Value& val);
+
 	void _split_child(Value& value, ChildPosition position);
 
 	Value& _value;
@@ -513,6 +517,24 @@ void ValueExploder::_half_explode(Value& to_explode, ChildPosition position)
 
 	auto child = _find_last_child_in_complent_position<POSITION>(predecessor);
 	_apply_value_to_child(*child, to_explode.child<POSITION>().as<uint32_t>());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<ChildPosition POSITION>
+std::optional<std::pair<Value*, ChildPosition>> detail::ValueSplitter::_recursively_find_child_to_split(Value& val)
+{
+	if (val.child<POSITION>().is<ValuePtr_t>()) {
+		if (auto explode_details = _recursively_find_child_to_split(val.child<POSITION>().as<Value>(), POSITION)) {
+			return explode_details;
+		}
+	}
+
+	if (val.child<POSITION>().is<uint32_t>() && val.child<POSITION>().as<uint32_t>() > 9) {
+		return { {&val, POSITION } };
+	}
+
+	return std::nullopt;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

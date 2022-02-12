@@ -363,26 +363,14 @@ bool detail::ValueSplitter::split()
 
 std::optional<std::pair<Value*, ChildPosition>> detail::ValueSplitter::_recursively_find_child_to_split(Value& val, std::optional<ChildPosition> position)
 {
-	if (val._children.first.is<ValuePtr_t>()) {
-		auto explode_details = _recursively_find_child_to_split(val._children.first.as<Value>(), ChildPosition::left);
-		if (explode_details) {
-			return explode_details;
-		}
+	if (auto explode_details = _recursively_find_child_to_split<ChildPosition::left>(val))
+	{
+		return explode_details;
 	}
 
-	if (val.child<ChildPosition::left>().is<uint32_t>() && val.child<ChildPosition::left>().as<uint32_t>() > 9) {
-		return { {&val, ChildPosition::left } };
-	}
-
-	if (val._children.second.is<ValuePtr_t>()) {
-		auto explode_details = _recursively_find_child_to_split(val._children.second.as <Value>(), ChildPosition::right);
-		if (explode_details) {
-			return explode_details;
-		}
-	}
-
-	if (val.child<ChildPosition::right>().is<uint32_t>() && val.child<ChildPosition::right>().as<uint32_t>() > 9) {
-		return { {&val, ChildPosition::right } };
+	if (auto explode_details = _recursively_find_child_to_split<ChildPosition::right>(val))
+	{
+		return explode_details;
 	}
 
 	return std::nullopt;

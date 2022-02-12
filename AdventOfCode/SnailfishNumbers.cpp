@@ -249,12 +249,14 @@ Value& Value::operator+=(const Value& other)
 	auto new_child = std::make_shared<Value>(other);
 	_children = Children_t{ {_move_children_into_new_value(), this, ChildPosition::left }, { std::move(new_child), this, ChildPosition::right } };
 
+	reduce();
+
 	return *this;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Value Value::operator+(const Value& other)
+Value Value::operator+(const Value& other) const
 {
 	auto out = *this;
 	out += other;

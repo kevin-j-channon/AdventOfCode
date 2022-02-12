@@ -274,7 +274,7 @@ public:
 		auto sum = Value::from_string("[[1,2],[[3,4],[5,6]]]"s);
 		sum += Value::from_string("[1,[2,[[3,4],5]]]"s);
 
-		Assert::AreEqual("[[[1,2],[[3,4],[5,6]]],[1,[2,[[3,4],5]]]]"s, sum.as_string<char>());
+		Assert::AreEqual("[[[1,2],[[3,4],[5,6]]],[1,[5,[0,9]]]]"s, sum.as_string<char>());
 	}
 
 	TEST_METHOD(AdditionSimple)
@@ -286,7 +286,7 @@ public:
 	TEST_METHOD(AdditionComplex)
 	{
 		auto sum = Value::from_string("[[1,2],[[3,4],[5,6]]]"s) + Value::from_string("[1,[2,[[3,4],5]]]"s);
-		Assert::AreEqual("[[[1,2],[[3,4],[5,6]]],[1,[2,[[3,4],5]]]]"s, sum.as_string<char>());
+		Assert::AreEqual("[[[1,2],[[3,4],[5,6]]],[1,[5,[0,9]]]]"s, sum.as_string<char>());
 	}
 
 	TEST_METHOD(ExplodeSample1)
@@ -343,6 +343,16 @@ public:
 		Assert::AreEqual("[[[[0,7],4],[[7,8],[0,[6,7]]]],[1,1]]"s, v.as_string<char>());
 
 		Assert::IsFalse(detail::ValueSplitter{ v }.split());
+	}
+
+	TEST_METHOD(SumSampleNumbers1)
+	{
+		const auto v1 = Value::from_string("[[[[4,3],4],4],[7,[[8,4],9]]]");
+		const auto v2 = Value::from_string("[1,1]");
+
+		const auto sum = v1 + v2;
+
+		Assert::AreEqual("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]"s, sum.as_string<char>());
 	}
 };
 }

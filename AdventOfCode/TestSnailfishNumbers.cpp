@@ -429,5 +429,40 @@ public:
 
 		Assert::AreEqual(Value::from_string("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]"), sum);
 	}
+
+	TEST_METHOD(MagnitudeSimple)
+	{
+		Assert::AreEqual(uint32_t{ 29 }, Value{ 9, 1 }.magnitude());
+	}
+
+	TEST_METHOD(MagnitudeSample1)
+	{
+		Assert::AreEqual(uint32_t{143}, Value::from_string("[[1,2],[[3,4],5]]").magnitude());
+	}
+
+	TEST_METHOD(MagnitudeSample2)
+	{
+		Assert::AreEqual(uint32_t{ 1384 }, Value::from_string("[[[[0,7],4],[[7,8],[6,0]]],[8,1]]").magnitude());
+	}
+
+	TEST_METHOD(MagnitudeSample3)
+	{
+		Assert::AreEqual(uint32_t{ 445 }, Value::from_string("[[[[1,1],[2,2]],[3,3]],[4,4]]").magnitude());
+	}
+
+	TEST_METHOD(MagnitudeSample4)
+	{
+		Assert::AreEqual(uint32_t{ 791 }, Value::from_string("[[[[3,0],[5,3]],[4,4]],[5,5]]").magnitude());
+	}
+
+	TEST_METHOD(MagnitudeSample5)
+	{
+		Assert::AreEqual(uint32_t{ 1137 }, Value::from_string("[[[[5,0],[7,4]],[5,5]],[6,6]]").magnitude());
+	}
+
+	TEST_METHOD(MagnitudeSample6)
+	{
+		Assert::AreEqual(uint32_t{ 3488 }, Value::from_string("[[[[8,7],[7,7]],[[8,6],[7,7]]],[[[0,7],[6,6]],[8,7]]]").magnitude());
+	}
 };
 }

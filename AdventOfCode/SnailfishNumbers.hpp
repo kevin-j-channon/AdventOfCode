@@ -151,6 +151,8 @@ public:
 
 	friend void swap(Child& a, Child& b);
 
+	uint32_t magnitude() const;
+
 	template<typename T> constexpr bool is() const;
 	template<typename Result_T> const Result_T& as() const;
 	template<typename Result_T> Result_T& as();
@@ -194,6 +196,8 @@ public:
 	Value operator+(const Value& other) const;
 
 	Value& reduce();
+
+	uint32_t magnitude() const;
 
 	Value* const parent() const;
 	std::optional<ChildPosition> position() const;

@@ -92,6 +92,20 @@ detail::Child detail::Child::clone() const
 		}, _as_variant());
 }
 
+uint32_t detail::Child::magnitude() const
+{
+	return std::visit([](auto&& arg) -> uint32_t {
+		using Arg_t = std::decay_t<decltype(arg)>;
+		if constexpr (std::is_same_v<Arg_t, uint32_t>) {
+			return arg;
+		}
+		else {
+			static_assert(std::is_same_v<Arg_t, ValuePtr_t>, "Invalid variant type");
+			return arg->magnitude();
+		}
+		}, _as_variant());
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 bool detail::Child::operator==(const Child& other) const
@@ -323,6 +337,13 @@ const detail::Child& Value::child(ChildPosition position) const
 detail::Child& Value::child(ChildPosition position)
 {
 	return position == ChildPosition::left ? child<ChildPosition::left>() : child<ChildPosition::right>();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+uint32_t Value::magnitude() const
+{
+	return 3 * _children.first.magnitude() + 2 * _children.second.magnitude();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

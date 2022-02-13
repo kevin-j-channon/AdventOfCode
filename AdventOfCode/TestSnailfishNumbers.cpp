@@ -31,10 +31,51 @@ public:
 		Assert::AreEqual(n2, n1);
 	}
 
-	TEST_METHOD(FailsIfStreamIsEmpty)
+	TEST_METHOD(StreamExtractionOperatorSucceedsForAGoodStream)
+	{
+		std::stringstream data{ "[1,2]" };
+		auto n1 = aoc::snailfish::Value{};
+		data >> n1;
+
+		const auto n2 = aoc::snailfish::Value{ 1, 2 };
+
+		Assert::AreEqual(n2, n1);
+	}
+
+	TEST_METHOD(StreamFailbitIsSetOnFailure)
+	{
+		std::stringstream data{ "{1,2]" };
+		auto n = Value{};
+		Assert::ExpectException<aoc::IOException>([&data, &n]() {data >> n; });
+		Assert::IsTrue(data.fail());
+	}
+
+	TEST_METHOD(ExtractingFromStreamThatsAtItsEndRetunsDefaultConstructedValue)
+	{
+		std::stringstream data{ "[1,2]" };
+		auto n1 = aoc::snailfish::Value{};
+		auto n2 = aoc::snailfish::Value{};
+		data >> n1 >> n2;
+
+		Assert::AreEqual(Value{}, n2);
+	}
+
+	TEST_METHOD(ExtractMultipeValuesFromAStream)
+	{
+		std::stringstream data{ "[1,2] [3,4]\n[5,6]" };
+		Value n1, n2, n3;
+		data >> n1 >> n2 >> n3;
+
+		Assert::AreEqual(Value{ 1, 2 }, n1);
+		Assert::AreEqual(Value{ 3, 4 }, n2);
+		Assert::AreEqual(Value{ 5, 6 }, n3);
+	}
+
+	TEST_METHOD(EmptyStreamReturnsDefaultConstructedValue)
 	{
 		std::stringstream data{ "" };
-		Assert::ExpectException<aoc::IOException>([&data]() {aoc::snailfish::Value::from_stream(data); });
+		const auto n = aoc::snailfish::Value::from_stream(data);
+		Assert::AreEqual(Value{}, n);
 	}
 
 	TEST_METHOD(FailsIfStreamDoesntStartWithSquareBracket)

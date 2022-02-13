@@ -545,3 +545,14 @@ std::optional<std::pair<Value*, ChildPosition>> detail::ValueSplitter::_recursiv
 }	// namespace: aoc
 
 ///////////////////////////////////////////////////////////////////////////////
+
+namespace std
+{
+inline istream& operator>>(istream& is, aoc::snailfish::Value& value)
+{
+	value = aoc::snailfish::Value::from_stream(is);
+	return is;
+}
+}
+
+///////////////////////////////////////////////////////////////////////////////

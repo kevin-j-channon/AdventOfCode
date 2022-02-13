@@ -300,11 +300,19 @@ Value& Value::reduce()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-Value Value::from_stream(std::istream& is)
+Value Value::from_stream(std::istream& is) try
 {
+	if (is.eof()) {
+		return Value{};
+	}
+
 	auto line = std::string{};
-	std::getline(is, line);
+	is >> line;	
 	return from_string(line);
+}
+catch (const Exception&) {
+	is.setstate(std::ios::failbit);
+	throw;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -312,7 +320,7 @@ Value Value::from_stream(std::istream& is)
 Value Value::from_string(const std::string& str)
 {
 	if (str.empty()) {
-		throw IOException("Failed to create snailfish Value - empty line");
+		return Value{};
 	}
 
 	return *create(str.begin(), str.end()).first;

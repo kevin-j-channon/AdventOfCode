@@ -16,6 +16,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include "CavernPathFinder.hpp"
 #include "PacketDecoder.hpp"
 #include "ProbeLauncher.hpp"
+#include "SnailfishNumbers.hpp"
 
 using namespace std::string_literals;
 using namespace std::chrono_literals;
@@ -1293,6 +1294,26 @@ public:
 		const auto trajectory_count = ProbeLauncher::find_launch_velocities(Target{}.from_stream(data_file)).size();
 
 		Assert::AreEqual(size_t{ 3773 }, trajectory_count);
+	}
+};
+}
+
+namespace day_18
+{
+TEST_CLASS(TestDay18)
+{
+public:
+	TEST_METHOD(Part1)
+	{
+		using namespace aoc::snailfish;
+
+		std::ifstream data_file(DATA_DIR / "Day18_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		using Iter_t = std::istream_iterator<aoc::snailfish::Value>;
+		const auto magnitude = std::accumulate(Iter_t{ data_file }, Iter_t{}, Value{}).magnitude();
+
+		Assert::AreEqual(uint32_t{3216}, magnitude);
 	}
 };
 }

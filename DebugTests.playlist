@@ -107,6 +107,7 @@
                 <Property Name="Class" Value="TestAlgebra" />
               </Rule>
             </Rule>
+            <Property Name="Namespace" Value="day_18" />
           </Rule>
         </Rule>
       </Rule>

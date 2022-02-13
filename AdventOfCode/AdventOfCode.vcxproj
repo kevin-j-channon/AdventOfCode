@@ -235,6 +235,9 @@
     <None Include="..\README.md" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="aoc.natvis" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\OpenBLAS.0.2.14.1\build\native\openblas.targets" Condition="Exists('..\packages\OpenBLAS.0.2.14.1\build\native\openblas.targets')" />

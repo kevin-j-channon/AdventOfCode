@@ -303,6 +303,7 @@ Value& Value::reduce()
 Value Value::from_stream(std::istream& is) try
 {
 	if (is.eof()) {
+		is.setstate(std::ios::failbit);
 		return Value{};
 	}
 

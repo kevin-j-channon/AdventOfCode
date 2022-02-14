@@ -14,21 +14,21 @@ struct Exception : public std::runtime_error
 
 struct OutOfRangeException : public Exception, public std::out_of_range
 {
-	OutOfRangeException(const std::string& msg) : Exception{ msg }, std::out_of_range(msg) {}
+	OutOfRangeException(const std::string& msg) : Exception{ msg }, std::out_of_range{ msg } {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
 struct InvalidArgException : public Exception, public std::invalid_argument
 {
-	InvalidArgException(const std::string& msg) : Exception{ msg }, std::invalid_argument(msg) {}
+	InvalidArgException(const std::string& msg) : Exception{ msg }, std::invalid_argument{ msg } {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
 struct IOException : public Exception, public std::invalid_argument
 {
-	IOException(const std::string& msg) : Exception{ msg }, std::invalid_argument(msg) {}
+	IOException(const std::string& msg) : Exception{ msg }, std::invalid_argument{ msg } {}
 };
 
 ///////////////////////////////////////////////////////////////////////////////

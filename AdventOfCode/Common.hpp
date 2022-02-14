@@ -531,6 +531,93 @@ struct Exp<BASE, 0>
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<typename Container_T>
+class PairwiseCombinationIterator
+{
+public:
+	using iterator_category = std::input_iterator_tag;
+	using value_type = std::pair<typename Container_T::const_iterator, typename Container_T::const_iterator>;
+	using difference_type = std::ptrdiff_t;
+
+	PairwiseCombinationIterator(const Container_T& values)
+		: _at_end{ values.begin() == values.end() }
+		, _begin{ values.begin() }
+		, _end{ values.end() }
+		, _it_1{ values.begin() }
+		, _it_2{ values.begin() }
+	{}
+
+	PairwiseCombinationIterator()
+		: _at_end{ true }
+	{}
+
+	PairwiseCombinationIterator(const PairwiseCombinationIterator& other) = default;
+	PairwiseCombinationIterator& operator=(const PairwiseCombinationIterator& other) = default;
+	PairwiseCombinationIterator(PairwiseCombinationIterator&& other) = default;
+	PairwiseCombinationIterator& operator=(PairwiseCombinationIterator&& other) = default;
+
+	bool operator==(const PairwiseCombinationIterator& other) const
+	{
+		if (_at_end && other._at_end) {
+			return true;
+		}
+
+		if (_it_1 != other._it_1) {
+			return false;
+		}
+
+		if (_it_2 != other._it_2) {
+			return false;
+		}
+
+		return true;
+	}
+
+	bool operator!=(const PairwiseCombinationIterator& other) const
+	{
+		return !(*this == other);
+	}
+
+	value_type operator*() const
+	{
+		return { _it_1, _it_2 };
+	}
+
+	PairwiseCombinationIterator& operator++()
+	{
+		if (_at_end) {
+			throw OutOfRangeException("");
+		}
+
+		++_it_2;
+		if (_it_2 == *_end) {
+			_it_2 = *_begin;
+			++_it_1;
+		}
+
+		if (_it_1 == *_end) {
+			_at_end = true;
+		}
+
+		return *this;
+	}
+
+	PairwiseCombinationIterator operator++(int)
+	{
+		auto temp = PairwiseCombinationIterator{ *this };
+		++(*this);
+		return temp;
+	}
+
+private:
+	bool _at_end;
+	std::optional<const typename Container_T::const_iterator> _begin, _end;
+	typename Container_T::const_iterator _it_1, _it_2;
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -3,6 +3,18 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 #include "Common.hpp"
 
+template<>
+std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString<typename aoc::PairwiseCombinationIterator<class std::initializer_list<int>>>(const typename aoc::PairwiseCombinationIterator<class std::initializer_list<int>>& value)
+{
+	return L"";
+}
+
+template<>
+inline std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString<struct std::pair<int const*, int const*>>(const struct std::pair<int const*, int const*>& value)
+{
+	return std::format(L"({}, {})", *value.first, *value.second);
+}
+
 namespace test_common
 {
 TEST_CLASS(Point2D)
@@ -485,6 +497,81 @@ public:
 		Assert::AreEqual(size_t{ 32 }, aoc::Exp<2, 5>::value);
 		Assert::AreEqual(size_t{ 64 }, aoc::Exp<2, 6>::value);
 		Assert::AreEqual(size_t{ 128 }, aoc::Exp<2, 7>::value);
+	}
+};
+
+TEST_CLASS(TestPairwiseCombinationIterator)
+{
+public:
+	TEST_METHOD(ComparisonOperators)
+	{
+		const auto v = { 1, 2, 3, 4 };
+		const auto it_0 = aoc::PairwiseCombinationIterator{ v };
+		const auto it_1 = aoc::PairwiseCombinationIterator{ v };
+
+		Assert::AreEqual(it_0, it_1);
+
+		const auto v2 = { 1, 2, 3, 4 };
+		const auto it_2 = aoc::PairwiseCombinationIterator{ v2 };
+		Assert::AreNotEqual(it_0, it_2);
+	}
+
+	TEST_METHOD(Dereference)
+	{
+		const auto v = { 1, 2, 3, 4 };
+		const auto it = aoc::PairwiseCombinationIterator{ v };
+
+		Assert::AreEqual({ v.begin(), v.begin() }, *it);
+	}
+
+	TEST_METHOD(PreIncrement)
+	{
+		const auto v = { 1, 2, 3, 4 };
+		auto it = aoc::PairwiseCombinationIterator{ v };
+
+		Assert::IsTrue(std::pair{ 1, 1 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 1, 2 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 1, 3 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 1, 4 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 2, 1 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 2, 2 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 2, 3 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 2, 4 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 3, 1 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 3, 2 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 3, 3 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 3, 4 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 4, 1 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 4, 2 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 4, 3 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+		Assert::IsTrue(std::pair{ 4, 4 } == std::pair{ *(*it).first, *(*it).second }); ++it;
+
+		Assert::AreEqual(aoc::PairwiseCombinationIterator<std::initializer_list<int>>{}, it);
+	}
+
+	TEST_METHOD(PostIncrement)
+	{
+		const auto v = { 1, 2, 3, 4 };
+		auto it = aoc::PairwiseCombinationIterator{ v };
+
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 1, 1 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 1, 2 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 1, 3 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 1, 4 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 2, 1 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 2, 2 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 2, 3 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 2, 4 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 3, 1 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 3, 2 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 3, 3 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 3, 4 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 4, 1 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 4, 2 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 4, 3 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+		{ auto temp_it = it++; Assert::IsTrue(std::pair{ 4, 4 } == std::pair{ *(*temp_it).first, *(*temp_it).second }); }
+
+		Assert::AreEqual(aoc::PairwiseCombinationIterator<std::initializer_list<int>>{}, it);
 	}
 };
 }

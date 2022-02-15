@@ -256,15 +256,6 @@ public:
 			.child<ChildPosition::right>()
 			.as<Value>();
 
-		Logger::WriteMessage(std::format("Child value: {}\n", value.child<ChildPosition::left>().as<Value>().as_string<char>()).c_str());
-		Logger::WriteMessage(std::format("Child's parent: {}\n", value.child<ChildPosition::left>().as<Value>().parent()->as_string<char>()).c_str());
-
-		Logger::WriteMessage(std::format("Grandchild value: {}\n", value.child<ChildPosition::left>().as<Value>().child<ChildPosition::right>().as<Value>().as_string<char>()).c_str());
-		Logger::WriteMessage(std::format("Grandchild's parent: {}\n", value.child<ChildPosition::left>().as<Value>().child<ChildPosition::right>().as<Value>().parent()->parent()->as_string<char>()).c_str());
-
-		auto* p = grand_child.parent();
-		auto* gp = p->parent();
-
 		Assert::AreEqual("[1,[5,6]]"s, grand_child.parent()->as_string<char>());
 		Assert::AreEqual(value.as_string<char>(), grand_child.parent()->parent()->as_string<char>());
 	}

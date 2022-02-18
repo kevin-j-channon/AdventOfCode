@@ -107,7 +107,22 @@
                 <Property Name="Class" Value="TestAlgebra" />
               </Rule>
             </Rule>
-            <Property Name="Namespace" Value="day_18" />
+            <Rule Match="All">
+              <Property Name="Namespace" Value="day_18" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="TestDay18" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="day_18::TestDay18::Part1" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="Part1" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
           </Rule>
         </Rule>
       </Rule>

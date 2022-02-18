@@ -63,6 +63,9 @@
     <ClCompile Include="SnailfishNumbers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="TestBeaconScanner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AdventOfCode.hpp">
@@ -129,6 +132,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SnailfishNumbers.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BeaconScanner.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

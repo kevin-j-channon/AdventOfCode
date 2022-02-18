@@ -123,6 +123,7 @@
                 </Rule>
               </Rule>
             </Rule>
+            <Property Name="Namespace" Value="test_beacon_scanner" />
           </Rule>
         </Rule>
       </Rule>

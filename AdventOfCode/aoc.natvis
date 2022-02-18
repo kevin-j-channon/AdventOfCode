@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+	<Type Name="aoc::snailfish::Value">
+		<DisplayString IncludeView="noparens">{as_string&lt;char&gt;()}</DisplayString>
+		<Expand>
+			<Item Name="parent_and_position">_parent_and_position</Item>
+			<Item Name="left_child">_children.first</Item>
+			<Item Name="rigth_child">children.second</Item>
+		</Expand>
+	</Type>
+</AutoVisualizer>

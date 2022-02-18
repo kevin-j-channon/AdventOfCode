@@ -2,6 +2,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 #include "SnailfishNumbers.hpp"
+#include "Common.hpp"
 
 using namespace std::string_literals;
 using namespace std::chrono_literals;
@@ -519,6 +520,40 @@ public:
 
 		Assert::AreEqual("[[[[6,6],[7,6]],[[7,7],[7,0]]],[[[7,7],[7,7]],[[7,8],[9,9]]]]"s, sum.as_string<char>());
 		Assert::AreEqual(uint32_t{4140}, sum.magnitude());
+	}
+};
+
+TEST_CLASS(TestCalculateMaxPairwiseSum)
+{
+public:
+	TEST_METHOD(ExampleHomework)
+	{
+		constexpr auto data_str =
+			"[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]\n"
+			"[[[5,[2,8]],4],[5,[[9,9],0]]]\n"
+			"[6,[[[6,2],[5,6]],[[7,6],[4,7]]]]\n"
+			"[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]\n"
+			"[[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]\n"
+			"[[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]\n"
+			"[[[[5,4],[7,7]],8],[[8,3],8]]\n"
+			"[[9,3],[[9,9],[6,[4,9]]]]\n"
+			"[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]\n"
+			"[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]"
+			;
+
+		std::stringstream data(data_str);
+
+		const auto values = std::vector<Value>{ std::istream_iterator<Value>{data}, std::istream_iterator<Value>{} };
+
+		using Iter_t = aoc::PairwiseCombinationIterator<decltype(values)>;
+
+		const auto magnitudes = 
+			std::ranges::subrange(Iter_t{ values }, Iter_t{}) | std::views::transform([](const auto& value_pair) -> uint32_t {
+			return (*value_pair.first + *value_pair.second).magnitude();
+				});
+
+		const auto max_magnitude = *std::max_element(magnitudes.begin(), magnitudes.end());
+		Assert::AreEqual(uint32_t{ 3993 }, max_magnitude);
 	}
 };
 }

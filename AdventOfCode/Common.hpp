@@ -537,22 +537,36 @@ class PairwiseCombinationIterator
 public:
 	using iterator_category = std::input_iterator_tag;
 	using value_type = std::pair<typename Container_T::const_iterator, typename Container_T::const_iterator>;
+	using reference = const value_type&;
+	using pointer = const value_type*;
 	using difference_type = std::ptrdiff_t;
 
 	PairwiseCombinationIterator(const Container_T& values)
 		: _at_end{ values.begin() == values.end() }
 		, _begin{ values.begin() }
 		, _end{ values.end() }
-		, _it_1{ values.begin() }
-		, _it_2{ values.begin() }
+		, _current{ values.begin(), values.begin() }
 	{}
 
 	PairwiseCombinationIterator()
 		: _at_end{ true }
 	{}
 
-	PairwiseCombinationIterator(const PairwiseCombinationIterator& other) = default;
-	PairwiseCombinationIterator& operator=(const PairwiseCombinationIterator& other) = default;
+	PairwiseCombinationIterator(const PairwiseCombinationIterator& other)
+		: _at_end{ other._at_end }
+		, _begin{ other._begin }
+		, _end{ other._end }
+		, _current{ other._current }
+	{}
+
+	PairwiseCombinationIterator& operator=(const PairwiseCombinationIterator& other)
+	{
+		auto temp = other;
+		this->swap(temp);
+
+		return *this;
+	}
+
 	PairwiseCombinationIterator(PairwiseCombinationIterator&& other) = default;
 	PairwiseCombinationIterator& operator=(PairwiseCombinationIterator&& other) = default;
 
@@ -562,11 +576,7 @@ public:
 			return true;
 		}
 
-		if (_it_1 != other._it_1) {
-			return false;
-		}
-
-		if (_it_2 != other._it_2) {
+		if (_current != other._current) {
 			return false;
 		}
 
@@ -578,9 +588,14 @@ public:
 		return !(*this == other);
 	}
 
-	value_type operator*() const
+	reference operator*() const
 	{
-		return { _it_1, _it_2 };
+		return _current;
+	}
+
+	pointer operator->() const
+	{
+		return &_current;
 	}
 
 	PairwiseCombinationIterator& operator++()
@@ -589,13 +604,13 @@ public:
 			throw OutOfRangeException("");
 		}
 
-		++_it_2;
-		if (_it_2 == *_end) {
-			_it_2 = *_begin;
-			++_it_1;
+		++_current.second;
+		if (_current.second == _end) {
+			_current.second = _begin;
+			++_current.first;
 		}
 
-		if (_it_1 == *_end) {
+		if (_current.first == _end) {
 			_at_end = true;
 		}
 
@@ -609,11 +624,18 @@ public:
 		return temp;
 	}
 
+	void swap(PairwiseCombinationIterator& other)
+	{
+		std::swap(_at_end, other._at_end);
+		std::swap(_begin, other._begin);
+		std::swap(_end, other._end);
+		std::swap(_current, other._current);
+	}
+
 private:
 	bool _at_end;
-	std::optional<const typename Container_T::const_iterator> _begin, _end;
-	typename Container_T::const_iterator _it_1, _it_2;
-
+	typename Container_T::const_iterator _begin, _end;
+	value_type _current;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

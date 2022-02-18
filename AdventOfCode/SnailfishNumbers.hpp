@@ -185,9 +185,9 @@ public:
 	Value(uint32_t first, ValuePtr_t&& second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt);
 	Value(ValuePtr_t&& first, uint32_t second, std::optional<std::pair<Value*, ChildPosition>> parent_and_pos = std::nullopt);
 	Value(const Value& other);
+	Value(Value&& other);
 
 	Value& operator=(const Value& other);
-	Value(Value&& other);
 
 	Value& operator=(Value&& other);
 	bool operator==(const Value& other) const;

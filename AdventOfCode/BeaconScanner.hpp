@@ -40,6 +40,10 @@ private:
 	static Id_t _id_from_string(const std::string& s)
 	{
 		auto parts = split(s, ' ');
+		if (parts.size() != 4) {
+			throw IOException{ std::format("Failed to read scanner ID from \"{}\": Invalid line format", s)};
+		}
+
 		return string_to<Id_t>(parts[2]);
 	}
 

@@ -23,5 +23,19 @@ public:
 		const auto scanner = Scanner::from_stream(data);
 		Assert::AreEqual(Scanner::Id_t{ 0 }, scanner.id());
 	}
+
+	TEST_METHOD(MalformedIdLineRaisesException)
+	{
+		using namespace aoc::navigation;
+
+		constexpr auto data_str =
+			"--- scanner ---\n"
+			"0,2\n"
+			"4,1\n"
+			"3,3\n";
+		std::stringstream data{ data_str };
+
+		Assert::ExpectException<aoc::IOException>([&]() { Scanner::from_stream(data); });
+	}
 };
 }

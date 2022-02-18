@@ -74,22 +74,43 @@ private:
 				return out;
 			}
 
-			const auto parts = split(line, ',');
-			const auto x = string_to<Position_t::XValue_t>(parts[0]);
-			const auto y = string_to<Position_t::YValue_t>(parts[1]);
-			auto z = Position_t::ZValue_t{ 0 };
-			if (parts.size() == 3) {
-				z = string_to<Position_t::ZValue_t>(parts[2]);
-			}
-
-			out.emplace_back(Position_t{ x, y, z });
+			out.emplace_back(_read_position_from_string(line));
 		}
 
 		return out;
 	}
 
+	static Position_t _read_position_from_string(const std::string& s)
+	{
+		const auto parts = split(s, ',');
+		
+		const auto x = string_to<Position_t::XValue_t>(parts[0]);
+		const auto y = string_to<Position_t::YValue_t>(parts[1]);
+
+		auto z = Position_t::ZValue_t{ 0 };
+		if (parts.size() == 3) {
+			z = string_to<Position_t::ZValue_t>(parts[2]);
+		}
+
+		return { x, y, z };
+	}
+
 	Id_t _id;
 	Beacons_t _beacons;
 };
+
+using Scanners_t = std::vector<Scanner>;
+
+Scanners_t read_all_scanners(std::istream& is)
+{
+	auto out = std::vector<Scanner>{};
+
+	while (!is.eof()) {
+		out.push_back(Scanner::from_stream(is));
+	}
+
+	return out;
+}
+
 }
 }

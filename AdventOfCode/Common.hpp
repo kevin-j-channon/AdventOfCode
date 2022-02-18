@@ -576,6 +576,10 @@ public:
 			return true;
 		}
 
+		if (_at_end != other._at_end) {
+			return false;
+		}
+
 		if (_current != other._current) {
 			return false;
 		}

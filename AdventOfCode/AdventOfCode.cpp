@@ -1315,5 +1315,25 @@ public:
 
 		Assert::AreEqual(uint32_t{3216}, magnitude);
 	}
+
+	TEST_METHOD(Part2)
+	{
+		using namespace aoc::snailfish;
+
+		std::ifstream data_file(DATA_DIR / "Day18_input.txt");
+		Assert::IsTrue(data_file.is_open());
+
+		const auto values = std::vector<Value>{ std::istream_iterator<Value>{data_file}, std::istream_iterator<Value>{} };
+
+		using Iter_t = aoc::PairwiseCombinationIterator<decltype(values)>;
+
+		auto magnitudes = std::vector<uint32_t>( values.size()* values.size(), 0 );
+		std::transform(Iter_t{ values }, Iter_t{}, magnitudes.begin(), [](const auto& value_pair) -> uint32_t {
+			return (*value_pair.first + *value_pair.second).magnitude();
+			});
+
+		const auto max_magnitude = *std::max_element(magnitudes.begin(), magnitudes.end());
+		Assert::AreEqual(uint32_t{ 4643 }, max_magnitude);
+	}
 };
 }

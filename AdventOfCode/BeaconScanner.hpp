@@ -25,16 +25,24 @@ using Beacons_t = std::vector<Beacon>;
 
 class Scanner
 {
+public:
+	using Id_t = uint32_t;
 
+	Scanner(Id_t id)
+		: _id{ id }
+	{}
+
+private:
+	Id_t _id;
 };
 
-using Scanners_t = std::vector<ScannerReport>;
+using Scanners_t = std::vector<Scanner>;
 
 class ScannerReport
 {
 public:
 
-	using Id_t = uint32_t;
+	using Id_t = Scanner::Id_t;
 
 	ScannerReport(Id_t id)
 		: _id{ id }
@@ -117,6 +125,106 @@ std::vector<ScannerReport> read_scanner_report(std::istream& is)
 
 	return out;
 }
+
+class MappedSpace
+{
+public:
+	using Direction_t = Point2D<int>;
+
+	const Beacons_t& beacons() const { return _beacons; }
+	const Scanners_t& scanners() const { return _scanners; }
+
+	static MappedSpace from_reports(const std::vector<ScannerReport>& reports)
+	{
+		auto out = MappedSpace{};
+		if (reports.empty()) {
+			return out;
+		}
+
+		// The first one is easy.
+		out._scanners.emplace_back(reports[0].id());
+		out._beacons = reports[0].beacons();
+
+		const auto offset = find_translational_offset(out.beacons(), reports[1].beacons());
+
+		return out;
+	}
+
+	static std::optional<Direction_t> find_translational_offset(const Beacons_t& reference, const Beacons_t& sample)
+	{
+		const auto threshold = std::min(sample.size(), size_t{ 12 });
+
+		auto lines = std::vector<Line2d<int>>{};
+		lines.reserve(reference.size() * sample.size());
+		
+		for (const auto& ref_beacon : reference) {
+			for (const auto& sample_beacon : sample) {
+				lines.emplace_back(
+					Point2D<int>{ref_beacon.position().x, ref_beacon.position().y },
+					Point2D<int>{ sample_beacon.position().x, sample_beacon.position().y }
+				);
+			}
+		}
+
+		auto size_score = [](const Line2d<int>& line) -> int {
+			const auto X = line.finish.x - line.start.x;
+			const auto Y = line.finish.y - line.start.y;
+
+			return X * X + Y * Y;
+		};
+
+		// Collect lines that are the same size
+		auto sized_lines = std::map<int, std::vector<Line2d<int>>>{};
+		for (auto& line : lines) {
+			const auto score = size_score(line);
+			sized_lines[score].push_back(std::move(line));
+		}
+
+		auto sized_lines_2 = std::map<int, std::vector<Line2d<int>>>{};
+		for (auto it = sized_lines.begin(); it != sized_lines.end(); ++it) {
+			if (it->second.size() >= threshold) {
+				sized_lines_2[it->first] = std::move(it->second);
+			}
+		}
+
+		if (sized_lines_2.empty()) {
+			return {};
+		}
+
+		// Find all the parallel lines
+		auto direction = [](auto&& line) { return Direction_t{ line.finish.x - line.start.x , line.finish.y - line.start.y }; };
+
+		auto parallel_groups = std::map<int, std::map<Direction_t, std::vector<Line2d<int>>>>{};
+		for (auto& [size_score, lines ] : sized_lines_2)
+		{
+			for (auto& line : lines) {
+				// All these lines are the same length, so if the diffs in their coords are equal, then they're parallel too.
+				parallel_groups[size_score][direction(line)].push_back(std::move(line));
+			}
+		}
+
+
+		auto parallel_groups_2 = std::map<int, std::map<Direction_t, std::vector<Line2d<int>>>>{};
+		for (auto size_group = parallel_groups.begin(); size_group != parallel_groups.end(); ++size_group) {
+			for (auto direction_group = size_group->second.begin(); direction_group != size_group->second.end(); ++direction_group) {
+				if (direction_group->second.size() >= threshold) {
+					parallel_groups_2[size_group->first][direction_group->first] = std::move(direction_group->second);
+				}
+			}
+		}
+
+		// If there is only one element left, then this is a potential region of overlap.
+		if (parallel_groups_2.size() != 1 || parallel_groups_2.begin()->second.size() != 1) {
+			return {};
+		}
+
+		return parallel_groups_2.begin()->second.begin()->first;
+	}
+
+private:
+	Beacons_t _beacons;
+	Scanners_t _scanners;
+};
 
 uint32_t calculate_number_of_beacons(const Scanners_t& scanners)
 {

@@ -116,4 +116,32 @@ public:
 		}
 	}
 };
+
+TEST_CLASS(TestMapper)
+{
+public:
+	TEST_METHOD(FindTranslationOffset)
+	{
+		constexpr auto data_str =
+			"--- scanner 0 ---\n"
+			"0,2\n"
+			"4,1\n"
+			"3,3\n"
+			"\n"
+			"--- scanner 1 ---\n"
+			"-1,-1\n"
+			"-5,0\n"
+			"-2,1"
+			;
+		std::stringstream data{ data_str };
+
+		const auto reports = read_scanner_report(data);
+
+		const auto offset = MappedSpace::find_translational_offset(reports.at(0).beacons(), reports.at(1).beacons());
+
+		Assert::IsTrue(offset.has_value());
+		Assert::AreEqual(-5, offset->x);
+		Assert::AreEqual(-2, offset->y);
+	}
+};
 }

@@ -21,20 +21,21 @@ private:
 	Position_t _position;
 };
 
-class Scanner
+using Beacons_t = std::vector<Beacon>;
+
+class ScannerReport
 {
 public:
 
 	using Id_t = uint32_t;
-	using Beacons_t = std::vector<Beacon>;
 
-	Scanner(Id_t id)
+	ScannerReport(Id_t id)
 		: _id{ id }
 	{}
 
-	static Scanner from_stream(std::istream& is)
+	static ScannerReport from_stream(std::istream& is)
 	{
-		auto out = Scanner{_id_from_stream(is)};
+		auto out = ScannerReport{_id_from_stream(is)};
 		
 		out._beacons = _read_beacons(is);
 
@@ -99,14 +100,14 @@ private:
 	Beacons_t _beacons;
 };
 
-using Scanners_t = std::vector<Scanner>;
+using Scanners_t = std::vector<ScannerReport>;
 
 Scanners_t read_all_scanners(std::istream& is)
 {
-	auto out = std::vector<Scanner>{};
+	auto out = std::vector<ScannerReport>{};
 
 	while (!is.eof()) {
-		out.push_back(Scanner::from_stream(is));
+		out.push_back(ScannerReport::from_stream(is));
 	}
 
 	return out;

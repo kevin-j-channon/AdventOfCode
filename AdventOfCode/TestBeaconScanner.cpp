@@ -20,8 +20,8 @@ public:
 			"3,3\n";
 		std::stringstream data{ data_str };
 
-		const auto scanner = Scanner::from_stream(data);
-		Assert::AreEqual(Scanner::Id_t{ 0 }, scanner.id());
+		const auto scanner = ScannerReport::from_stream(data);
+		Assert::AreEqual(ScannerReport::Id_t{ 0 }, scanner.id());
 	}
 
 	TEST_METHOD(MalformedIdLineRaisesException)
@@ -33,7 +33,7 @@ public:
 			"3,3\n";
 		std::stringstream data{ data_str };
 
-		Assert::ExpectException<aoc::IOException>([&]() { Scanner::from_stream(data); });
+		Assert::ExpectException<aoc::IOException>([&]() { ScannerReport::from_stream(data); });
 	}
 
 	TEST_METHOD(InitialiseBeaconPositionsFromStream)
@@ -45,7 +45,7 @@ public:
 			"3,3\n";
 		std::stringstream data{ data_str };
 
-		const auto scanner = Scanner::from_stream(data);
+		const auto scanner = ScannerReport::from_stream(data);
 		Assert::AreEqual(size_t{ 3 }, scanner.beacons().size());
 
 		{

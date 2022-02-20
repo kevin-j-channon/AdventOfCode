@@ -120,6 +120,7 @@ template<typename Value_T>
 struct Line2d
 {
 	using Value_t = Value_T;
+	using Point_t = Point2D<Value_t>;
 	using This_t = Line2d<Value_t>;
 
 	enum Orientation
@@ -131,7 +132,7 @@ struct Line2d
 
 	Line2d() {}
 
-	Line2d(Point2D<Value_t> start_, Point2D<Value_t> finish_)
+	Line2d(Point_t start_, Point_t finish_)
 		: start{std::move(start_)}
 		, finish{std::move(finish_)}
 	{}
@@ -142,8 +143,8 @@ struct Line2d
 	Line2d(This_t&&) = default;
 	This_t& operator=(This_t&&) = default;
 
-	Point2D<Value_T> start;
-	Point2D<Value_T> finish;
+	Point_t start;
+	Point_t finish;
 
 	This_t& from(std::istream& is)
 	{

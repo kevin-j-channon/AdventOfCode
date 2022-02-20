@@ -128,6 +128,7 @@ std::vector<ScannerReport> read_scanner_report(std::istream& is)
 
 class MappedSpace
 {
+	using Line_t = Line2d<int>;
 public:
 	using Direction_t = Point2D<int>;
 
@@ -152,44 +153,54 @@ public:
 
 	static std::optional<Direction_t> find_translational_offset(const Beacons_t& reference, const Beacons_t& sample)
 	{
-		const auto threshold = std::min(sample.size(), size_t{ 12 });
+		return _find_offset_with_threshold(
+			_create_all_offsets(reference, sample),
+			std::min(sample.size(), size_t{ 12 })
+		);
+	}
 
-		auto lines = std::vector<Line2d<int>>{};
+private:
+
+	static std::vector<Line_t> _create_all_offsets(const Beacons_t& reference, const Beacons_t& sample)
+	{
+		auto lines = std::vector<Line_t>{};
 		lines.reserve(reference.size() * sample.size());
-		
+
 		for (const auto& ref_beacon : reference) {
 			for (const auto& sample_beacon : sample) {
 				lines.emplace_back(
-					Point2D<int>{ref_beacon.position().x, ref_beacon.position().y },
-					Point2D<int>{ sample_beacon.position().x, sample_beacon.position().y }
+					Line_t::Point_t{ ref_beacon.position().x, ref_beacon.position().y },
+					Line_t::Point_t{ sample_beacon.position().x, sample_beacon.position().y }
 				);
 			}
 		}
 
-		// Find all the parallel lines
-		auto direction = [](auto&& line) { return Direction_t{ line.finish.x - line.start.x , line.finish.y - line.start.y }; };
-
-		auto parallel_groups = std::map<Direction_t, std::vector<Line2d<int>>>{};
-		for (auto& line : lines) {
-			parallel_groups[direction(line)].push_back(std::move(line));
-		}
-
-		auto parallel_groups_2 = std::map<Direction_t, std::vector<Line2d<int>>>{};
-		for (auto direction_group = parallel_groups.begin(); direction_group != parallel_groups.end(); ++direction_group) {
-			if (direction_group->second.size() >= threshold) {
-				parallel_groups_2[direction_group->first] = std::move(direction_group->second);
-			}
-		}
-
-		// If there is only one element left, then this is a potential region of overlap.
-		if (parallel_groups_2.size() != 1) {
-			return {};
-		}
-
-		return parallel_groups_2.begin()->first;
+		return lines;
 	}
 
-private:
+	static std::optional<Direction_t> _find_offset_with_threshold(std::vector<Line_t> point_offsets, size_t threshold)
+	{
+		const auto parallel_groups = _group_offsets_by_direction(std::move(point_offsets));
+
+		const auto direction_with_max_number_of_lines = std::max_element(parallel_groups.begin(), parallel_groups.end(), [](const auto& x1, const auto& x2) {
+			return x1.second.size() < x2.second.size();
+			});
+
+		return direction_with_max_number_of_lines->second.size() >= threshold ? std::optional<Direction_t>{direction_with_max_number_of_lines->first} : std::nullopt;
+	}
+
+	static std::map<Direction_t, std::vector<Line2d<int>>> _group_offsets_by_direction(std::vector<Line_t> offsets)
+	{
+		auto direction = [](const Line_t& line) { return Direction_t{ line.finish.x - line.start.x , line.finish.y - line.start.y }; };
+
+		auto parallel_groups = std::map<Direction_t, std::vector<Line2d<int>>>{};
+		for (auto& offset : offsets) {
+			parallel_groups[direction(offset)].push_back(std::move(offset));
+		}
+
+		return parallel_groups;
+	}
+
 	Beacons_t _beacons;
 	Scanners_t _scanners;
 };

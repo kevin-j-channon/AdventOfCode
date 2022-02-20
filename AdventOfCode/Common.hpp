@@ -49,7 +49,6 @@ struct Point2D
 		return !(*this == other);
 	}
 
-
 	bool operator<(const This_t& other) const
 	{
 		if (x != other.x)
@@ -322,9 +321,98 @@ struct Point3D
 		return !(*this == other);
 	}
 
+	bool operator<(const This_t& other) const
+	{
+		if (x != other.x)
+			return x < other.x;
+
+		if (y != other.y)
+			return y < other.y;
+
+		if (z != other.z)
+			return z < other.z;
+
+		return false;
+	}
+
+	Point3D& load(std::istream& is) try
+	{
+		if (is.eof())
+			return *this;
+
+		auto str = std::string{};
+		is >> str;
+
+		from_string(str);
+
+		return *this;
+	}
+	catch (const Exception&)
+	{
+		is.setstate(std::ios::failbit);
+		throw;
+	}
+	catch (const std::invalid_argument&)
+	{
+		is.setstate(std::ios::failbit);
+		throw aoc::Exception("Failed to extract Point2D from stream");
+	}
+	catch (const std::out_of_range&)
+	{
+		is.setstate(std::ios::failbit);
+		throw aoc::Exception("Failed to extract Point2D from stream");
+	}
+
+	Point3D& from_string(const std::string& str)
+	{
+		auto x_y_z_str = split(str, ',');
+		if (x_y_z_str.size() != 3) {
+			throw aoc::Exception("Failed to read Point2D");
+		}
+
+		this->x = string_to<XValue_t>(x_y_z_str[0]);
+		this->y = string_to<YValue_t>(x_y_z_str[1]);
+		this->z = string_to<ZValue_t>(x_y_z_str[2]);
+
+		return *this;
+	}
+
 	XValue_t x;
 	YValue_t y;
 	ZValue_t z;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
+struct Line3d
+{
+	using Value_t = Value_T;
+	using Point_t = Point3D<Value_t>;
+	using This_t = Line3d<Value_t>;
+
+	Line3d() {}
+
+	Line3d(Point_t start_, Point_t finish_)
+		: start{ std::move(start_) }
+		, finish{ std::move(finish_) }
+	{}
+
+	Line3d(const This_t&) = default;
+	This_t& operator=(const This_t&) = default;
+
+	Line3d(This_t&&) = default;
+	This_t& operator=(This_t&&) = default;
+
+	Point_t start;
+	Point_t finish;
+
+	This_t& from(std::istream& is)
+	{
+		is >> *this;
+
+		return *this;
+	}
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -664,6 +752,15 @@ inline istream& operator>>(std::istream& is, aoc::Point2D<Value_T>& p)
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
+inline istream& operator>>(std::istream& is, aoc::Point3D<Value_T>& p)
+{
+	p.load(is);
+	return is;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
 inline istream& operator>>(std::istream& is, aoc::ValueRange<Value_T>& range)
 {
 	range.from_stream(is);
@@ -703,6 +800,41 @@ catch (std::out_of_range&)
 {
 	is.setstate(std::ios::failbit);
 	throw aoc::Exception("Failed to extract Line2d from stream");
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
+inline istream& operator>>(istream& is, aoc::Line3d<Value_T>& line) try
+{
+	line = aoc::Line3d<Value_T>{ {0, 0, 0}, {0, 0, 0} };
+
+	if (is.eof())
+		return is;
+
+	is >> line.start;
+
+	// Skip the arrow part
+	char arrow_buffer[5] = { 0 };
+	is.read(arrow_buffer, 4);
+	if (strcmp(arrow_buffer, " -> ") != 0) {
+		is.setstate(std::ios::failbit);
+		throw aoc::Exception("Invalid arrow in Line3d serialization");
+	}
+
+	is >> line.finish;
+
+	return is;
+}
+catch (std::invalid_argument&)
+{
+	is.setstate(std::ios::failbit);
+	throw aoc::Exception("Failed to extract Line3d from stream");
+}
+catch (std::out_of_range&)
+{
+	is.setstate(std::ios::failbit);
+	throw aoc::Exception("Failed to extract Line3d from stream");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

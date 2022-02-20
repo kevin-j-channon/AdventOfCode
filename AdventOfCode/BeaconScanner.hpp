@@ -128,9 +128,9 @@ std::vector<ScannerReport> read_scanner_report(std::istream& is)
 
 class MappedSpace
 {
-	using Line_t = Line2d<int>;
+	using Line_t = Line3d<int>;
 public:
-	using Direction_t = Point2D<int>;
+	using Direction_t = Point3D<int>;
 
 	const Beacons_t& beacons() const { return _beacons; }
 	const Scanners_t& scanners() const { return _scanners; }
@@ -168,10 +168,7 @@ private:
 
 		for (const auto& ref_beacon : reference) {
 			for (const auto& sample_beacon : sample) {
-				lines.emplace_back(
-					Line_t::Point_t{ ref_beacon.position().x, ref_beacon.position().y },
-					Line_t::Point_t{ sample_beacon.position().x, sample_beacon.position().y }
-				);
+				lines.emplace_back(ref_beacon.position(), sample_beacon.position());
 			}
 		}
 
@@ -189,11 +186,11 @@ private:
 		return direction_with_max_number_of_lines->second.size() >= threshold ? std::optional<Direction_t>{direction_with_max_number_of_lines->first} : std::nullopt;
 	}
 
-	static std::map<Direction_t, std::vector<Line2d<int>>> _group_offsets_by_direction(std::vector<Line_t> offsets)
+	static std::map<Direction_t, std::vector<Line_t>> _group_offsets_by_direction(std::vector<Line_t> offsets)
 	{
-		auto direction = [](const Line_t& line) { return Direction_t{ line.finish.x - line.start.x , line.finish.y - line.start.y }; };
+		auto direction = [](const Line_t& line) { return Direction_t{ line.finish.x - line.start.x , line.finish.y - line.start.y, line.finish.z - line.start.z }; };
 
-		auto parallel_groups = std::map<Direction_t, std::vector<Line2d<int>>>{};
+		auto parallel_groups = std::map<Direction_t, std::vector<Line_t>>{};
 		for (auto& offset : offsets) {
 			parallel_groups[direction(offset)].push_back(std::move(offset));
 		}

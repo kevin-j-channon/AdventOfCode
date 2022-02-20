@@ -84,7 +84,7 @@ public:
 			;
 		std::stringstream data{ data_str };
 
-		const auto scanners = read_all_scanners(data);
+		const auto scanners = read_scanner_report(data);
 		Assert::AreEqual(size_t{ 2 }, scanners.size());
 
 		auto point_values = std::array{

@@ -23,6 +23,13 @@ private:
 
 using Beacons_t = std::vector<Beacon>;
 
+class Scanner
+{
+
+};
+
+using Scanners_t = std::vector<ScannerReport>;
+
 class ScannerReport
 {
 public:
@@ -100,9 +107,7 @@ private:
 	Beacons_t _beacons;
 };
 
-using Scanners_t = std::vector<ScannerReport>;
-
-Scanners_t read_all_scanners(std::istream& is)
+std::vector<ScannerReport> read_scanner_report(std::istream& is)
 {
 	auto out = std::vector<ScannerReport>{};
 
@@ -111,6 +116,11 @@ Scanners_t read_all_scanners(std::istream& is)
 	}
 
 	return out;
+}
+
+uint32_t calculate_number_of_beacons(const Scanners_t& scanners)
+{
+	return 0;
 }
 
 }

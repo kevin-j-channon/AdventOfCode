@@ -166,59 +166,27 @@ public:
 			}
 		}
 
-		auto size_score = [](const Line2d<int>& line) -> int {
-			const auto X = line.finish.x - line.start.x;
-			const auto Y = line.finish.y - line.start.y;
-
-			return X * X + Y * Y;
-		};
-
-		// Collect lines that are the same size
-		auto sized_lines = std::map<int, std::vector<Line2d<int>>>{};
-		for (auto& line : lines) {
-			const auto score = size_score(line);
-			sized_lines[score].push_back(std::move(line));
-		}
-
-		auto sized_lines_2 = std::map<int, std::vector<Line2d<int>>>{};
-		for (auto it = sized_lines.begin(); it != sized_lines.end(); ++it) {
-			if (it->second.size() >= threshold) {
-				sized_lines_2[it->first] = std::move(it->second);
-			}
-		}
-
-		if (sized_lines_2.empty()) {
-			return {};
-		}
-
 		// Find all the parallel lines
 		auto direction = [](auto&& line) { return Direction_t{ line.finish.x - line.start.x , line.finish.y - line.start.y }; };
 
-		auto parallel_groups = std::map<int, std::map<Direction_t, std::vector<Line2d<int>>>>{};
-		for (auto& [size_score, lines ] : sized_lines_2)
-		{
-			for (auto& line : lines) {
-				// All these lines are the same length, so if the diffs in their coords are equal, then they're parallel too.
-				parallel_groups[size_score][direction(line)].push_back(std::move(line));
-			}
+		auto parallel_groups = std::map<Direction_t, std::vector<Line2d<int>>>{};
+		for (auto& line : lines) {
+			parallel_groups[direction(line)].push_back(std::move(line));
 		}
 
-
-		auto parallel_groups_2 = std::map<int, std::map<Direction_t, std::vector<Line2d<int>>>>{};
-		for (auto size_group = parallel_groups.begin(); size_group != parallel_groups.end(); ++size_group) {
-			for (auto direction_group = size_group->second.begin(); direction_group != size_group->second.end(); ++direction_group) {
-				if (direction_group->second.size() >= threshold) {
-					parallel_groups_2[size_group->first][direction_group->first] = std::move(direction_group->second);
-				}
+		auto parallel_groups_2 = std::map<Direction_t, std::vector<Line2d<int>>>{};
+		for (auto direction_group = parallel_groups.begin(); direction_group != parallel_groups.end(); ++direction_group) {
+			if (direction_group->second.size() >= threshold) {
+				parallel_groups_2[direction_group->first] = std::move(direction_group->second);
 			}
 		}
 
 		// If there is only one element left, then this is a potential region of overlap.
-		if (parallel_groups_2.size() != 1 || parallel_groups_2.begin()->second.size() != 1) {
+		if (parallel_groups_2.size() != 1) {
 			return {};
 		}
 
-		return parallel_groups_2.begin()->second.begin()->first;
+		return parallel_groups_2.begin()->first;
 	}
 
 private:

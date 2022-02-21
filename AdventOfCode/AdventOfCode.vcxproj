@@ -180,6 +180,7 @@
     <ClCompile Include="TestEntertainment.cpp" />
     <ClCompile Include="TestFunctionalAreascpp.cpp" />
     <ClCompile Include="TestIO.cpp" />
+    <ClCompile Include="TestMaths.cpp" />
     <ClCompile Include="TestModelling.cpp" />
     <ClCompile Include="TestPaperfolder.cpp" />
     <ClCompile Include="TestPolymerizer.cpp" />

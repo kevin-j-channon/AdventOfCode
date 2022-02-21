@@ -124,6 +124,7 @@
               </Rule>
             </Rule>
             <Property Name="Namespace" Value="test_beacon_scanner" />
+            <Property Name="Namespace" Value="test_geometry" />
           </Rule>
         </Rule>
       </Rule>

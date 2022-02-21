@@ -2,6 +2,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 #include "Common.hpp"
+#include <Maths/Geometry.hpp>
 
 template<>
 std::wstring Microsoft::VisualStudio::CppUnitTestFramework::ToString<typename aoc::PairwiseCombinationIterator<class std::initializer_list<int>>>(const typename aoc::PairwiseCombinationIterator<class std::initializer_list<int>>& value)

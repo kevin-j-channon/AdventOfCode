@@ -2,6 +2,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 #include "Common.hpp"
+#include <Maths/Geometry.hpp>
 #include "DiagnosticLog.hpp"
 #include "BoatSystems.hpp"
 #include "AdventOfCode.hpp"

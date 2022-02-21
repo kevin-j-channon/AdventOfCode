@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.hpp"
+#include <Maths/Geometry.hpp>
 
 namespace aoc
 {

@@ -16,6 +16,9 @@
     <Filter Include="Data">
       <UniqueIdentifier>{772660bd-d62d-435f-9b83-b0c1c1eb0bc5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Maths">
+      <UniqueIdentifier>{1741d128-e487-448f-99e8-b72053fa8425}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AdventOfCode.cpp">
@@ -136,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="BeaconScanner.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Maths\Geometry.hpp">
+      <Filter>Header Files\Maths</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

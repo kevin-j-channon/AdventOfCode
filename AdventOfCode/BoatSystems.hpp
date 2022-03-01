@@ -219,7 +219,7 @@ public:
 	public:
 		using Value_t = Value_T;
 		using Size_t = size_t;
-		using Point_t = Point3D<Size_t, Size_t, Value_t>;
+		using Point_t = Point3D<Size_t>;
 
 	private:
 		std::vector<Point_t> _points;
@@ -378,10 +378,10 @@ public:
 		return VentAnalyzer{ data }.score<FORMATIONS>();
 	}
 
-	uint32_t lava_tube_smoke_risk(std::istream& data) const
+	size_t lava_tube_smoke_risk(std::istream& data) const
 	{
-		const auto minima = FloorHeightAnalyser<uint32_t, 1>{}.load(data).find_minima();
-		return std::accumulate(minima.begin(), minima.end(), uint32_t{ 0 }, [](auto curr, const auto& next) {
+		const auto minima = FloorHeightAnalyser<size_t, 1>{}.load(data).find_minima();
+		return std::accumulate(minima.begin(), minima.end(), size_t{ 0 }, [](auto curr, const auto& next) {
 			return curr + next.z + 1;
 			});
 	}

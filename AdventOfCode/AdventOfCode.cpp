@@ -915,7 +915,7 @@ public:
 
 		const auto risk = aoc::Submarine().boat_systems().lava_tube_smoke_risk(data_file);
 
-		Assert::AreEqual(uint32_t{ 545 }, risk);
+		Assert::AreEqual(size_t{ 545 }, risk);
 	}
 };
 }

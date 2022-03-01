@@ -3,6 +3,8 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 #include "BeaconScanner.hpp"
 
+#include <cmath>
+
 namespace test_beacon_scanner
 {
 
@@ -50,23 +52,23 @@ public:
 
 		{
 			const auto& b = scanner.beacons().at(0);
-			Assert::AreEqual(0, b.position().x);
-			Assert::AreEqual(2, b.position().y);
-			Assert::AreEqual(0, b.position().z);
+			Assert::AreEqual(0.0, b.position().x);
+			Assert::AreEqual(2.0, b.position().y);
+			Assert::AreEqual(0.0, b.position().z);
 		}
 
 		{
 			const auto& b = scanner.beacons().at(1);
-			Assert::AreEqual(4, b.position().x);
-			Assert::AreEqual(1, b.position().y);
-			Assert::AreEqual(0, b.position().z);
+			Assert::AreEqual(4.0, b.position().x);
+			Assert::AreEqual(1.0, b.position().y);
+			Assert::AreEqual(0.0, b.position().z);
 		}
 
 		{
 			const auto& b = scanner.beacons().at(2);
-			Assert::AreEqual(3, b.position().x);
-			Assert::AreEqual(3, b.position().y);
-			Assert::AreEqual(0, b.position().z);
+			Assert::AreEqual(3.0, b.position().x);
+			Assert::AreEqual(3.0, b.position().y);
+			Assert::AreEqual(0.0, b.position().z);
 		}
 	}
 	TEST_METHOD(ReadingMultipleScannersFromAStream)
@@ -89,14 +91,14 @@ public:
 
 		auto point_values = std::array{
 			std::array{
-				std::array{ 0, 2 },
-				std::array{ 4, 1 },
-				std::array{ 3, 3 }
+				std::array{ 0.0, 2.0 },
+				std::array{ 4.0, 1.0 },
+				std::array{ 3.0, 3.0 }
 			},
 			std::array{
-				std::array{ -1, -1 },
-				std::array{ -5,  0 },
-				std::array{ -2,  1 }
+				std::array{ -1.0, -1.0 },
+				std::array{ -5.0,  0.0 },
+				std::array{ -2.0,  1.0 }
 			}
 		};
 
@@ -111,7 +113,7 @@ public:
 				Assert::AreEqual(values[j][0], b.position().x);
 				Assert::AreEqual(values[j][1], b.position().y);
 
-				Assert::AreEqual(0, b.position().z);
+				Assert::AreEqual(0.0, b.position().z);
 			}
 		}
 	}
@@ -140,8 +142,54 @@ public:
 		const auto offset = MappedSpace::find_translational_offset(reports.at(0).beacons(), reports.at(1).beacons());
 
 		Assert::IsTrue(offset.has_value());
-		Assert::AreEqual(-5, offset->x);
-		Assert::AreEqual(-2, offset->y);
+		Assert::AreEqual(-5.0, offset->x);
+		Assert::AreEqual(-2.0, offset->y);
+	}
+
+	TEST_METHOD(RotateBeacon)
+	{
+		const auto beacons = Beacons_t{
+			{{0.0, 0.0, 1.0}},
+			{{0.0, 1.0, 0.0}},
+			{{0.0, 1.0, 1.0}},
+			{{1.0, 0.0, 0.0}},
+			{{1.0, 0.0, 1.0}},
+			{{1.0, 1.0, 0.0}},
+			{{1.0, 1.0, 1.0}},
+		};
+
+		const auto rotation_axes = std::vector<boost::qvm::vec<Direction_t::Value_t, 3>>{
+			{{0.0, 0.0, 1.0}},
+			{{0.0, 1.0, 0.0}},
+			{{1.0, 0.0, 0.0}},
+			// {0.0, 1.0, 1.0},
+			// {1.0, 0.0, 1.0},
+			// {1.0, 1.0, 0.0},
+			// {1.0, 1.0, 1.0},
+		};
+
+		const auto expected = std::vector<Beacons_t>{
+			{{{0.,0.,1.}},{{-1.,0.,0.}},{{-1.,0.,1.}},{{0.,1.,0.}},{{0.,1.,1.}},{{-1.,1.,0.}},{{-1.,1.,1.}}},
+			{{{1.,0.,0.}},{{0.,1.,0.}},{{1.,1.,0.}},{{0.,0.,-1.}},{{1.,0.,-1.}},{{0.,1.,-1.}},{{1.,1.,-1.}}},
+			{{{0.,-1.,0.}},{{0.,0.,1.}},{{0.,-1.,1.}},{{1.,0.,0.}},{{1.,-1.,0.}},{{1.,0.,1.}},{{1.,-1.,1.}}}
+		};
+
+		auto expected_beacons = expected.begin();
+		for (const auto& axis : rotation_axes) {
+			auto expected_beacon = expected_beacons->begin();
+			
+			for (const auto& b : beacons) {
+				const auto rotated = MappedSpace::rotate_beacon(b, axis, std::numbers::pi / 2);
+
+				Assert::AreEqual((int)expected_beacon->position().x, (int)rotated.position().x);
+				Assert::AreEqual((int)expected_beacon->position().y, (int)rotated.position().y);
+				Assert::AreEqual((int)expected_beacon->position().z, (int)rotated.position().z);
+
+				++expected_beacon;
+			}
+			
+			++expected_beacons;
+		}
 	}
 };
 }

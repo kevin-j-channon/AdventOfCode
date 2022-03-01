@@ -3,11 +3,17 @@
 #include "Common.hpp"
 #include <Maths/Geometry.hpp>
 
+#include <boost/qvm.hpp>
+#include <boost/qvm/quat_operations.hpp>
+
+#include <numbers>
+
 namespace aoc
 {
 namespace navigation
 {
-using Position_t = Point3D<int>;
+using Position_t = Point3D<double>;
+using Direction_t = Point3D<double>;
 
 class Beacon
 {
@@ -101,12 +107,12 @@ private:
 	{
 		const auto parts = split(s, ',');
 		
-		const auto x = string_to<Position_t::XValue_t>(parts[0]);
-		const auto y = string_to<Position_t::YValue_t>(parts[1]);
+		const auto x = string_to<Position_t::Value_t>(parts[0]);
+		const auto y = string_to<Position_t::Value_t>(parts[1]);
 
-		auto z = Position_t::ZValue_t{ 0 };
+		auto z = Position_t::Value_t{ 0 };
 		if (parts.size() == 3) {
-			z = string_to<Position_t::ZValue_t>(parts[2]);
+			z = string_to<Position_t::Value_t>(parts[2]);
 		}
 
 		return { x, y, z };
@@ -129,9 +135,8 @@ std::vector<ScannerReport> read_scanner_report(std::istream& is)
 
 class MappedSpace
 {
-	using Line_t = Line3d<int>;
+	using Line_t = Line3d<double>;
 public:
-	using Direction_t = Point3D<int>;
 
 	const Beacons_t& beacons() const { return _beacons; }
 	const Scanners_t& scanners() const { return _scanners; }
@@ -160,7 +165,98 @@ public:
 		);
 	}
 
+	// TODO: This needs to be something that has the rotation in it with each set of beacons.
+	static std::vector<Beacons_t> get_rotations(Beacons_t original)
+	{
+		static const auto rotation_axes = get_rotation_axes();
+
+		auto out = std::vector<Beacons_t>{};
+		out.push_back(std::move(original));
+
+		for (const auto& [axis, symetries] : rotation_axes) {
+			const auto step = 2 * std::numbers::pi / (1 + symetries);
+
+			for (const auto& i : ValueRange<int>(1, symetries)) {
+				out.push_back(rotate_all_beacons(original, axis, i * step));
+			}
+		}
+
+		return out;
+	}
+
+	static Beacons_t rotate_all_beacons(const Beacons_t& original, const boost::qvm::vec<Direction_t::Value_t, 3>& axis, double angle)
+	{
+		auto out = Beacons_t{};
+		out.reserve(original.size());
+
+		std::transform(original.begin(), original.end(), std::back_inserter(out), [&axis, &angle](auto&& b) {
+			return rotate_beacon(b, axis, angle);
+			});
+
+		return out;
+	}
+
+	static Beacon rotate_beacon(const Beacon& b, const boost::qvm::vec<Direction_t::Value_t, 3>& axis, double angle)
+	{
+		using namespace boost::qvm;
+
+		const auto cos_term = cos(0.5 * angle);
+		const auto sin_term = sin(0.5 * angle);
+		const auto q1 = quat<Position_t::Value_t>{{0.0, b.position().x, b.position().y, b.position().z}};
+		const auto q2 = quat<Direction_t::Value_t>{{cos_term, sin_term * axis.a[0], sin_term * axis.a[1], sin_term * axis.a[2]}};
+
+		const auto rotated = (q2 * q1) * conjugate(q2);
+		return { Position_t(rotated.a[1], rotated.a[2], rotated.a[3]) };
+	}
+
+	static std::vector<std::pair<boost::qvm::vec<Direction_t::Value_t, 3>, uint32_t>> get_rotation_axes()
+	{
+		auto out = std::vector<std::pair<boost::qvm::vec<Direction_t::Value_t, 3>, uint32_t>>{};
+
+		add_plane_rotations(out);
+		add_edge_rotations(out);
+		add_vertex_rotations(out);
+
+		return out;
+	}
+
+	static void add_plane_rotations(std::vector<std::pair<boost::qvm::vec<Direction_t::Value_t, 3>, uint32_t>>& rotation_axes)
+	{
+		using namespace boost::qvm;
+
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 1, 0, 0}}, 3);
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 0, 1, 0}}, 3);
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 0, 0, 1}}, 3);
+	}
+
+	static void add_edge_rotations(std::vector<std::pair<boost::qvm::vec<Direction_t::Value_t, 3>, uint32_t>>& rotation_axes)
+	{
+		using namespace boost::qvm;
+
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 1, 1, 0}}, 1);
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 1, 0, 1}}, 1);
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 0, 1, 1}}, 1);
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 1,-1, 0}}, 1);
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 1, 0,-1}}, 1);
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 0, 1,-1}}, 1);
+	}
+
+	static void add_vertex_rotations(std::vector<std::pair<boost::qvm::vec<Direction_t::Value_t, 3>, uint32_t>>& rotation_axes)
+	{
+		using namespace boost::qvm;
+
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 1, 1, 1}}, 2);
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 1, 1,-1}}, 2);
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{ 1,-1, 1}}, 2);
+		rotation_axes.emplace_back(vec<Direction_t::Value_t, 3>{{-1, 1, 1}}, 2);
+	}
+
 private:
+
+	static boost::qvm::quat<Position_t::Value_t> _make_boost_quat(const Position_t& p)
+	{
+		return {{0.0, p.x, p.y, p.z}};
+	}
 
 	static std::vector<Line_t> _create_all_offsets(const Beacons_t& reference, const Beacons_t& sample)
 	{

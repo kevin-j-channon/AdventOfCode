@@ -155,6 +155,22 @@ inline auto string_to(const std::string& str) -> unsigned long
 ///////////////////////////////////////////////////////////////////////////////
 
 template<>
+inline auto string_to(const std::string& str) -> double
+{
+    return std::stod(str);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<>
+inline auto string_to(const std::string& str) -> long double
+{
+    return std::stold(str);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<>
 inline auto string_to(const std::string& str) -> long long
 {
     return std::stoll(str);

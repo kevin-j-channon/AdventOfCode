@@ -10,7 +10,6 @@ namespace aoc
 namespace navigation
 {
 using Position_t = Point3D<double>;
-using Direction_t = aoc::Direction_t<double>;
 
 class Beacon
 {
@@ -154,7 +153,7 @@ public:
 		return out;
 	}
 
-	static std::optional<Direction_t> find_translational_offset(const Beacons_t& reference, const Beacons_t& sample)
+	static std::optional<Direction_t<Position_t::Value_t>> find_translational_offset(const Beacons_t& reference, const Beacons_t& sample)
 	{
 		return _find_offset_with_threshold(
 			_create_all_offsets(reference, sample),
@@ -181,7 +180,7 @@ public:
 		return out;
 	}
 
-	static Beacons_t rotate_all_beacons(const Beacons_t& original, const Direction_t& axis, double angle)
+	static Beacons_t rotate_all_beacons(const Beacons_t& original, const Direction_t<Position_t::Value_t>& axis, double angle)
 	{
 		auto out = Beacons_t{};
 		out.reserve(original.size());
@@ -193,14 +192,14 @@ public:
 		return out;
 	}
 
-	static Beacon rotate_beacon(const Beacon& b, const Direction_t& axis, double angle)
+	static Beacon rotate_beacon(const Beacon& b, const Direction_t<Position_t::Value_t>& axis, double angle)
 	{
 		return { rotate(b.position(), axis, angle) };
 	}
 
-	static std::vector<std::pair<Direction_t, uint32_t>> get_rotation_axes()
+	static std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>> get_rotation_axes()
 	{
-		auto out = std::vector<std::pair<Direction_t, uint32_t>>{};
+		auto out = std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>>{};
 
 		add_plane_rotations(out);
 		add_edge_rotations(out);
@@ -209,29 +208,29 @@ public:
 		return out;
 	}
 
-	static void add_plane_rotations(std::vector<std::pair<Direction_t, uint32_t>>& rotation_axes)
+	static void add_plane_rotations(std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>>& rotation_axes)
 	{
-		rotation_axes.emplace_back(Direction_t{ 1, 0, 0}, 3);
-		rotation_axes.emplace_back(Direction_t{ 0, 1, 0}, 3);
-		rotation_axes.emplace_back(Direction_t{ 0, 0, 1}, 3);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 0, 0}, 3);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 0, 1, 0}, 3);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 0, 0, 1}, 3);
 	}
 
-	static void add_edge_rotations(std::vector<std::pair<Direction_t, uint32_t>>& rotation_axes)
+	static void add_edge_rotations(std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>>& rotation_axes)
 	{
-		rotation_axes.emplace_back(Direction_t{ 1, 1, 0}, 1);
-		rotation_axes.emplace_back(Direction_t{ 1, 0, 1}, 1);
-		rotation_axes.emplace_back(Direction_t{ 0, 1, 1}, 1);
-		rotation_axes.emplace_back(Direction_t{ 1,-1, 0}, 1);
-		rotation_axes.emplace_back(Direction_t{ 1, 0,-1}, 1);
-		rotation_axes.emplace_back(Direction_t{ 0, 1,-1}, 1);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 1, 0}, 1);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 0, 1}, 1);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 0, 1, 1}, 1);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1,-1, 0}, 1);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 0,-1}, 1);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 0, 1,-1}, 1);
 	}
 
-	static void add_vertex_rotations(std::vector<std::pair<Direction_t, uint32_t>>& rotation_axes)
+	static void add_vertex_rotations(std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>>& rotation_axes)
 	{
-		rotation_axes.emplace_back(Direction_t{ 1, 1, 1}, 2);
-		rotation_axes.emplace_back(Direction_t{ 1, 1,-1}, 2);
-		rotation_axes.emplace_back(Direction_t{ 1,-1, 1}, 2);
-		rotation_axes.emplace_back(Direction_t{-1, 1, 1}, 2);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 1, 1}, 2);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 1,-1}, 2);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1,-1, 1}, 2);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{-1, 1, 1}, 2);
 	}
 
 private:
@@ -250,7 +249,7 @@ private:
 		return lines;
 	}
 
-	static std::optional<Direction_t> _find_offset_with_threshold(std::vector<Line_t> point_offsets, size_t threshold)
+	static std::optional<Direction_t<Position_t::Value_t>> _find_offset_with_threshold(std::vector<Line_t> point_offsets, size_t threshold)
 	{
 		const auto parallel_groups = _group_offsets_by_direction(std::move(point_offsets));
 
@@ -258,14 +257,14 @@ private:
 			return x1.second.size() < x2.second.size();
 			});
 
-		return direction_with_max_number_of_lines->second.size() >= threshold ? std::optional<Direction_t>{direction_with_max_number_of_lines->first} : std::nullopt;
+		return direction_with_max_number_of_lines->second.size() >= threshold ? std::optional<Direction_t<Position_t::Value_t>>{direction_with_max_number_of_lines->first} : std::nullopt;
 	}
 
-	static std::map<Direction_t, std::vector<Line_t>> _group_offsets_by_direction(std::vector<Line_t> offsets)
+	static std::map<Direction_t<Position_t::Value_t>, std::vector<Line_t>> _group_offsets_by_direction(std::vector<Line_t> offsets)
 	{
-		auto direction = [](const Line_t& line) { return Direction_t{ line.finish.x - line.start.x , line.finish.y - line.start.y, line.finish.z - line.start.z }; };
+		auto direction = [](const Line_t& line) { return Direction_t<Position_t::Value_t>{ line.finish.x - line.start.x , line.finish.y - line.start.y, line.finish.z - line.start.z }; };
 
-		auto parallel_groups = std::map<Direction_t, std::vector<Line_t>>{};
+		auto parallel_groups = std::map<Direction_t<Position_t::Value_t>, std::vector<Line_t>>{};
 		for (auto& offset : offsets) {
 			parallel_groups[direction(offset)].push_back(std::move(offset));
 		}

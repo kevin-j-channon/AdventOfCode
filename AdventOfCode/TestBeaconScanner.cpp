@@ -158,7 +158,7 @@ public:
 			{{1.0, 1.0, 1.0}},
 		};
 
-		const auto rotation_axes = std::vector<Direction_t>{
+		const auto rotation_axes = std::vector<aoc::Direction_t<Position_t::Value_t>>{
 			{0.0, 0.0, 1.0},
 			{0.0, 1.0, 0.0},
 			{1.0, 0.0, 0.0},

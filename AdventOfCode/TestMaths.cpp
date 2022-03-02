@@ -4,6 +4,8 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 #include <Maths/Geometry.hpp>
 #include "Common.hpp"
 
+#include <numbers>
+
 namespace test_geometry
 {
 TEST_CLASS(Point2D)
@@ -263,6 +265,94 @@ public:
 			for (auto y : aoc::ValueRange<int>(-10, 10)) {
 				Assert::IsTrue(rect.contains({ x, y }));
 			}
+		}
+	}
+};
+
+TEST_CLASS(TestRotations)
+{
+public:
+
+	TEST_METHOD(PointIn3Dimensions)
+	{
+		using Point_t = aoc::Point3D<double>;
+		using Direction_t = aoc::Direction_t<double>;
+
+		const auto points = std::array{
+			Point_t{0.0, 0.0, 1.0},
+			Point_t{0.0, 1.0, 0.0},
+			Point_t{0.0, 1.0, 1.0},
+			Point_t{1.0, 0.0, 0.0},
+			Point_t{1.0, 0.0, 1.0},
+			Point_t{1.0, 1.0, 0.0},
+			Point_t{1.0, 1.0, 1.0},
+		};
+
+		const auto rotation_axes = std::array{
+			Direction_t{0.0, 0.0, 1.0},
+			Direction_t{0.0, 1.0, 0.0},
+			Direction_t{1.0, 0.0, 0.0},
+			// aoc::Direction_t<double>{0.0, 1.0, 1.0},
+			// aoc::Direction_t<double>{1.0, 0.0, 1.0},
+			// aoc::Direction_t<double>{1.0, 1.0, 0.0},
+			// aoc::Direction_t<double>{1.0, 1.0, 1.0},
+		};
+
+		const auto expected = std::array{
+			std::array{
+				Point_t{0.,0.,1.},
+				Point_t{-1.,0.,0.},
+				Point_t{-1.,0.,1.},
+				Point_t{0.,1.,0.},
+				Point_t{0.,1.,1.},
+				Point_t{-1.,1.,0.},
+				Point_t{-1.,1.,1.}
+			},
+			std::array{
+				Point_t{1.,0.,0.},
+				Point_t{0.,1.,0.},
+				Point_t{1.,1.,0.},
+				Point_t{0.,0.,-1.},
+				Point_t{1.,0.,-1.},
+				Point_t{0.,1.,-1.},
+				Point_t{1.,1.,-1.}
+			},
+			std::array{
+				Point_t{0.,-1.,0.},
+				Point_t{0.,0.,1.},
+				Point_t{0.,-1.,1.},
+				Point_t{1.,0.,0.},
+				Point_t{1.,-1.,0.},
+				Point_t{1.,0.,1.},
+				Point_t{1.,-1.,1.}
+			}
+		};
+
+		auto approx_equal = [](double a, double b, double epsilon)
+		{
+			if (a + epsilon >= b && a - epsilon <= b) {
+				return true;
+			}
+
+			Logger::WriteMessage(std::format("{} != {} +/- {}", a, b, epsilon).c_str());
+			return false;
+		};
+
+		auto expected_points = expected.begin();
+		for (const auto& axis : rotation_axes) {
+			auto expected_point = expected_points->begin();
+
+			for (const auto& p : points) {
+				const auto rotated = aoc::rotate(p, axis, std::numbers::pi / 2);
+
+				Assert::IsTrue(approx_equal(expected_point->x, rotated.x, 0.001));
+				Assert::IsTrue(approx_equal(expected_point->y, rotated.y, 0.001));
+				Assert::IsTrue(approx_equal(expected_point->z, rotated.z, 0.001));
+
+				++expected_point;
+			}
+
+			++expected_points;
 		}
 	}
 };

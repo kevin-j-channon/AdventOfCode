@@ -158,10 +158,10 @@ public:
 			{{1.0, 1.0, 1.0}},
 		};
 
-		const auto rotation_axes = std::vector<boost::qvm::vec<Direction_t::Value_t, 3>>{
-			{{0.0, 0.0, 1.0}},
-			{{0.0, 1.0, 0.0}},
-			{{1.0, 0.0, 0.0}},
+		const auto rotation_axes = std::vector<Direction_t>{
+			{0.0, 0.0, 1.0},
+			{0.0, 1.0, 0.0},
+			{1.0, 0.0, 0.0},
 			// {0.0, 1.0, 1.0},
 			// {1.0, 0.0, 1.0},
 			// {1.0, 1.0, 0.0},

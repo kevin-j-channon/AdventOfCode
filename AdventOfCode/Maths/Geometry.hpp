@@ -5,7 +5,8 @@
 #include "StringOperations.hpp"
 #include "Exception.hpp"
 
-#include <armadillo>
+#include <boost/qvm.hpp>
+#include <boost/qvm/quat_operations.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -411,6 +412,25 @@ std::vector<Point2D<Value_T>> rasterize(const Line2d<Value_T>& line)
 	}
 
 	throw Exception("Only horizontal or vertical lines can be rasterized");
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
+using Direction_t = Point3D<Value_T>;
+
+template<typename Value_T>
+Point3D<Value_T> rotate(const Point3D<Value_T>& p, const Direction_t<Value_T>& axis, Value_T angle)
+{
+	using namespace boost::qvm;
+
+	const auto cos_term = cos(0.5 * angle);
+	const auto sin_term = sin(0.5 * angle);
+	const auto q1 = quat<Value_T>{ {0.0, p.x, p.y, p.z} };
+	const auto q2 = quat<Value_T>{ {cos_term, sin_term * axis.x, sin_term * axis.y, sin_term * axis.z} };
+
+	const auto rotated = (q2 * q1) * conjugate(q2);
+	return { rotated.a[1], rotated.a[2], rotated.a[3] };
 }
 
 ///////////////////////////////////////////////////////////////////////////////

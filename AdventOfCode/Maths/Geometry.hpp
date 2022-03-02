@@ -419,18 +419,37 @@ std::vector<Point2D<Value_T>> rasterize(const Line2d<Value_T>& line)
 template<typename Value_T>
 using Direction_t = Point3D<Value_T>;
 
-template<typename Value_T>
-Point3D<Value_T> rotate(const Point3D<Value_T>& p, const Direction_t<Value_T>& axis, Value_T angle)
+using RotationAxis_t = Direction_t<double>;
+using RotationAngle_t = double;
+
+using Quaternion_t = boost::qvm::quat<double>;
+
+namespace quaternion
 {
-	using namespace boost::qvm;
 
-	const auto cos_term = cos(0.5 * angle);
-	const auto sin_term = sin(0.5 * angle);
-	const auto q1 = quat<Value_T>{ {0.0, p.x, p.y, p.z} };
-	const auto q2 = quat<Value_T>{ {cos_term, sin_term * axis.x, sin_term * axis.y, sin_term * axis.z} };
+inline Quaternion_t from_axis_and_angle(const RotationAxis_t& axis, RotationAngle_t angle)
+{
+	return boost::qvm::rot_quat(boost::qvm::vec<double, 3>{ {axis.x, axis.y, axis.z}}, angle);
+}
 
-	const auto rotated = (q2 * q1) * conjugate(q2);
+inline Quaternion_t from_point(const Point3D<double>& p)
+{
+	return { {0.0, p.x, p.y, p.z} };
+}
+
+using boost::qvm::conjugate;
+
+}
+
+inline Point3D<double> rotate(const Point3D<double>& p, const Quaternion_t& q)
+{
+	const auto rotated = (q * quaternion::from_point(p)) * quaternion::conjugate(q);
 	return { rotated.a[1], rotated.a[2], rotated.a[3] };
+}
+
+inline Point3D<double> rotate(const Point3D<double>& p, const Direction_t<double>& axis, double angle)
+{
+	return rotate(p, quaternion::from_axis_and_angle(axis, angle));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

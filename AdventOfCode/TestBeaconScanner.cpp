@@ -179,7 +179,7 @@ public:
 			auto expected_beacon = expected_beacons->begin();
 			
 			for (const auto& b : beacons) {
-				const auto rotated = MappedSpace::rotate_beacon(b, axis, std::numbers::pi / 2);
+				const auto rotated = MappedSpace::rotate_beacon(b, aoc::quaternion::from_axis_and_angle(axis, std::numbers::pi / 2));
 
 				Assert::AreEqual((int)expected_beacon->position().x, (int)rotated.position().x);
 				Assert::AreEqual((int)expected_beacon->position().y, (int)rotated.position().y);
@@ -190,6 +190,12 @@ public:
 			
 			++expected_beacons;
 		}
+	}
+
+	TEST_METHOD(GettingRotations)
+	{
+		const auto rotations = MappedSpace::get_rotation_axes();
+		Assert::AreEqual(size_t{ 13 }, rotations.size());
 	}
 };
 }

@@ -201,39 +201,39 @@ public:
 	{
 		auto out = std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>>{};
 
-		add_plane_rotations(out);
-		add_edge_rotations(out);
-		add_vertex_rotations(out);
+		_add_plane_rotations(out);
+		_add_edge_rotations(out);
+		_add_vertex_rotations(out);
 
 		return out;
 	}
 
-	static void add_plane_rotations(std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>>& rotation_axes)
+private:
+
+	static void _add_plane_rotations(std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>>& rotation_axes)
 	{
 		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 0, 0}, 3);
 		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 0, 1, 0}, 3);
 		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 0, 0, 1}, 3);
 	}
 
-	static void add_edge_rotations(std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>>& rotation_axes)
+	static void _add_edge_rotations(std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>>& rotation_axes)
 	{
 		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 1, 0}, 1);
 		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 0, 1}, 1);
 		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 0, 1, 1}, 1);
-		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1,-1, 0}, 1);
-		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 0,-1}, 1);
-		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 0, 1,-1}, 1);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, -1, 0}, 1);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 0, -1}, 1);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 0, 1, -1}, 1);
 	}
 
-	static void add_vertex_rotations(std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>>& rotation_axes)
+	static void _add_vertex_rotations(std::vector<std::pair<Direction_t<Position_t::Value_t>, uint32_t>>& rotation_axes)
 	{
 		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 1, 1}, 2);
-		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 1,-1}, 2);
-		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1,-1, 1}, 2);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, 1, -1}, 2);
+		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{ 1, -1, 1}, 2);
 		rotation_axes.emplace_back(Direction_t<Position_t::Value_t>{-1, 1, 1}, 2);
 	}
-
-private:
 
 	static std::vector<Line_t> _create_all_offsets(const Beacons_t& reference, const Beacons_t& sample)
 	{

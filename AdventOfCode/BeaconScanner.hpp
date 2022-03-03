@@ -149,6 +149,55 @@ std::vector<ScannerReport> read_scanner_report(std::istream& is)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+class BeaconCloudRotator
+{
+	struct RotatedBeacons
+	{
+		Beacons_t beacons;
+		Quaternion_t rotation;
+	};
+
+public:
+
+	BeaconCloudRotator(const Beacons_t& beacons)
+		: _beacons{ beacons }
+	{}
+
+	std::vector<RotatedBeacons> get_rotations()
+	{
+		auto out = std::vector<RotatedBeacons>{};
+
+		for (const auto& rotation : quaternion::cubic_rotations()) {
+			out.push_back(rotate_all_beacons(rotation));
+		}
+
+		return out;
+	}
+
+	RotatedBeacons rotate_all_beacons(const Quaternion_t& rotation)
+	{
+		auto out = RotatedBeacons{};
+		out.rotation = rotation;
+
+		out.beacons.reserve(_beacons.size());
+		std::transform(_beacons.begin(), _beacons.end(), std::back_inserter(out.beacons), [&rotation](auto&& b) -> Beacon {
+			return { rotate_beacon(b, rotation) };
+			});
+
+		return out;
+	}
+
+	static Beacon rotate_beacon(const Beacon& b, const Quaternion_t& rotation)
+	{
+		return { rotate(b.position(), rotation) };
+	}
+
+private:
+	const Beacons_t& _beacons;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 class MappedSpace
 {
 	using Line_t = Line3d<double>;
@@ -192,53 +241,6 @@ public:
 		);
 	}
 
-	static std::vector<RotatedBeacons> get_rotations(const Beacons_t& original_beacons)
-	{
-		static const auto rotation_axes = get_rotation_axes();
-
-		auto out = std::vector<RotatedBeacons>{};
-		out.push_back({ original_beacons, Quaternion_t{{1.0, 0.0, 0.0, 0.0}} });
-
-		for (const auto& [axis, symetries] : rotation_axes) {
-			const auto step = 2 * std::numbers::pi / (1 + symetries);
-
-			for (const auto& i : ValueRange<int>(1, symetries)) {
-				out.push_back(rotate_all_beacons(original_beacons, quaternion::from_axis_and_angle(axis, i * step)));
-			}
-		}
-
-		return out;
-	}
-
-	static RotatedBeacons rotate_all_beacons(const Beacons_t& original, const Quaternion_t& rotation)
-	{
-		auto out = RotatedBeacons{};
-		out.rotation = rotation;
-
-		out.beacons.reserve(original.size());
-		std::transform(original.begin(), original.end(), std::back_inserter(out.beacons), [&rotation](auto&& b) -> Beacon {
-			return { rotate_beacon(b, rotation) };
-			});
-
-		return out;
-	}
-
-	static Beacon rotate_beacon(const Beacon& b, const Quaternion_t& rotation)
-	{
-		return { rotate(b.position(), rotation) };
-	}
-
-	static std::vector<std::pair<Direction_t, uint32_t>> get_rotation_axes()
-	{
-		auto out = std::vector<std::pair<Direction_t, uint32_t>>{};
-
-		_add_plane_rotations(out);
-		_add_edge_rotations(out);
-		_add_vertex_rotations(out);
-
-		return out;
-	}
-
 private:
 
 	static MappedSpace _rotate_and_add_beacons(MappedSpace map, const ScannerReport& report)
@@ -249,7 +251,7 @@ private:
 			uint32_t		// Score
 			>>{};
 
-		const auto sets_of_rotated_beacons = get_rotations(report.beacons());
+		const auto sets_of_rotated_beacons = BeaconCloudRotator{ report.beacons() }.get_rotations();
 		for (const auto& rotated_beacons : sets_of_rotated_beacons) {
 			const auto offset_and_score = find_translational_offset(map.beacons(), rotated_beacons.beacons);
 			if (!offset_and_score) {
@@ -260,33 +262,6 @@ private:
 		}
 
 		return std::move(map);
-	}
-
-
-	static void _add_plane_rotations(std::vector<std::pair<Direction_t, uint32_t>>& rotation_axes)
-	{
-		// TODO: All these functions should actually return quaternions for each explicit rotation.
-		rotation_axes.emplace_back(Direction_t{ 1, 0, 0}, 3);
-		rotation_axes.emplace_back(Direction_t{ 0, 1, 0}, 3);
-		rotation_axes.emplace_back(Direction_t{ 0, 0, 1}, 3);
-	}
-
-	static void _add_edge_rotations(std::vector<std::pair<Direction_t, uint32_t>>& rotation_axes)
-	{
-		rotation_axes.emplace_back(Direction_t{ 1, 1, 0}, 1);
-		rotation_axes.emplace_back(Direction_t{ 1, 0, 1}, 1);
-		rotation_axes.emplace_back(Direction_t{ 0, 1, 1}, 1);
-		rotation_axes.emplace_back(Direction_t{ 1, -1, 0}, 1);
-		rotation_axes.emplace_back(Direction_t{ 1, 0, -1}, 1);
-		rotation_axes.emplace_back(Direction_t{ 0, 1, -1}, 1);
-	}
-
-	static void _add_vertex_rotations(std::vector<std::pair<Direction_t, uint32_t>>& rotation_axes)
-	{
-		rotation_axes.emplace_back(Direction_t{ 1, 1, 1}, 2);
-		rotation_axes.emplace_back(Direction_t{ 1, 1, -1}, 2);
-		rotation_axes.emplace_back(Direction_t{ 1, -1, 1}, 2);
-		rotation_axes.emplace_back(Direction_t{-1, 1, 1}, 2);
 	}
 
 	static std::vector<Line_t> _create_all_offsets(const Beacons_t& reference, const Beacons_t& sample)
@@ -321,7 +296,7 @@ private:
 			return x1.second.size() < x2.second.size();
 			});
 
-		return { direction_with_max_number_of_lines->first, direction_with_max_number_of_lines->second.size() };
+		return { direction_with_max_number_of_lines->first, static_cast<uint32_t>(direction_with_max_number_of_lines->second.size()) };
 	}
 
 	static std::map<Direction_t, std::vector<Line_t>> _group_offsets_by_direction(std::vector<Line_t> offsets)

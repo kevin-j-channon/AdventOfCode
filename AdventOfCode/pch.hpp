@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cctype>
 #include <chrono>
+#include <cmath>
 #include <cstdint>
 #include <cwctype>
 #include <filesystem>
@@ -19,6 +20,7 @@
 #include <iterator>
 #include <limits>
 #include <map>
+#include <numbers>
 #include <numeric>
 #include <optional>
 #include <queue>

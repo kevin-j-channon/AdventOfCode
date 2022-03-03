@@ -8,12 +8,6 @@
 #include <boost/qvm.hpp>
 #include <boost/qvm/quat_operations.hpp>
 
-#include <stdexcept>
-#include <string>
-#include <vector>
-#include <istream>
-#include <cmath>
-
 ///////////////////////////////////////////////////////////////////////////////
 
 namespace aoc
@@ -427,30 +421,57 @@ using Quaternion_t = boost::qvm::quat<double>;
 namespace quaternion
 {
 
-inline Quaternion_t from_axis_and_angle(const RotationAxis_t& axis, RotationAngle_t angle)
-{
-	return boost::qvm::rot_quat(boost::qvm::vec<double, 3>{ {axis.x, axis.y, axis.z}}, angle);
-}
+Quaternion_t from_axis_and_angle(const RotationAxis_t& axis, RotationAngle_t angle);
 
-inline Quaternion_t from_point(const Point3D<double>& p)
+inline Quaternion_t from_point(const Point3D<double>& p);
+
+constexpr std::array<Quaternion_t, 24> cubic_rotations()
 {
-	return { {0.0, p.x, p.y, p.z} };
+	constexpr auto inv_sqrt2 = 1.0 / std::numbers::sqrt2;
+	constexpr auto sqrt3_by_2 = std::numbers::sqrt3 / 2.0;
+
+	return {
+		// Identity rotation
+		Quaternion_t{{       1.0,        0.0,        0.0,        0.0 }},	// 1, 0, 0 -> 0
+
+		// Plane rotations.
+		Quaternion_t{{ inv_sqrt2,  inv_sqrt2,        0.0,        0.0 }},	// 1, 0, 0 -> 1 * pi / 2
+		Quaternion_t{{       0.0,        1.0,        0.0,        0.0 }},	// 1, 0, 0 -> 2 * pi / 2
+		Quaternion_t{{-inv_sqrt2,  inv_sqrt2,        0.0,        0.0 }},	// 1, 0, 0 -> 3 * pi / 2
+		Quaternion_t{{ inv_sqrt2,        0.0,  inv_sqrt2,        0.0 }},	// 0, 1, 0 -> 1 * pi / 2
+		Quaternion_t{{       0.0,        0.0,        1.0,        0.0 }},	// 0, 1, 0 -> 2 * pi / 2
+		Quaternion_t{{-inv_sqrt2,        0.0,  inv_sqrt2,        0.0 }},	// 0, 1, 0 -> 3 * pi / 2
+		Quaternion_t{{ inv_sqrt2,        0.0,        0.0,  inv_sqrt2 }},	// 0, 0, 1 -> 1 * pi / 2
+		Quaternion_t{{       0.0,        0.0,        0.0,        1.0 }},	// 0, 0, 1 -> 2 * pi / 2
+		Quaternion_t{{-inv_sqrt2,        0.0,        0.0,  inv_sqrt2 }},	// 0, 0, 1 -> 3 * pi / 2
+
+		// Edge rotations.
+		Quaternion_t{{       0.0,        0.0,        1.0,        1.0 }},	// 0, 1, 1 -> pi
+		Quaternion_t{{       0.0,        1.0,        0.0,        1.0 }},	// 1, 0, 1 -> pi
+		Quaternion_t{{       0.0,        1.0,        1.0,        0.0 }},	// 1, 1, 0 -> pi
+		Quaternion_t{{       0.0,        1.0,       -1.0,        1.0 }},	// 0, 1, 1 -> pi
+		Quaternion_t{{       0.0,        1.0,        0.0,       -1.0 }},	// 0, 1, 1 -> pi
+		Quaternion_t{{       0.0,        0.0,        1.0,       -1.0 }},	// 0, 1, 1 -> pi
+
+		// Vertex rotations.
+		Quaternion_t{{       0.5, sqrt3_by_2, sqrt3_by_2, sqrt3_by_2 }},	// 1, 1, 1 -> 2 * pi / 3
+		Quaternion_t{{      -0.5, sqrt3_by_2, sqrt3_by_2, sqrt3_by_2 }},	// 1, 1, 1 -> 4 * pi / 3
+		Quaternion_t{{       0.5, sqrt3_by_2, sqrt3_by_2,-sqrt3_by_2 }},	// 1, 1,-1 -> 2 * pi / 3
+		Quaternion_t{{      -0.5, sqrt3_by_2, sqrt3_by_2,-sqrt3_by_2 }},	// 1, 1,-1 -> 4 * pi / 3
+		Quaternion_t{{       0.5, sqrt3_by_2,-sqrt3_by_2, sqrt3_by_2 }},	// 1,-1, 1 -> 2 * pi / 3
+		Quaternion_t{{      -0.5, sqrt3_by_2,-sqrt3_by_2, sqrt3_by_2 }},	// 1,-1, 1 -> 4 * pi / 3
+		Quaternion_t{{       0.5,-sqrt3_by_2, sqrt3_by_2, sqrt3_by_2 }},	//-1, 1, 1 -> 2 * pi / 3
+		Quaternion_t{{      -0.5,-sqrt3_by_2, sqrt3_by_2, sqrt3_by_2 }},	//-1, 1, 1 -> 4 * pi / 3
+	};
 }
 
 using boost::qvm::conjugate;
 
 }
 
-inline Point3D<double> rotate(const Point3D<double>& p, const Quaternion_t& q)
-{
-	const auto rotated = (q * quaternion::from_point(p)) * quaternion::conjugate(q);
-	return { rotated.a[1], rotated.a[2], rotated.a[3] };
-}
+Point3D<double> rotate(const Point3D<double>& p, const Quaternion_t& q);
 
-inline Point3D<double> rotate(const Point3D<double>& p, const Direction_t<double>& axis, double angle)
-{
-	return rotate(p, quaternion::from_axis_and_angle(axis, angle));
-}
+Point3D<double> rotate(const Point3D<double>& p, const Direction_t<double>& axis, double angle);
 
 ///////////////////////////////////////////////////////////////////////////////
 

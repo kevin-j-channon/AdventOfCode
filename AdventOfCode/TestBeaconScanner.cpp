@@ -139,11 +139,14 @@ public:
 
 		const auto reports = read_scanner_report(data);
 
-		const auto offset = MappedSpace::find_translational_offset(reports.at(0).beacons(), reports.at(1).beacons());
+		const auto offset_and_score = MappedSpace::find_translational_offset(reports.at(0).beacons(), reports.at(1).beacons());
 
-		Assert::IsTrue(offset.has_value());
-		Assert::AreEqual(-5.0, offset->x);
-		Assert::AreEqual(-2.0, offset->y);
+		Assert::IsTrue(offset_and_score.has_value());
+
+		const auto [offset, score] = *offset_and_score;
+		Assert::AreEqual(-5.0, offset.x);
+		Assert::AreEqual(-2.0, offset.y);
+		Assert::AreEqual(uint32_t{ 3 }, score);
 	}
 
 	TEST_METHOD(RotateBeacon)

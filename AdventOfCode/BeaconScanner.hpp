@@ -5,12 +5,19 @@
 
 #include <numbers>
 
+///////////////////////////////////////////////////////////////////////////////
+
 namespace aoc
 {
 namespace navigation
 {
+
+///////////////////////////////////////////////////////////////////////////////
+
 using Position_t = Point3D<double>;
 using Direction_t = aoc::Direction_t<Position_t::Value_t>;
+
+///////////////////////////////////////////////////////////////////////////////
 
 class Beacon
 {
@@ -25,7 +32,11 @@ private:
 	Position_t _position;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
 using Beacons_t = std::vector<Beacon>;
+
+///////////////////////////////////////////////////////////////////////////////
 
 class Scanner
 {
@@ -40,7 +51,11 @@ private:
 	Id_t _id;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
 using Scanners_t = std::vector<Scanner>;
+
+///////////////////////////////////////////////////////////////////////////////
 
 class ScannerReport
 {
@@ -119,6 +134,8 @@ private:
 	Beacons_t _beacons;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
 std::vector<ScannerReport> read_scanner_report(std::istream& is)
 {
 	auto out = std::vector<ScannerReport>{};
@@ -130,11 +147,17 @@ std::vector<ScannerReport> read_scanner_report(std::istream& is)
 	return out;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 class MappedSpace
 {
 	using Line_t = Line3d<double>;
-	using RotatedBeacon_t = std::pair<Beacon, Quaternion_t>;
-	using RotatedBeacons_t = std::vector<RotatedBeacon_t>;
+
+	struct RotatedBeacons
+	{
+		Beacons_t beacons;
+		Quaternion_t rotation;
+	};
 
 public:
 
@@ -152,12 +175,16 @@ public:
 		out._scanners.emplace_back(reports[0].id());
 		out._beacons = reports[0].beacons();
 
+		out = std::accumulate(std::next(reports.begin()), reports.end(), std::move(out), [](auto&& current, const auto& report) -> MappedSpace {
+			return _rotate_and_add_beacons(std::move(current), report);
+			});
+
 		const auto offset = find_translational_offset(out.beacons(), reports[1].beacons());
 
 		return out;
 	}
 
-	static std::optional<Direction_t> find_translational_offset(const Beacons_t& reference, const Beacons_t& sample)
+	static std::optional<std::pair<Direction_t, uint32_t>> find_translational_offset(const Beacons_t& reference, const Beacons_t& sample)
 	{
 		return _find_offset_with_threshold(
 			_create_all_offsets(reference, sample),
@@ -165,33 +192,32 @@ public:
 		);
 	}
 
-	static std::vector<RotatedBeacons_t> get_rotations(Beacons_t original)
+	static std::vector<RotatedBeacons> get_rotations(const Beacons_t& original_beacons)
 	{
 		static const auto rotation_axes = get_rotation_axes();
 
-		auto out = std::vector<RotatedBeacons_t>{};
-		auto original_with_direction = RotatedBeacons_t{};
-		std::transform(original.begin(), original.end(), std::back_inserter(original_with_direction),
-			[](auto&& b) -> RotatedBeacon_t { return { b, Quaternion_t{{1.0, 0.0, 0.0, 0.0}} }; });
+		auto out = std::vector<RotatedBeacons>{};
+		out.push_back({ original_beacons, Quaternion_t{{1.0, 0.0, 0.0, 0.0}} });
 
 		for (const auto& [axis, symetries] : rotation_axes) {
 			const auto step = 2 * std::numbers::pi / (1 + symetries);
 
 			for (const auto& i : ValueRange<int>(1, symetries)) {
-				out.push_back(rotate_all_beacons(original, quaternion::from_axis_and_angle(axis, i * step)));
+				out.push_back(rotate_all_beacons(original_beacons, quaternion::from_axis_and_angle(axis, i * step)));
 			}
 		}
 
 		return out;
 	}
 
-	static RotatedBeacons_t rotate_all_beacons(const Beacons_t& original, const Quaternion_t& rotation)
+	static RotatedBeacons rotate_all_beacons(const Beacons_t& original, const Quaternion_t& rotation)
 	{
-		auto out = RotatedBeacons_t{};
-		out.reserve(original.size());
+		auto out = RotatedBeacons{};
+		out.rotation = rotation;
 
-		std::transform(original.begin(), original.end(), std::back_inserter(out), [&rotation](auto&& b) -> RotatedBeacon_t {
-			return { rotate_beacon(b, rotation), rotation };
+		out.beacons.reserve(original.size());
+		std::transform(original.begin(), original.end(), std::back_inserter(out.beacons), [&rotation](auto&& b) -> Beacon {
+			return { rotate_beacon(b, rotation) };
 			});
 
 		return out;
@@ -215,8 +241,31 @@ public:
 
 private:
 
+	static MappedSpace _rotate_and_add_beacons(MappedSpace map, const ScannerReport& report)
+	{
+		auto results = std::vector<std::tuple<
+			Quaternion_t,	// Rotation
+			Direction_t,	// Offset
+			uint32_t		// Score
+			>>{};
+
+		const auto sets_of_rotated_beacons = get_rotations(report.beacons());
+		for (const auto& rotated_beacons : sets_of_rotated_beacons) {
+			const auto offset_and_score = find_translational_offset(map.beacons(), rotated_beacons.beacons);
+			if (!offset_and_score) {
+				continue;
+			}
+			
+			results.emplace_back(rotated_beacons.rotation, offset_and_score->first, offset_and_score->second);
+		}
+
+		return std::move(map);
+	}
+
+
 	static void _add_plane_rotations(std::vector<std::pair<Direction_t, uint32_t>>& rotation_axes)
 	{
+		// TODO: All these functions should actually return quaternions for each explicit rotation.
 		rotation_axes.emplace_back(Direction_t{ 1, 0, 0}, 3);
 		rotation_axes.emplace_back(Direction_t{ 0, 1, 0}, 3);
 		rotation_axes.emplace_back(Direction_t{ 0, 0, 1}, 3);
@@ -254,7 +303,17 @@ private:
 		return lines;
 	}
 
-	static std::optional<Direction_t> _find_offset_with_threshold(std::vector<Line_t> point_offsets, size_t threshold)
+	static std::optional<std::pair<Direction_t, uint32_t>> _find_offset_with_threshold(std::vector<Line_t> point_offsets, size_t threshold)
+	{
+		const auto best_offset_and_score = _find_best_scoring_offset(std::move(point_offsets));
+		if (best_offset_and_score.second < threshold) {
+			return {};
+		}
+		
+		return {std::move(best_offset_and_score)};
+	}
+
+	static std::pair<Direction_t, uint32_t> _find_best_scoring_offset(std::vector<Line_t> point_offsets)
 	{
 		const auto parallel_groups = _group_offsets_by_direction(std::move(point_offsets));
 
@@ -262,7 +321,7 @@ private:
 			return x1.second.size() < x2.second.size();
 			});
 
-		return direction_with_max_number_of_lines->second.size() >= threshold ? std::optional<Direction_t>{direction_with_max_number_of_lines->first} : std::nullopt;
+		return { direction_with_max_number_of_lines->first, direction_with_max_number_of_lines->second.size() };
 	}
 
 	static std::map<Direction_t, std::vector<Line_t>> _group_offsets_by_direction(std::vector<Line_t> offsets)
@@ -281,10 +340,14 @@ private:
 	Scanners_t _scanners;
 };
 
+///////////////////////////////////////////////////////////////////////////////
+
 uint32_t calculate_number_of_beacons(const Scanners_t& scanners)
 {
 	return 0;
 }
+
+///////////////////////////////////////////////////////////////////////////////
 
 }
 }

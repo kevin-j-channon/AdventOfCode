@@ -16,6 +16,16 @@ Quaternion_t from_axis_and_angle(const RotationAxis_t& axis, RotationAngle_t ang
 
 ///////////////////////////////////////////////////////////////////////////////
 
+std::pair<RotationAxis_t, RotationAngle_t> to_axis_and_angle(const Quaternion_t& q)
+{
+	const auto angle = 2 * std::acos(q.a[0]);
+	const auto sin_half_angle = std::sin(0.5 * angle);
+
+	return { {q.a[1] / sin_half_angle, q.a[2] / sin_half_angle, q.a[3] / sin_half_angle}, angle };
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 Quaternion_t from_point(const Point3D<double>& p)
 {
 	return { { 0.0, p.x, p.y, p.z } };

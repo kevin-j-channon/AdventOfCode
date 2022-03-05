@@ -430,6 +430,8 @@ Quaternion_t from_axis_and_angle(const Direction_t<Value_T>& axis, RotationAngle
 	return from_axis_and_angle(RotationAxis_t{ static_cast<double>(axis.x), static_cast<double>(axis.y) , static_cast<double>(axis.z) }, angle);
 }
 
+std::pair<RotationAxis_t, RotationAngle_t> to_axis_and_angle(const Quaternion_t& q);
+
 inline Quaternion_t from_point(const Point3D<double>& p);
 
 constexpr std::array<Quaternion_t, 24> cubic_rotations()

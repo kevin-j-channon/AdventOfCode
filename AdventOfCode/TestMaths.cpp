@@ -6,6 +6,8 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 #include <numbers>
 
+#define REPEAT_TEST(n) for (auto _ = 0; _ < 10; ++_)
+
 namespace test_geometry
 {
 TEST_CLASS(Point2D)
@@ -328,16 +330,6 @@ public:
 			}
 		};
 
-		auto approx_equal = [](double a, double b, double epsilon)
-		{
-			if (a + epsilon >= b && a - epsilon <= b) {
-				return true;
-			}
-
-			Logger::WriteMessage(std::format("{} != {} +/- {}", a, b, epsilon).c_str());
-			return false;
-		};
-
 		auto expected_points = expected.begin();
 		for (const auto& axis : rotation_axes) {
 			auto expected_point = expected_points->begin();
@@ -345,9 +337,9 @@ public:
 			for (const auto& p : points) {
 				const auto rotated = aoc::rotate(p, axis, std::numbers::pi / 2);
 
-				Assert::IsTrue(approx_equal(expected_point->x, rotated.x, 0.001));
-				Assert::IsTrue(approx_equal(expected_point->y, rotated.y, 0.001));
-				Assert::IsTrue(approx_equal(expected_point->z, rotated.z, 0.001));
+				Assert::AreEqual(expected_point->x, rotated.x, 0.001);
+				Assert::AreEqual(expected_point->y, rotated.y, 0.001);
+				Assert::AreEqual(expected_point->z, rotated.z, 0.001);
 
 				++expected_point;
 			}
@@ -426,6 +418,35 @@ public:
 			}
 
 			++expected_points;
+		}
+	}
+
+	TEST_METHOD(ConvertRotationToAxisAndAngle)
+	{
+		using std::numbers::pi;
+		using Direction_t = aoc::Direction_t<double>;
+
+		auto rng = std::mt19937_64{ 324235 };
+		auto angle_gen = std::uniform_real_distribution<>{ 0.0, pi };
+		auto axis_gen = std::uniform_real_distribution<>{ 0.0, 1.0 };
+
+		REPEAT_TEST(100) {
+			const auto angle = angle_gen(rng);
+
+			const auto unnormed_x = axis_gen(rng);
+			const auto unnormed_y = axis_gen(rng);
+			const auto unnormed_z = axis_gen(rng);
+
+			const auto norm = std::sqrt(unnormed_x * unnormed_x + unnormed_y * unnormed_y + unnormed_z * unnormed_z);
+
+			const auto axis = boost::qvm::vec<double, 3>{{ unnormed_x / norm, unnormed_y / norm, unnormed_z / norm }};
+
+			const auto [recovered_axis, recovered_angle] = aoc::quaternion::to_axis_and_angle(boost::qvm::rot_quat(axis, angle));
+
+			Assert::AreEqual(angle, recovered_angle, 1e-10);
+			Assert::AreEqual(axis.a[0], recovered_axis.x, 1e-10);
+			Assert::AreEqual(axis.a[1], recovered_axis.y, 1e-10);
+			Assert::AreEqual(axis.a[2], recovered_axis.z, 1e-10);
 		}
 	}
 };

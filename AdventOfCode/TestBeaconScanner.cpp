@@ -52,23 +52,23 @@ public:
 
 		{
 			const auto& b = scanner.beacons().at(0);
-			Assert::AreEqual(0.0, b.position().x);
-			Assert::AreEqual(2.0, b.position().y);
-			Assert::AreEqual(0.0, b.position().z);
+			Assert::AreEqual(0, b.position().x);
+			Assert::AreEqual(2, b.position().y);
+			Assert::AreEqual(0, b.position().z);
 		}
 
 		{
 			const auto& b = scanner.beacons().at(1);
-			Assert::AreEqual(4.0, b.position().x);
-			Assert::AreEqual(1.0, b.position().y);
-			Assert::AreEqual(0.0, b.position().z);
+			Assert::AreEqual(4, b.position().x);
+			Assert::AreEqual(1, b.position().y);
+			Assert::AreEqual(0, b.position().z);
 		}
 
 		{
 			const auto& b = scanner.beacons().at(2);
-			Assert::AreEqual(3.0, b.position().x);
-			Assert::AreEqual(3.0, b.position().y);
-			Assert::AreEqual(0.0, b.position().z);
+			Assert::AreEqual(3, b.position().x);
+			Assert::AreEqual(3, b.position().y);
+			Assert::AreEqual(0, b.position().z);
 		}
 	}
 	TEST_METHOD(ReadingMultipleScannersFromAStream)
@@ -91,14 +91,14 @@ public:
 
 		auto point_values = std::array{
 			std::array{
-				std::array{ 0.0, 2.0 },
-				std::array{ 4.0, 1.0 },
-				std::array{ 3.0, 3.0 }
+				std::array{ 0, 2 },
+				std::array{ 4, 1 },
+				std::array{ 3, 3 }
 			},
 			std::array{
-				std::array{ -1.0, -1.0 },
-				std::array{ -5.0,  0.0 },
-				std::array{ -2.0,  1.0 }
+				std::array{ -1, -1 },
+				std::array{ -5,  0 },
+				std::array{ -2,  1 }
 			}
 		};
 
@@ -113,7 +113,7 @@ public:
 				Assert::AreEqual(values[j][0], b.position().x);
 				Assert::AreEqual(values[j][1], b.position().y);
 
-				Assert::AreEqual(0.0, b.position().z);
+				Assert::AreEqual(0, b.position().z);
 			}
 		}
 	}
@@ -139,42 +139,42 @@ public:
 
 		const auto reports = read_scanner_report(data);
 
-		const auto offset_and_score = MappedSpace::find_translational_offset(reports.at(0).beacons(), reports.at(1).beacons());
+		const auto offset_and_score = BeaconCloudRegistrator{ 3 }.find_offset_and_score(reports.at(0).beacons(), reports.at(1).beacons());
 
 		Assert::IsTrue(offset_and_score.has_value());
 
 		const auto [offset, score] = *offset_and_score;
-		Assert::AreEqual(-5.0, offset.x);
-		Assert::AreEqual(-2.0, offset.y);
+		Assert::AreEqual(-5, offset.x);
+		Assert::AreEqual(-2, offset.y);
 		Assert::AreEqual(uint32_t{ 3 }, score);
 	}
 
 	TEST_METHOD(RotateBeacon)
 	{
 		const auto beacons = Beacons_t{
-			{{0.0, 0.0, 1.0}},
-			{{0.0, 1.0, 0.0}},
-			{{0.0, 1.0, 1.0}},
-			{{1.0, 0.0, 0.0}},
-			{{1.0, 0.0, 1.0}},
-			{{1.0, 1.0, 0.0}},
-			{{1.0, 1.0, 1.0}},
+			{{0, 0, 1}},
+			{{0, 1, 0}},
+			{{0, 1, 1}},
+			{{1, 0, 0}},
+			{{1, 0, 1}},
+			{{1, 1, 0}},
+			{{1, 1, 1}},
 		};
 
 		const auto rotation_axes = std::vector<aoc::Direction_t<Position_t::Value_t>>{
-			{0.0, 0.0, 1.0},
-			{0.0, 1.0, 0.0},
-			{1.0, 0.0, 0.0},
-			// {0.0, 1.0, 1.0},
-			// {1.0, 0.0, 1.0},
-			// {1.0, 1.0, 0.0},
-			// {1.0, 1.0, 1.0},
+			{0, 0, 1},
+			{0, 1, 0},
+			{1, 0, 0},
+			// {0, 1, 1},
+			// {1, 0, 1},
+			// {1, 1, 0},
+			// {1, 1, 1},
 		};
 
 		const auto expected = std::vector<Beacons_t>{
-			{{{0.,0.,1.}},{{-1.,0.,0.}},{{-1.,0.,1.}},{{0.,1.,0.}},{{0.,1.,1.}},{{-1.,1.,0.}},{{-1.,1.,1.}}},
-			{{{1.,0.,0.}},{{0.,1.,0.}},{{1.,1.,0.}},{{0.,0.,-1.}},{{1.,0.,-1.}},{{0.,1.,-1.}},{{1.,1.,-1.}}},
-			{{{0.,-1.,0.}},{{0.,0.,1.}},{{0.,-1.,1.}},{{1.,0.,0.}},{{1.,-1.,0.}},{{1.,0.,1.}},{{1.,-1.,1.}}}
+			{{{0,0,1}},{{-1,0,0}},{{-1,0,1}},{{0,1,0}},{{0,1,1}},{{-1,1,0}},{{-1,1,1}}},
+			{{{1,0,0}},{{0,1,0}},{{1,1,0}},{{0,0,-1}},{{1,0,-1}},{{0,1,-1}},{{1,1,-1}}},
+			{{{0,-1,0}},{{0,0,1}},{{0,-1,1}},{{1,0,0}},{{1,-1,0}},{{1,0,1}},{{1,-1,1}}}
 		};
 
 		auto expected_beacons = expected.begin();
@@ -192,6 +192,36 @@ public:
 			}
 			
 			++expected_beacons;
+		}
+	}
+
+	TEST_METHOD(FindCorrectRotation)
+	{
+		const auto reference = std::vector{
+			Beacon{{-1,-1, 1}},
+			Beacon{{-2,-2, 2}},
+			Beacon{{-3,-3, 3}},
+			Beacon{{-2,-3, 1}},
+			Beacon{{ 5, 6,-4}},
+			Beacon{{ 8, 0, 7}}
+		};
+
+		const auto sample = std::vector{
+			Beacon{{ 1,-1, 1}},
+			Beacon{{ 2,-2, 2}},
+			Beacon{{ 3,-3, 3}},
+			Beacon{{ 2,-1, 3}},
+			Beacon{{-5, 4,-6}},
+			Beacon{{-8,-7, 0}}
+		};
+
+		
+		for (const auto& rotated_beacons : BeaconCloudRotator{ sample }.get_rotations()) {
+			const auto offset_and_score = BeaconCloudRegistrator{ 6 }.find_offset_and_score(reference, rotated_beacons.beacons);
+			if (offset_and_score)
+			{
+				Logger::WriteMessage(std::format("Found score: {}", offset_and_score->second).c_str());
+			}
 		}
 	}
 };

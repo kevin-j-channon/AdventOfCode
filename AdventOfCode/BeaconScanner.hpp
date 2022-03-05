@@ -14,7 +14,7 @@ namespace navigation
 
 ///////////////////////////////////////////////////////////////////////////////
 
-using Position_t = Point3D<double>;
+using Position_t = Point3D<int>;
 using Direction_t = aoc::Direction_t<Position_t::Value_t>;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -189,18 +189,86 @@ public:
 
 	static Beacon rotate_beacon(const Beacon& b, const Quaternion_t& rotation)
 	{
-		return { rotate(b.position(), rotation) };
+		return rotate(b.position(), rotation);
 	}
 
 private:
+
 	const Beacons_t& _beacons;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+class BeaconCloudRegistrator
+{
+	using Line_t = Line3d<int>;
+
+public:
+
+	BeaconCloudRegistrator(uint32_t overlap_threshold)
+		: _overlap_threshold{ overlap_threshold }
+	{}
+
+	std::optional<std::pair<Direction_t, uint32_t>> find_offset_and_score(const Beacons_t& reference, const Beacons_t& sample)
+	{
+		return _find_offset_with_threshold(_create_all_offsets(reference, sample));
+	}
+
+private:
+
+	static std::vector<Line_t> _create_all_offsets(const Beacons_t& reference, const Beacons_t& sample)
+	{
+		auto lines = std::vector<Line_t>{};
+		lines.reserve(reference.size() * sample.size());
+
+		for (const auto& ref_beacon : reference) {
+			for (const auto& sample_beacon : sample) {
+				lines.emplace_back(ref_beacon.position(), sample_beacon.position());
+			}
+		}
+
+		return lines;
+	}
+
+	std::optional<std::pair<Direction_t, uint32_t>> _find_offset_with_threshold(std::vector<Line_t> point_offsets) const
+	{
+		const auto best_offset_and_score = _find_best_scoring_offset(_group_offsets_by_direction(std::move(point_offsets)));
+		if (best_offset_and_score.second < _overlap_threshold) {
+			return {};
+		}
+
+		return { std::move(best_offset_and_score) };
+	}
+
+	static std::pair<Direction_t, uint32_t> _find_best_scoring_offset(std::map<Direction_t, std::vector<Line_t>> parallel_groups)
+	{
+		const auto direction_with_max_number_of_lines = std::max_element(parallel_groups.begin(), parallel_groups.end(), [](const auto& x1, const auto& x2) {
+			return x1.second.size() < x2.second.size();
+			});
+
+		return { direction_with_max_number_of_lines->first, static_cast<uint32_t>(direction_with_max_number_of_lines->second.size()) };
+	}
+
+	static std::map<Direction_t, std::vector<Line_t>> _group_offsets_by_direction(std::vector<Line_t> offsets)
+	{
+		auto direction = [](const Line_t& line) { return Direction_t{ line.finish.x - line.start.x , line.finish.y - line.start.y, line.finish.z - line.start.z }; };
+
+		auto parallel_groups = std::map<Direction_t, std::vector<Line_t>>{};
+		for (auto& offset : offsets) {
+			parallel_groups[direction(offset)].push_back(std::move(offset));
+		}
+
+		return parallel_groups;
+	}
+
+	uint32_t _overlap_threshold;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 
 class MappedSpace
 {
-	using Line_t = Line3d<double>;
+	using Line_t = Line3d<int>;
 
 	struct RotatedBeacons
 	{
@@ -228,17 +296,7 @@ public:
 			return _rotate_and_add_beacons(std::move(current), report);
 			});
 
-		const auto offset = find_translational_offset(out.beacons(), reports[1].beacons());
-
 		return out;
-	}
-
-	static std::optional<std::pair<Direction_t, uint32_t>> find_translational_offset(const Beacons_t& reference, const Beacons_t& sample)
-	{
-		return _find_offset_with_threshold(
-			_create_all_offsets(reference, sample),
-			std::min(sample.size(), size_t{ 12 })
-		);
 	}
 
 private:
@@ -253,7 +311,7 @@ private:
 
 		const auto sets_of_rotated_beacons = BeaconCloudRotator{ report.beacons() }.get_rotations();
 		for (const auto& rotated_beacons : sets_of_rotated_beacons) {
-			const auto offset_and_score = find_translational_offset(map.beacons(), rotated_beacons.beacons);
+			const auto offset_and_score = BeaconCloudRegistrator{ 12 }.find_offset_and_score(map.beacons(), rotated_beacons.beacons);
 			if (!offset_and_score) {
 				continue;
 			}
@@ -262,53 +320,6 @@ private:
 		}
 
 		return std::move(map);
-	}
-
-	static std::vector<Line_t> _create_all_offsets(const Beacons_t& reference, const Beacons_t& sample)
-	{
-		auto lines = std::vector<Line_t>{};
-		lines.reserve(reference.size() * sample.size());
-
-		for (const auto& ref_beacon : reference) {
-			for (const auto& sample_beacon : sample) {
-				lines.emplace_back(ref_beacon.position(), sample_beacon.position());
-			}
-		}
-
-		return lines;
-	}
-
-	static std::optional<std::pair<Direction_t, uint32_t>> _find_offset_with_threshold(std::vector<Line_t> point_offsets, size_t threshold)
-	{
-		const auto best_offset_and_score = _find_best_scoring_offset(std::move(point_offsets));
-		if (best_offset_and_score.second < threshold) {
-			return {};
-		}
-		
-		return {std::move(best_offset_and_score)};
-	}
-
-	static std::pair<Direction_t, uint32_t> _find_best_scoring_offset(std::vector<Line_t> point_offsets)
-	{
-		const auto parallel_groups = _group_offsets_by_direction(std::move(point_offsets));
-
-		const auto direction_with_max_number_of_lines = std::max_element(parallel_groups.begin(), parallel_groups.end(), [](const auto& x1, const auto& x2) {
-			return x1.second.size() < x2.second.size();
-			});
-
-		return { direction_with_max_number_of_lines->first, static_cast<uint32_t>(direction_with_max_number_of_lines->second.size()) };
-	}
-
-	static std::map<Direction_t, std::vector<Line_t>> _group_offsets_by_direction(std::vector<Line_t> offsets)
-	{
-		auto direction = [](const Line_t& line) { return Direction_t{ line.finish.x - line.start.x , line.finish.y - line.start.y, line.finish.z - line.start.z }; };
-
-		auto parallel_groups = std::map<Direction_t, std::vector<Line_t>>{};
-		for (auto& offset : offsets) {
-			parallel_groups[direction(offset)].push_back(std::move(offset));
-		}
-
-		return parallel_groups;
 	}
 
 	Beacons_t _beacons;

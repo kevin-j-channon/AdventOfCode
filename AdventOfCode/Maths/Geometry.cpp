@@ -42,6 +42,15 @@ Point3D<double> rotate(const Point3D<double>& p, const Direction_t<double>& axis
 
 ///////////////////////////////////////////////////////////////////////////////
 
+Point3D<int> rotate(const Point3D<int>& p, const Quaternion_t& q)
+{
+	const auto p_double = Point3D<double>{ static_cast<double>(p.x), static_cast<double>(p.y) , static_cast<double>(p.z) };
+	const auto rotated_point = rotate(p_double, q);
+	return { std::lround(rotated_point.x), std::lround(rotated_point.y), std::lround(rotated_point.z) };
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 }	// namesppace: aoc
 
 ///////////////////////////////////////////////////////////////////////////////

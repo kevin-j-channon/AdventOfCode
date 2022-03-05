@@ -423,6 +423,13 @@ namespace quaternion
 
 Quaternion_t from_axis_and_angle(const RotationAxis_t& axis, RotationAngle_t angle);
 
+template<typename Value_T>
+	requires std::is_integral_v<Value_T>
+Quaternion_t from_axis_and_angle(const Direction_t<Value_T>& axis, RotationAngle_t angle)
+{
+	return from_axis_and_angle(RotationAxis_t{ static_cast<double>(axis.x), static_cast<double>(axis.y) , static_cast<double>(axis.z) }, angle);
+}
+
 inline Quaternion_t from_point(const Point3D<double>& p);
 
 constexpr std::array<Quaternion_t, 24> cubic_rotations()
@@ -472,6 +479,8 @@ using boost::qvm::conjugate;
 Point3D<double> rotate(const Point3D<double>& p, const Quaternion_t& q);
 
 Point3D<double> rotate(const Point3D<double>& p, const Direction_t<double>& axis, double angle);
+
+Point3D<int> rotate(const Point3D<int>& p, const Quaternion_t& q);
 
 ///////////////////////////////////////////////////////////////////////////////
 

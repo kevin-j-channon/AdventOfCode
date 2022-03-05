@@ -273,7 +273,7 @@ TEST_CLASS(TestRotations)
 {
 public:
 
-	TEST_METHOD(PointIn3Dimensions)
+	TEST_METHOD(DoublePointIn3Dimensions)
 	{
 		using Point_t = aoc::Point3D<double>;
 		using Direction_t = aoc::Direction_t<double>;
@@ -348,6 +348,79 @@ public:
 				Assert::IsTrue(approx_equal(expected_point->x, rotated.x, 0.001));
 				Assert::IsTrue(approx_equal(expected_point->y, rotated.y, 0.001));
 				Assert::IsTrue(approx_equal(expected_point->z, rotated.z, 0.001));
+
+				++expected_point;
+			}
+
+			++expected_points;
+		}
+	}
+
+	TEST_METHOD(IntegerPointIn3Dimensions)
+	{
+		using Point_t = aoc::Point3D<int>;
+		using Direction_t = aoc::Direction_t<int>;
+
+		const auto points = std::array{
+			Point_t{0, 0, 1},
+			Point_t{0, 1, 0},
+			Point_t{0, 1, 1},
+			Point_t{1, 0, 0},
+			Point_t{1, 0, 1},
+			Point_t{1, 1, 0},
+			Point_t{1, 1, 1},
+		};
+
+		const auto rotation_axes = std::array{
+			Direction_t{0, 0, 1},
+			Direction_t{0, 1, 0},
+			Direction_t{1, 0, 0},
+			// aoc::Direction_t<double>{0, 1, 1},
+			// aoc::Direction_t<double>{1, 0, 1},
+			// aoc::Direction_t<double>{1, 1, 0},
+			// aoc::Direction_t<double>{1, 1, 1},
+		};
+
+		const auto expected = std::array{
+			std::array{
+				Point_t{0,0,1},
+				Point_t{-1,0,0},
+				Point_t{-1,0,1},
+				Point_t{0,1,0},
+				Point_t{0,1,1},
+				Point_t{-1,1,0},
+				Point_t{-1,1,1}
+			},
+			std::array{
+				Point_t{1,0,0},
+				Point_t{0,1,0},
+				Point_t{1,1,0},
+				Point_t{0,0,-1},
+				Point_t{1,0,-1},
+				Point_t{0,1,-1},
+				Point_t{1,1,-1}
+			},
+			std::array{
+				Point_t{0,-1,0},
+				Point_t{0,0,1},
+				Point_t{0,-1,1},
+				Point_t{1,0,0},
+				Point_t{1,-1,0},
+				Point_t{1,0,1},
+				Point_t{1,-1,1}
+			}
+		};
+
+		auto expected_points = expected.begin();
+		for (const auto& axis : rotation_axes) {
+			auto expected_point = expected_points->begin();
+
+			for (const auto& p : points) {
+				const auto rotated = aoc::rotate(p, aoc::quaternion::from_axis_and_angle(axis, std::numbers::pi / 2));
+
+				Assert::AreEqual(expected_point->x, rotated.x);
+				Assert::AreEqual(expected_point->y, rotated.y);
+				Assert::AreEqual(expected_point->z, rotated.z);
 
 				++expected_point;
 			}

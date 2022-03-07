@@ -18,17 +18,22 @@ Quaternion_t from_axis_and_angle(const RotationAxis_t& axis, RotationAngle_t ang
 
 std::pair<RotationAxis_t, RotationAngle_t> to_axis_and_angle(const Quaternion_t& q)
 {
-	const auto angle = 2 * std::acos(q.a[0]);
-	const auto sin_half_angle = std::sin(0.5 * angle);
+	const auto q_normalized = boost::qvm::normalized(q);
 
-	return { {q.a[1] / sin_half_angle, q.a[2] / sin_half_angle, q.a[3] / sin_half_angle}, angle };
+	const auto angle = 2 * std::acos(q_normalized.a[0]);
+	const auto normalization_factor = std::sqrt(1 - q_normalized.a[0]* q_normalized.a[0]);
+	if (normalization_factor < 1e-10) {
+		return {{0.0, 0.0, 0.0}, angle};
+	}
+
+	return {{q_normalized.a[1] / normalization_factor, q_normalized.a[2] / normalization_factor, q_normalized.a[3] / normalization_factor}, angle};
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 Quaternion_t from_point(const Point3D<double>& p)
 {
-	return { { 0.0, p.x, p.y, p.z } };
+	return {{ 0.0, p.x, p.y, p.z }};
 }
 
 ///////////////////////////////////////////////////////////////////////////////

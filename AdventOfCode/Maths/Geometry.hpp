@@ -436,41 +436,46 @@ inline Quaternion_t from_point(const Point3D<double>& p);
 
 constexpr std::array<Quaternion_t, 24> cubic_rotations()
 {
-	constexpr auto inv_sqrt2 = 1.0 / std::numbers::sqrt2;
-	constexpr auto sqrt3_by_2 = std::numbers::sqrt3 / 2.0;
-
+	constexpr auto a = 1.0 / std::numbers::sqrt2;
 	return {
 		// Identity rotation
-		Quaternion_t{{       1.0,        0.0,        0.0,        0.0 }},	// 1, 0, 0 -> 0
+		Quaternion_t{{ 1.0, 0.0, 0.0, 0.0 }},	// 1, 0, 0 -> 0
 
 		// Plane rotations.
-		Quaternion_t{{ inv_sqrt2,  inv_sqrt2,        0.0,        0.0 }},	// 1, 0, 0 -> 1 * pi / 2
-		Quaternion_t{{       0.0,        1.0,        0.0,        0.0 }},	// 1, 0, 0 -> 2 * pi / 2
-		Quaternion_t{{-inv_sqrt2,  inv_sqrt2,        0.0,        0.0 }},	// 1, 0, 0 -> 3 * pi / 2
-		Quaternion_t{{ inv_sqrt2,        0.0,  inv_sqrt2,        0.0 }},	// 0, 1, 0 -> 1 * pi / 2
-		Quaternion_t{{       0.0,        0.0,        1.0,        0.0 }},	// 0, 1, 0 -> 2 * pi / 2
-		Quaternion_t{{-inv_sqrt2,        0.0,  inv_sqrt2,        0.0 }},	// 0, 1, 0 -> 3 * pi / 2
-		Quaternion_t{{ inv_sqrt2,        0.0,        0.0,  inv_sqrt2 }},	// 0, 0, 1 -> 1 * pi / 2
-		Quaternion_t{{       0.0,        0.0,        0.0,        1.0 }},	// 0, 0, 1 -> 2 * pi / 2
-		Quaternion_t{{-inv_sqrt2,        0.0,        0.0,  inv_sqrt2 }},	// 0, 0, 1 -> 3 * pi / 2
+		// NOTE: For these elements, the non-zero values happen to be normalized without further manipulation.
+		Quaternion_t{{   a,   a, 0.0, 0.0 }},	// 1, 0, 0 -> 1 * pi / 2
+		Quaternion_t{{ 0.0, 1.0, 0.0, 0.0 }},	// 1, 0, 0 -> 2 * pi / 2
+		Quaternion_t{{  -a,   a, 0.0, 0.0 }},	// 1, 0, 0 -> 3 * pi / 2
+		Quaternion_t{{   a, 0.0,   a, 0.0 }},	// 0, 1, 0 -> 1 * pi / 2
+		Quaternion_t{{ 0.0, 0.0, 1.0, 0.0 }},	// 0, 1, 0 -> 2 * pi / 2
+		Quaternion_t{{  -a, 0.0,   a, 0.0 }},	// 0, 1, 0 -> 3 * pi / 2
+		Quaternion_t{{   a, 0.0, 0.0,   a }},	// 0, 0, 1 -> 1 * pi / 2
+		Quaternion_t{{ 0.0, 0.0, 0.0, 1.0 }},	// 0, 0, 1 -> 2 * pi / 2
+		Quaternion_t{{  -a, 0.0, 0.0,   a }},	// 0, 0, 1 -> 3 * pi / 2
 
 		// Edge rotations.
-		Quaternion_t{{       0.0,        0.0,        1.0,        1.0 }},	// 0, 1, 1 -> pi
-		Quaternion_t{{       0.0,        1.0,        0.0,        1.0 }},	// 1, 0, 1 -> pi
-		Quaternion_t{{       0.0,        1.0,        1.0,        0.0 }},	// 1, 1, 0 -> pi
-		Quaternion_t{{       0.0,        1.0,       -1.0,        1.0 }},	// 0, 1, 1 -> pi
-		Quaternion_t{{       0.0,        1.0,        0.0,       -1.0 }},	// 0, 1, 1 -> pi
-		Quaternion_t{{       0.0,        0.0,        1.0,       -1.0 }},	// 0, 1, 1 -> pi
+		// NOTE: The non-zero components of these elements are actually 1.0, but to make them unit rotations, the quaternion
+		// needs to be normalized. When you do this, the normalization factor is \frac{1}{\sqrt{2}}, so that's what ends up
+		// appearing in the values below.
+		Quaternion_t{{ 0.0, 0.0,   a,   a }},	// 0, 1, 1 -> pi
+		Quaternion_t{{ 0.0,   a, 0.0,    a}},	// 1, 0, 1 -> pi
+		Quaternion_t{{ 0.0,   a,   a, 0.0 }},	// 1, 1, 0 -> pi
+		Quaternion_t{{ 0.0,   a,  -a,   a }},	// 0, 1, 1 -> pi
+		Quaternion_t{{ 0.0,   a, 0.0,  -a }},	// 0, 1, 1 -> pi
+		Quaternion_t{{ 0.0, 0.0,   a,  -a }},	// 0, 1, 1 -> pi
 
 		// Vertex rotations.
-		Quaternion_t{{       0.5, sqrt3_by_2, sqrt3_by_2, sqrt3_by_2 }},	// 1, 1, 1 -> 2 * pi / 3
-		Quaternion_t{{      -0.5, sqrt3_by_2, sqrt3_by_2, sqrt3_by_2 }},	// 1, 1, 1 -> 4 * pi / 3
-		Quaternion_t{{       0.5, sqrt3_by_2, sqrt3_by_2,-sqrt3_by_2 }},	// 1, 1,-1 -> 2 * pi / 3
-		Quaternion_t{{      -0.5, sqrt3_by_2, sqrt3_by_2,-sqrt3_by_2 }},	// 1, 1,-1 -> 4 * pi / 3
-		Quaternion_t{{       0.5, sqrt3_by_2,-sqrt3_by_2, sqrt3_by_2 }},	// 1,-1, 1 -> 2 * pi / 3
-		Quaternion_t{{      -0.5, sqrt3_by_2,-sqrt3_by_2, sqrt3_by_2 }},	// 1,-1, 1 -> 4 * pi / 3
-		Quaternion_t{{       0.5,-sqrt3_by_2, sqrt3_by_2, sqrt3_by_2 }},	//-1, 1, 1 -> 2 * pi / 3
-		Quaternion_t{{      -0.5,-sqrt3_by_2, sqrt3_by_2, sqrt3_by_2 }},	//-1, 1, 1 -> 4 * pi / 3
+		// NOTE: the vector values in these elements should be \frac{\sqrt{3}}{2}, however, when you normalise the vector part
+		// the normmalization factor is \sqrt{\frac{x^2 + y^2 + z^2}{1 - w^2}}, which resolves to \sqrt{3}; so the vector part
+		// becomes simply 1/2.
+		Quaternion_t{{ 0.5, 0.5, 0.5, 0.5 }},	// 1, 1, 1 -> 2 * pi / 3
+		Quaternion_t{{-0.5, 0.5, 0.5, 0.5 }},	// 1, 1, 1 -> 4 * pi / 3
+		Quaternion_t{{ 0.5, 0.5, 0.5,-0.5 }},	// 1, 1,-1 -> 2 * pi / 3
+		Quaternion_t{{-0.5, 0.5, 0.5,-0.5 }},	// 1, 1,-1 -> 4 * pi / 3
+		Quaternion_t{{ 0.5, 0.5,-0.5, 0.5 }},	// 1,-1, 1 -> 2 * pi / 3
+		Quaternion_t{{-0.5, 0.5,-0.5, 0.5 }},	// 1,-1, 1 -> 4 * pi / 3
+		Quaternion_t{{ 0.5,-0.5, 0.5, 0.5 }},	//-1, 1, 1 -> 2 * pi / 3
+		Quaternion_t{{-0.5,-0.5, 0.5, 0.5 }},	//-1, 1, 1 -> 4 * pi / 3
 	};
 }
 

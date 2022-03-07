@@ -322,6 +322,14 @@ struct Point3D
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename Value_T>
+Point3D<Value_T> operator+(const Point3D<Value_T>& p1, const Point3D<Value_T>& p2)
+{
+	return { p1.x + p2.x, p1.y + p2.y, p1.z + p2.z };
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Value_T>
 struct Line3d
 {
 	using Value_t = Value_T;

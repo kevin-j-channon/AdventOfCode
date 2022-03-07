@@ -10,7 +10,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace test_geometry
 {
-TEST_CLASS(Point2D)
+TEST_CLASS(TestPoint2D)
 {
 public:
 
@@ -54,6 +54,19 @@ public:
 		Assert::ExpectException<aoc::Exception>([&]() { ss >> v; });
 
 		Assert::IsTrue(ss.fail());
+	}
+};
+
+TEST_CLASS(TestPoint3D)
+{
+public:
+	TEST_METHOD(AdditionOperator)
+	{
+		const auto p = aoc::Point3D<int>{ 1, 2, 3 } + aoc::Point3D<int>{ 4, 5, 6};
+
+		Assert::AreEqual(5, p.x);
+		Assert::AreEqual(7, p.y);
+		Assert::AreEqual(9, p.z);
 	}
 };
 

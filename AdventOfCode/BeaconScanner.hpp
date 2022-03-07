@@ -205,7 +205,7 @@ class BeaconCloudRegistrator
 
 public:
 
-	BeaconCloudRegistrator(uint32_t overlap_threshold)
+	BeaconCloudRegistrator(size_t overlap_threshold)
 		: _overlap_threshold{ overlap_threshold }
 	{}
 
@@ -261,7 +261,7 @@ private:
 		return parallel_groups;
 	}
 
-	uint32_t _overlap_threshold;
+	size_t _overlap_threshold;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -434,6 +434,38 @@ std::pair<RotationAxis_t, RotationAngle_t> to_axis_and_angle(const Quaternion_t&
 
 inline Quaternion_t from_point(const Point3D<double>& p);
 
+enum CubicRotations
+{
+	identity,					// 1, 0, 0 -> 0
+
+	plane_about_x_090,          // 1, 0, 0 -> 1 * pi / 2
+	plane_about_x_180,          // 1, 0, 0 -> 2 * pi / 2
+	plane_about_x_270,          // 1, 0, 0 -> 3 * pi / 2
+	plane_about_y_090,          // 0, 1, 0 -> 1 * pi / 2
+	plane_about_y_180,          // 0, 1, 0 -> 2 * pi / 2
+	plane_about_y_270,          // 0, 1, 0 -> 3 * pi / 2
+	plane_about_z_090,          // 0, 0, 1 -> 1 * pi / 2
+	plane_about_z_180,          // 0, 0, 1 -> 2 * pi / 2
+	plane_about_z_270,          // 0, 0, 1 -> 3 * pi / 2
+
+	// Capital letter are negative axis directions.
+	edge_about_yz_180,          // 0, 1, 1 -> pi
+	edge_about_xz_180,          // 1, 0, 1 -> pi
+	edge_about_xy_180,          // 1, 1, 0 -> pi
+	edge_about_xY_180,          // 1,-1, 0 -> pi
+	edge_about_xZ_180,          // 1, 0,-1 -> pi
+	edge_about_yZ_180,          // 0, 1,-1 -> pi
+
+	vertex_about_xyz_120,       // 1, 1, 1 -> 2 * pi / 3
+	vertex_about_xyz_240,       // 1, 1, 1 -> 4 * pi / 3
+	vertex_about_xyZ_120,       // 1, 1,-1 -> 2 * pi / 3
+	vertex_about_xyZ_240,       // 1, 1,-1 -> 4 * pi / 3
+	vertex_about_xYz_120,       // 1,-1, 1 -> 2 * pi / 3
+	vertex_about_xYz_240,       // 1,-1, 1 -> 4 * pi / 3
+	vertex_about_Xyz_120,       //-1, 1, 1 -> 2 * pi / 3
+	vertex_about_Xyz_240,       //-1, 1, 1 -> 4 * pi / 3
+};
+
 constexpr std::array<Quaternion_t, 24> cubic_rotations()
 {
 	constexpr auto a = 1.0 / std::numbers::sqrt2;
@@ -457,12 +489,12 @@ constexpr std::array<Quaternion_t, 24> cubic_rotations()
 		// NOTE: The non-zero components of these elements are actually 1.0, but to make them unit rotations, the quaternion
 		// needs to be normalized. When you do this, the normalization factor is \frac{1}{\sqrt{2}}, so that's what ends up
 		// appearing in the values below.
-		Quaternion_t{{ 0.0, 0.0,   a,   a }},	// 0, 1, 1 -> pi
+		Quaternion_t{{ 0.0, 0.0,   a,    a}},	// 0, 1, 1 -> pi
 		Quaternion_t{{ 0.0,   a, 0.0,    a}},	// 1, 0, 1 -> pi
 		Quaternion_t{{ 0.0,   a,   a, 0.0 }},	// 1, 1, 0 -> pi
-		Quaternion_t{{ 0.0,   a,  -a,   a }},	// 0, 1, 1 -> pi
-		Quaternion_t{{ 0.0,   a, 0.0,  -a }},	// 0, 1, 1 -> pi
-		Quaternion_t{{ 0.0, 0.0,   a,  -a }},	// 0, 1, 1 -> pi
+		Quaternion_t{{ 0.0,   a,  -a, 0.0 }},	// 1,-1, 0 -> pi
+		Quaternion_t{{ 0.0,   a, 0.0,  -a }},	// 1, 0,-1 -> pi
+		Quaternion_t{{ 0.0, 0.0,   a,  -a }},	// 0, 1,-1 -> pi
 
 		// Vertex rotations.
 		// NOTE: the vector values in these elements should be \frac{\sqrt{3}}{2}, however, when you normalise the vector part

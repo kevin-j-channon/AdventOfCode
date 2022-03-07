@@ -197,6 +197,7 @@ public:
 
 	TEST_METHOD(FindCorrectRotation)
 	{
+		// GIVEN: Reference and sample beacon clouds
 		const auto reference = std::vector{
 			Beacon{{-1,-1, 1}},
 			Beacon{{-2,-2, 2}},
@@ -215,13 +216,40 @@ public:
 			Beacon{{-8,-7, 0}}
 		};
 
-		
-		for (const auto& rotated_beacons : BeaconCloudRotator{ sample }.get_rotations()) {
-			const auto offset_and_score = BeaconCloudRegistrator{ 6 }.find_offset_and_score(reference, rotated_beacons.beacons);
-			if (offset_and_score)
-			{
-				Logger::WriteMessage(std::format("Found score: {}", offset_and_score->second).c_str());
+		// WHEN: The sample cloud is rotated 180 deg about (0, 1, -1)
+		const auto rotated_beacons = BeaconCloudRotator{ sample }.get_rotations();
+		const auto& best_rotation = rotated_beacons[aoc::quaternion::edge_about_yZ_180].beacons;
+
+		// THEN: The positions are equal to the reference beacon positions.
+		auto beacons_are_equal = [](auto&& b1, auto&& b2) -> bool {
+			const auto& p1 = b1.position();
+			const auto& p2 = b2.position();
+
+			return p1 == p2;
+		};
+
+		Assert::IsTrue(std::equal(reference.begin(), reference.end(), best_rotation.begin(), best_rotation.end(), beacons_are_equal));
+
+		// AND: The calculated offset is zero.
+		const auto offset_and_score = BeaconCloudRegistrator{ sample.size() }
+			.find_offset_and_score(reference, rotated_beacons[aoc::quaternion::edge_about_yZ_180].beacons);
+
+		Assert::IsTrue(std::nullopt != offset_and_score);
+		const auto [offset, score] = *offset_and_score;
+		Assert::AreEqual(0, offset.x);
+		Assert::AreEqual(0, offset.y);
+		Assert::AreEqual(0, offset.z);
+
+		// AND: The score is 6 (all the beacons match).
+		Assert::AreEqual(uint32_t{ 6 }, score);
+
+		// AND: An offset cannot be found for any of the other rotations.
+		for (auto i = 0; i < rotated_beacons.size(); ++i) {
+			if (i == aoc::quaternion::edge_about_yZ_180) {
+				continue;
 			}
+
+			Assert::IsTrue(std::nullopt == BeaconCloudRegistrator{ sample.size() }.find_offset_and_score(reference, rotated_beacons[i].beacons));
 		}
 	}
 };

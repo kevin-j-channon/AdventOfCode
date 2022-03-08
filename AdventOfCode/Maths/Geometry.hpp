@@ -362,6 +362,68 @@ struct Line3d
 
 ///////////////////////////////////////////////////////////////////////////////
 
+template<typename Value_T>
+class Cubiod
+{
+public:
+	using Value_t = Value_T;
+	using Point_t = Point3D<Value_t>;
+
+	Cubiod()
+		: _low_vertex{ 0, 0, 0 }
+		, _high_vertex{ 0, 0, 0 }
+	{}
+
+	Cubiod(Point_t top_left_front, Point_t bottom_right_back)
+		: _low_vertex{ std::move(top_left_front) }
+		, _high_vertex{ std::move(bottom_right_back) }
+	{}
+
+	Cubiod(const Cubiod&) = default;
+	Cubiod& operator=(const Cubiod&) = default;
+
+	Cubiod(Cubiod&&) = default;
+	Cubiod& operator=(Cubiod&&) = default;
+
+	const Point_t& top_left_front() const { return _low_vertex; }
+	const Point_t& bottom_right_back() const { return _high_vertex; }
+
+	bool contains(const Point_t& p) const
+	{
+		if (p.x < _low_vertex.x) {
+			return false;
+		}
+
+		if (p.x > _high_vertex.x) {
+			return false;
+		}
+
+		if (p.y < _low_vertex.y) {
+			return false;
+		}
+
+		if (p.y > _high_vertex.y) {
+			return false;
+		}
+
+		if (p.z < _low_vertex.z) {
+			return false;
+		}
+
+		if (p.z > _high_vertex.z) {
+			return false;
+		}
+
+		return true;
+	}
+
+private:
+	Point_t _low_vertex;
+	Point_t _high_vertex;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
 template<size_t ORIENTATION, typename Value_T>
 std::vector<Point2D<Value_T>> rasterize(const Line2d<Value_T>& line)
 {

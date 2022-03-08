@@ -284,6 +284,34 @@ public:
 	}
 };
 
+TEST_CLASS(TestCubiod)
+{
+public:
+	TEST_METHOD(ContainsReturnsTrueForPointInsideIt)
+	{
+		const auto cuboid = aoc::Cubiod<int>{ {1,1,1}, {5,5,5} };
+
+		for (auto x : aoc::ValueRange<int>{ 1, 5 }) {
+			for (auto y : aoc::ValueRange<int>{ 1, 5 }) {
+				for (auto z : aoc::ValueRange<int>{ 1, 5 }) {
+					Assert::IsTrue(cuboid.contains({ x, y, z }));
+				}
+			}
+		}
+	}
+
+	TEST_METHOD(ContainsReturnsFalseForPointOutsideIt)
+	{
+		const auto cuboid = aoc::Cubiod<int>{ {-5,-5,-5}, {5,5,5} };
+		Assert::IsFalse(cuboid.contains({-6, 0, 0 }));
+		Assert::IsFalse(cuboid.contains({ 6, 0, 0 }));
+		Assert::IsFalse(cuboid.contains({ 0, 6, 0 }));
+		Assert::IsFalse(cuboid.contains({ 0,-6, 0 }));
+		Assert::IsFalse(cuboid.contains({ 0, 0, 6 }));
+		Assert::IsFalse(cuboid.contains({ 0, 0,-6 }));
+	}
+};
+
 TEST_CLASS(TestRotations)
 {
 public:

@@ -68,6 +68,15 @@ public:
 		Assert::AreEqual(7, p.y);
 		Assert::AreEqual(9, p.z);
 	}
+
+	TEST_METHOD(SubtractionOperator)
+	{
+		const auto p = aoc::Point3D<int>{ 14, 54, 6 } - aoc::Point3D<int>{ 1, 2, 3 };
+
+		Assert::AreEqual(13, p.x);
+		Assert::AreEqual(52, p.y);
+		Assert::AreEqual( 3, p.z);
+	}
 };
 
 TEST_CLASS(Line2d)

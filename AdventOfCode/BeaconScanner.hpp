@@ -27,6 +27,10 @@ public:
 	{}
 
 	const Position_t& position() const { return _position; }
+	void set_position(const Position_t& new_position)
+	{
+		_position = new_position;
+	}
 
 private:
 	Position_t _position;

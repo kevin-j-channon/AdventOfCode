@@ -183,7 +183,7 @@ protected:
 	};
 
 	template<int SCALE, int COUNT>
-	static OverlappingBeacons get_overlapping_beacon_clouds()
+	static OverlappingBeacons get_overlapping_beacon_clouds(std::mt19937_64& rng)
 	{
 		using Point_t = aoc::Point3D<int>;
 
@@ -193,8 +193,6 @@ protected:
 		constexpr auto beacon_count = COUNT * SCALE * SCALE * SCALE * SCALE;	// The count is scaled by the cube of the scale to try and preserve the density.
 		constexpr auto cloud_2_offset_dimension = static_cast<int>(1.6 * volume_dimension);
 		constexpr auto lower_corner_dimension = 0;
-
-		std::mt19937_64 rng{ 9343324 };		// Arbitrary seed value.
 
 		const auto cloud_2_centre = Point_t{ cloud_2_offset_dimension, cloud_2_offset_dimension, cloud_2_offset_dimension };
 
@@ -243,7 +241,7 @@ public:
 
 		const auto reports = read_scanner_report(data);
 
-		const auto offset_and_score = BeaconCloudRegistrator{ 3 }.find_offset_and_score(reports.at(0).beacons(), reports.at(1).beacons());
+		const auto offset_and_score = BeaconCloudRegistrator{ reports.at(0).beacons(), reports.at(1).beacons(), 3 }.find_offset_and_score();
 
 		Assert::IsTrue(offset_and_score.has_value());
 
@@ -335,11 +333,11 @@ public:
 		Assert::IsTrue(std::equal(reference.begin(), reference.end(), best_rotation.begin(), best_rotation.end(), beacons_are_equal));
 
 		// AND: The calculated offset is zero.
-		const auto offset_and_score = BeaconCloudRegistrator{ sample.size() }
-			.find_offset_and_score(reference, rotated_beacons[aoc::quaternion::edge_about_yZ_180].beacons);
+		const auto offset_and_score = BeaconCloudRegistrator{ reference, rotated_beacons[aoc::quaternion::edge_about_yZ_180].beacons, sample.size() }
+			.find_offset_and_score();
 
 		Assert::IsTrue(std::nullopt != offset_and_score);
-		const auto [offset, score] = *offset_and_score;
+		const auto& [offset, score] = *offset_and_score;
 		Assert::AreEqual(0, offset.x);
 		Assert::AreEqual(0, offset.y);
 		Assert::AreEqual(0, offset.z);
@@ -353,17 +351,18 @@ public:
 				continue;
 			}
 
-			Assert::IsTrue(std::nullopt == BeaconCloudRegistrator{ sample.size() }.find_offset_and_score(reference, rotated_beacons[i].beacons));
+			Assert::IsTrue(std::nullopt == BeaconCloudRegistrator{ reference, rotated_beacons[i].beacons, sample.size() }.find_offset_and_score());
 		}
 	}
 
 	TEST_METHOD(ValidateOverlapWithFullyMatchedBeacons)
 	{
-		const auto overlapping_beacons = get_overlapping_beacon_clouds<1, 100>();
+		std::mt19937_64 rng{ 9343324 };		// Arbitrary seed value.
+		const auto overlapping_beacons = get_overlapping_beacon_clouds<1, 100>(rng);
 		Assert::AreEqual(size_t{ 100 }, overlapping_beacons.cloud_1.size());
 		Assert::AreEqual(size_t{ 100 }, overlapping_beacons.cloud_2.size());
 
-		const auto offset_and_score = BeaconCloudRegistrator{ overlapping_beacons.overlap_count }.find_offset_and_score(overlapping_beacons.cloud_1, overlapping_beacons.cloud_2);
+		const auto offset_and_score = BeaconCloudRegistrator{ overlapping_beacons.cloud_1, overlapping_beacons.cloud_2, overlapping_beacons.overlap_count }.find_offset_and_score();
 		Assert::IsTrue(offset_and_score.has_value());
 
 		Assert::AreEqual(overlapping_beacons.overlap_count, static_cast<size_t>(offset_and_score->second));
@@ -371,6 +370,18 @@ public:
 		Assert::AreEqual(-overlapping_beacons.offset.x, offset_and_score->first.x);
 		Assert::AreEqual(-overlapping_beacons.offset.y, offset_and_score->first.y);
 		Assert::AreEqual(-overlapping_beacons.offset.z, offset_and_score->first.z);
+	}
+
+	TEST_METHOD(ValidateOverlapWithUnmatchedBeacon)
+	{
+		std::mt19937_64 rng{ 234523 };		// Arbitrary seed value.
+		auto overlapping_beacons = get_overlapping_beacon_clouds<1, 100>(rng);
+
+		// Add in an extra point in the overlap region
+		overlapping_beacons.cloud_2.push_back(Beacon{{-50, -50, -50}});
+
+		// Since there is an additional, unmatched point in the overlap region, then no match should be found.
+		Assert::IsTrue(std::nullopt == BeaconCloudRegistrator{ overlapping_beacons.cloud_1, overlapping_beacons.cloud_2, overlapping_beacons.overlap_count }.find_offset_and_score());
 	}
 };
 }

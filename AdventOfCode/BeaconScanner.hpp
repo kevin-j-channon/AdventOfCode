@@ -209,24 +209,26 @@ class BeaconCloudRegistrator
 
 public:
 
-	BeaconCloudRegistrator(size_t overlap_threshold)
+	BeaconCloudRegistrator(const Beacons_t& reference, const Beacons_t& sample, size_t overlap_threshold)
 		: _overlap_threshold{ overlap_threshold }
+		, _reference{ reference }
+		, _sample{ sample }
 	{}
 
-	std::optional<std::pair<Direction_t, uint32_t>> find_offset_and_score(const Beacons_t& reference, const Beacons_t& sample)
+	std::optional<std::pair<Direction_t, uint32_t>> find_offset_and_score()
 	{
-		return _find_offset_with_threshold(_create_all_offsets(reference, sample));
+		return _find_offset_with_threshold(_create_all_offsets());
 	}
 
 private:
 
-	static std::vector<Line_t> _create_all_offsets(const Beacons_t& reference, const Beacons_t& sample)
+	std::vector<Line_t> _create_all_offsets() const
 	{
 		auto lines = std::vector<Line_t>{};
-		lines.reserve(reference.size() * sample.size());
+		lines.reserve(_reference.size() * _sample.size());
 
-		for (const auto& ref_beacon : reference) {
-			for (const auto& sample_beacon : sample) {
+		for (const auto& ref_beacon : _reference) {
+			for (const auto& sample_beacon : _sample) {
 				lines.emplace_back(ref_beacon.position(), sample_beacon.position());
 			}
 		}
@@ -236,21 +238,30 @@ private:
 
 	std::optional<std::pair<Direction_t, uint32_t>> _find_offset_with_threshold(std::vector<Line_t> point_offsets) const
 	{
-		const auto best_offset_and_score = _find_best_scoring_offset(_group_offsets_by_direction(std::move(point_offsets)));
-		if (best_offset_and_score.second < _overlap_threshold) {
+		const auto best_offset_and_score =
+			_find_best_scoring_offset(
+				_drop_overlaps_with_unmatched_points(
+					_drop_single_point_groups(
+						_group_offsets_by_direction(std::move(point_offsets)))));
+
+		if (!best_offset_and_score || best_offset_and_score->second < _overlap_threshold) {
 			return {};
 		}
 
 		return { std::move(best_offset_and_score) };
 	}
 
-	static std::pair<Direction_t, uint32_t> _find_best_scoring_offset(std::map<Direction_t, std::vector<Line_t>> parallel_groups)
+	static std::optional<std::pair<Direction_t, uint32_t>> _find_best_scoring_offset(std::map<Direction_t, std::vector<Line_t>> parallel_groups)
 	{
+		if (parallel_groups.empty()) {
+			return {};
+		}
+
 		const auto direction_with_max_number_of_lines = std::max_element(parallel_groups.begin(), parallel_groups.end(), [](const auto& x1, const auto& x2) {
 			return x1.second.size() < x2.second.size();
 			});
 
-		return { direction_with_max_number_of_lines->first, static_cast<uint32_t>(direction_with_max_number_of_lines->second.size()) };
+		return { { direction_with_max_number_of_lines->first, static_cast<uint32_t>(direction_with_max_number_of_lines->second.size()) } };
 	}
 
 	static std::map<Direction_t, std::vector<Line_t>> _group_offsets_by_direction(std::vector<Line_t> offsets)
@@ -265,7 +276,148 @@ private:
 		return parallel_groups;
 	}
 
+	static std::map<Direction_t, std::vector<Line_t>> _drop_single_point_groups(std::map<Direction_t, std::vector<Line_t>> groups)
+	{
+		if (groups.empty()) {
+			return {};
+		}
+
+		while (true) {
+			auto to_erase = std::find_if(groups.begin(), groups.end(), [](auto&& g) { return g.second.size() < 2;  });
+			if (groups.end() == to_erase) {
+				break;
+			}
+
+			groups.erase(to_erase);
+		}
+
+		return std::move(groups);
+	}
+
+	std::map<Direction_t, std::vector<Line_t>> _drop_overlaps_with_unmatched_points(std::map<Direction_t, std::vector<Line_t>> groups) const
+	{
+		if (groups.empty()) {
+			return {};
+		}
+
+		const auto groups_to_drop = _find_groups_to_drop_due_to_unmatched_points(groups);
+		std::for_each(groups_to_drop.begin(), groups_to_drop.end(), [&groups](auto&& g) { groups.erase(g); });
+
+		return std::move(groups);
+	}
+
+	std::vector<Direction_t> _find_groups_to_drop_due_to_unmatched_points(const std::map<Direction_t, std::vector<Line_t>>& groups) const
+	{
+		auto out = make_vector<Direction_t>(Capacity{ groups.size() });
+
+		for (const auto& [direction, lines] : groups) {
+			Logger::WriteMessage(std::format("Should we drop ({}, {}, {})?\n", direction.x, direction.y, direction.z).c_str());
+			if (_group_has_unmatched_points(direction, lines, groups)) {
+				out.push_back(direction);
+			}
+		}
+
+		return out;
+	}
+
+	bool _group_has_unmatched_points(const Direction_t& direction, const std::vector<Line_t>& lines, const std::map<Direction_t, std::vector<Line_t>>& all_groups) const
+	{
+		if (lines.size() < 2) {
+			// There can be no sensible enclosing volume in this case.
+			return false;
+		}
+
+		return _has_unmatched_points_in_overlap_region(direction, lines, all_groups);
+	}
+
+	bool _has_unmatched_points_in_overlap_region(const Direction_t& direction, const std::vector<Line_t>& lines, const std::map<Direction_t, std::vector<Line_t>>& all_groups) const
+	{
+
+		// Sample must contain only the line end points in the overlap region.
+		// TODO: This function doesn't work as expected.
+		const auto sample_overlap_region = _determine_enclosing_volume_of_finish_points(lines);
+
+		Logger::WriteMessage(std::format("Volume: (({}, {}, {}),({}, {}, {}))\n",
+			sample_overlap_region.top_left_front().x, sample_overlap_region.top_left_front().y, sample_overlap_region.top_left_front().z,
+			sample_overlap_region.bottom_right_back().x, sample_overlap_region.bottom_right_back().y, sample_overlap_region.bottom_right_back().z).c_str());
+		
+		const auto v1 = range_to<std::vector<Position_t>>(_sample
+			| std::views::transform([](auto&& beacon) { return beacon.position(); })
+			| std::views::filter([&sample_overlap_region](auto&& point) { return sample_overlap_region.contains(point); })
+			| std::views::filter([&lines](auto&& point) {
+			return std::find_if(lines.begin(), lines.end(), [&point](auto&& line) {
+				return line.finish == point;
+				}) == lines.end();
+				}));
+
+		const auto sample_overlap_region_has_points_not_on_a_line_end = !v1.empty();
+
+		if (sample_overlap_region_has_points_not_on_a_line_end) {
+			return true;
+		}
+
+		// Reference must contain only the line start points in the overlap region.
+		const auto reference_overlap_region = _determine_enclosing_volume_of_start_points(lines);
+
+		Logger::WriteMessage(std::format("Volume: (({}, {}, {}),({}, {}, {}))\n",
+			sample_overlap_region.top_left_front().x, sample_overlap_region.top_left_front().y, sample_overlap_region.top_left_front().z,
+			sample_overlap_region.bottom_right_back().x, sample_overlap_region.bottom_right_back().y, sample_overlap_region.bottom_right_back().z).c_str());
+
+		const auto v2 = range_to<std::vector<Position_t>>(_reference
+			| std::views::transform([](auto&& beacon) { return beacon.position(); })
+			| std::views::filter([&reference_overlap_region](auto&& point) { return reference_overlap_region.contains(point); })
+			| std::views::filter([&lines](auto&& point) {
+			return std::find_if(lines.begin(), lines.end(), [&point](auto&& line) {
+				return line.start == point;
+				}) == lines.end();
+				}));
+
+		const auto reference_overlap_region_has_points_not_on_a_line_start = !v2.empty();
+
+		if (reference_overlap_region_has_points_not_on_a_line_start) {
+			return true;
+		}
+
+		return false;
+	}
+
+	static Cubiod<int> _determine_enclosing_volume_of_finish_points(const std::vector<Line_t>& lines)
+	{
+		if (lines.empty()) {
+			return { {0,0,0}, {0,0,0} };
+		}
+
+		const auto min_vertex = std::min_element(lines.begin(), lines.end(), [](auto&& line_1, auto&& line_2) {
+			return line_1.finish < line_2.finish;
+			})->finish;
+
+		const auto max_vertex = std::max_element(lines.begin(), lines.end(), [](auto&& line_1, auto&& line_2) {
+			return line_1.finish < line_2.finish;
+			})->finish;
+
+		return { min_vertex, max_vertex };
+	}
+
+	static Cubiod<int> _determine_enclosing_volume_of_start_points(const std::vector<Line_t>& lines)
+	{
+		if (lines.empty()) {
+			return { {0,0,0}, {0,0,0} };
+		}
+
+		const auto min_vertex = std::min_element(lines.begin(), lines.end(), [](auto&& line_1, auto&& line_2) {
+			return line_1.start < line_2.start;
+			})->start;
+
+		const auto max_vertex = std::max_element(lines.begin(), lines.end(), [](auto&& line_1, auto&& line_2) {
+			return line_1.start < line_2.start;
+			})->start;
+
+		return { min_vertex, max_vertex };
+	}
+
 	size_t _overlap_threshold;
+	const Beacons_t& _reference;
+	const Beacons_t& _sample;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -315,7 +467,7 @@ private:
 
 		const auto sets_of_rotated_beacons = BeaconCloudRotator{ report.beacons() }.get_rotations();
 		for (const auto& rotated_beacons : sets_of_rotated_beacons) {
-			const auto offset_and_score = BeaconCloudRegistrator{ 12 }.find_offset_and_score(map.beacons(), rotated_beacons.beacons);
+			const auto offset_and_score = BeaconCloudRegistrator{ map.beacons(), rotated_beacons.beacons, 12 }.find_offset_and_score();
 			if (!offset_and_score) {
 				continue;
 			}

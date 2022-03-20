@@ -103,7 +103,7 @@ public:
 	};
 
 	ValueRange() : _min{ 0 }, _max{ 0 } {}
-	
+
 	constexpr ValueRange(Value_t max_)
 		: _min{ 0 }
 		, _max{ std::move(max_) }
@@ -336,7 +336,42 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
+struct Capacity
+{
+	explicit Capacity(size_t c) : value{ c } {}
+	size_t value;
+};
+
+struct Size
+{
+	explicit Size(size_t s) : value{ s } {}
+	size_t value;
+};
+
+template<typename Value_T, typename Alloc_T = std::allocator<Value_T>>
+std::vector<Value_T, Alloc_T> make_vector(Capacity c, Size s = Size{0})
+{
+	auto out = std::vector<Value_T, Alloc_T>(s.value);
+	out.reserve(c.value);
+	return out;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+template<typename Result_T, typename Range_T>
+Result_T range_to(Range_T range)
+{
+	auto out = Result_T{};
+	if constexpr (std::ranges::sized_range<Range_T>) {
+		out.reserve(range.size());
+	}
+
+	std::ranges::copy(range, std::back_inserter(out));
+
+	return out;
+}
+
+}	// namespace: aoc
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -354,6 +389,6 @@ inline istream& operator>>(std::istream& is, aoc::ValueRange<Value_T>& range)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-}
+}	// namespace: std
 
 ///////////////////////////////////////////////////////////////////////////////

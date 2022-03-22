@@ -334,7 +334,6 @@ private:
 	{
 
 		// Sample must contain only the line end points in the overlap region.
-		// TODO: This function doesn't work as expected.
 		const auto sample_overlap_region = _determine_enclosing_volume_of_finish_points(lines);
 
 		Logger::WriteMessage(std::format("Volume: (({}, {}, {}),({}, {}, {}))\n",
@@ -387,15 +386,19 @@ private:
 			return { {0,0,0}, {0,0,0} };
 		}
 
-		const auto min_vertex = std::min_element(lines.begin(), lines.end(), [](auto&& line_1, auto&& line_2) {
-			return line_1.finish < line_2.finish;
-			})->finish;
+		const auto [x_min, x_max ] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
+			return line_1.finish.x < line_2.finish.x;
+			});
 
-		const auto max_vertex = std::max_element(lines.begin(), lines.end(), [](auto&& line_1, auto&& line_2) {
-			return line_1.finish < line_2.finish;
-			})->finish;
+		const auto [y_min, y_max] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
+			return line_1.finish.y < line_2.finish.y;
+			});
 
-		return { min_vertex, max_vertex };
+		const auto [z_min, z_max] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
+			return line_1.finish.z < line_2.finish.z;
+			});
+
+		return { {x_min->finish.x, y_min->finish.y, z_min->finish.z}, {x_max->finish.x, y_max->finish.y, z_max->finish.z} };
 	}
 
 	static Cubiod<int> _determine_enclosing_volume_of_start_points(const std::vector<Line_t>& lines)
@@ -404,15 +407,19 @@ private:
 			return { {0,0,0}, {0,0,0} };
 		}
 
-		const auto min_vertex = std::min_element(lines.begin(), lines.end(), [](auto&& line_1, auto&& line_2) {
-			return line_1.start < line_2.start;
-			})->start;
+		const auto [x_min, x_max] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
+			return line_1.start.x < line_2.start.x;
+			});
 
-		const auto max_vertex = std::max_element(lines.begin(), lines.end(), [](auto&& line_1, auto&& line_2) {
-			return line_1.start < line_2.start;
-			})->start;
+		const auto [y_min, y_max] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
+			return line_1.start.y < line_2.start.y;
+			});
 
-		return { min_vertex, max_vertex };
+		const auto [z_min, z_max] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
+			return line_1.start.z < line_2.start.z;
+			});
+
+		return { {x_min->start.x, y_min->start.y, z_min->start.z}, {x_max->start.x, y_max->start.y, z_max->start.z} };
 	}
 
 	size_t _overlap_threshold;

@@ -311,7 +311,6 @@ private:
 		auto out = make_vector<Direction_t>(Capacity{ groups.size() });
 
 		for (const auto& [direction, lines] : groups) {
-			Logger::WriteMessage(std::format("Should we drop ({}, {}, {})?\n", direction.x, direction.y, direction.z).c_str());
 			if (_group_has_unmatched_points(direction, lines, groups)) {
 				out.push_back(direction);
 			}
@@ -334,44 +333,30 @@ private:
 	{
 
 		// Sample must contain only the line end points in the overlap region.
-		const auto sample_overlap_region = _determine_enclosing_volume_of_finish_points(lines);
-
-		Logger::WriteMessage(std::format("Volume: (({}, {}, {}),({}, {}, {}))\n",
-			sample_overlap_region.top_left_front().x, sample_overlap_region.top_left_front().y, sample_overlap_region.top_left_front().z,
-			sample_overlap_region.bottom_right_back().x, sample_overlap_region.bottom_right_back().y, sample_overlap_region.bottom_right_back().z).c_str());
-		
-		const auto v1 = range_to<std::vector<Position_t>>(_sample
+		const auto sample_overlap_region = _determine_enclosing_volume_of_terminal_points(lines, [](const Line_t& l) -> const Point3D<int>&{ return l.finish; });
+		const auto sample_overlap_region_has_points_not_on_a_line_end = !range_to<std::vector<Position_t>>(_sample
 			| std::views::transform([](auto&& beacon) { return beacon.position(); })
 			| std::views::filter([&sample_overlap_region](auto&& point) { return sample_overlap_region.contains(point); })
 			| std::views::filter([&lines](auto&& point) {
-			return std::find_if(lines.begin(), lines.end(), [&point](auto&& line) {
-				return line.finish == point;
-				}) == lines.end();
-				}));
-
-		const auto sample_overlap_region_has_points_not_on_a_line_end = !v1.empty();
+				return std::find_if(lines.begin(), lines.end(), [&point](auto&& line) {
+					return line.finish == point;
+					}) == lines.end();
+				})).empty();
 
 		if (sample_overlap_region_has_points_not_on_a_line_end) {
 			return true;
 		}
 
 		// Reference must contain only the line start points in the overlap region.
-		const auto reference_overlap_region = _determine_enclosing_volume_of_start_points(lines);
-
-		Logger::WriteMessage(std::format("Volume: (({}, {}, {}),({}, {}, {}))\n",
-			sample_overlap_region.top_left_front().x, sample_overlap_region.top_left_front().y, sample_overlap_region.top_left_front().z,
-			sample_overlap_region.bottom_right_back().x, sample_overlap_region.bottom_right_back().y, sample_overlap_region.bottom_right_back().z).c_str());
-
-		const auto v2 = range_to<std::vector<Position_t>>(_reference
+		const auto reference_overlap_region = _determine_enclosing_volume_of_terminal_points(lines, [](const Line_t& l) -> const Point3D<int>&{ return l.start; });
+		const auto reference_overlap_region_has_points_not_on_a_line_start = !range_to<std::vector<Position_t>>(_reference
 			| std::views::transform([](auto&& beacon) { return beacon.position(); })
 			| std::views::filter([&reference_overlap_region](auto&& point) { return reference_overlap_region.contains(point); })
 			| std::views::filter([&lines](auto&& point) {
-			return std::find_if(lines.begin(), lines.end(), [&point](auto&& line) {
-				return line.start == point;
-				}) == lines.end();
-				}));
-
-		const auto reference_overlap_region_has_points_not_on_a_line_start = !v2.empty();
+				return std::find_if(lines.begin(), lines.end(), [&point](auto&& line) {
+					return line.start == point;
+					}) == lines.end();
+				})).empty();
 
 		if (reference_overlap_region_has_points_not_on_a_line_start) {
 			return true;
@@ -380,46 +365,26 @@ private:
 		return false;
 	}
 
-	static Cubiod<int> _determine_enclosing_volume_of_finish_points(const std::vector<Line_t>& lines)
+	template<typename LineEndExtractor_T>
+	static Cubiod<int> _determine_enclosing_volume_of_terminal_points(const std::vector<Line_t>& lines, LineEndExtractor_T line_end)
 	{
 		if (lines.empty()) {
 			return { {0,0,0}, {0,0,0} };
 		}
 
-		const auto [x_min, x_max ] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
-			return line_1.finish.x < line_2.finish.x;
+		const auto [x_min, x_max] = std::ranges::minmax_element(lines, [&line_end](auto&& line_1, auto&& line_2) {
+			return line_end(line_1).x < line_end(line_2).x;
 			});
 
-		const auto [y_min, y_max] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
-			return line_1.finish.y < line_2.finish.y;
+		const auto [y_min, y_max] = std::ranges::minmax_element(lines, [&line_end](auto&& line_1, auto&& line_2) {
+			return line_end(line_1).y < line_end(line_2).y;
 			});
 
-		const auto [z_min, z_max] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
-			return line_1.finish.z < line_2.finish.z;
+		const auto [z_min, z_max] = std::ranges::minmax_element(lines, [&line_end](auto&& line_1, auto&& line_2) {
+			return line_end(line_1).z < line_end(line_2).z;
 			});
 
-		return { {x_min->finish.x, y_min->finish.y, z_min->finish.z}, {x_max->finish.x, y_max->finish.y, z_max->finish.z} };
-	}
-
-	static Cubiod<int> _determine_enclosing_volume_of_start_points(const std::vector<Line_t>& lines)
-	{
-		if (lines.empty()) {
-			return { {0,0,0}, {0,0,0} };
-		}
-
-		const auto [x_min, x_max] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
-			return line_1.start.x < line_2.start.x;
-			});
-
-		const auto [y_min, y_max] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
-			return line_1.start.y < line_2.start.y;
-			});
-
-		const auto [z_min, z_max] = std::ranges::minmax_element(lines, [](auto&& line_1, auto&& line_2) {
-			return line_1.start.z < line_2.start.z;
-			});
-
-		return { {x_min->start.x, y_min->start.y, z_min->start.z}, {x_max->start.x, y_max->start.y, z_max->start.z} };
+		return { {line_end(*x_min).x, line_end(*y_min).y, line_end(*z_min).z}, {line_end(*x_max).x, line_end(*y_max).y, line_end(*z_max).z}};
 	}
 
 	size_t _overlap_threshold;

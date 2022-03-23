@@ -331,38 +331,44 @@ private:
 
 	bool _has_unmatched_points_in_overlap_region(const Direction_t& direction, const std::vector<Line_t>& lines, const std::map<Direction_t, std::vector<Line_t>>& all_groups) const
 	{
-
 		// Sample must contain only the line end points in the overlap region.
-		const auto sample_overlap_region = _determine_enclosing_volume_of_terminal_points(lines, [](const Line_t& l) -> const Point3D<int>&{ return l.finish; });
-		const auto sample_overlap_region_has_points_not_on_a_line_end = !range_to<std::vector<Position_t>>(_sample
-			| std::views::transform([](auto&& beacon) { return beacon.position(); })
-			| std::views::filter([&sample_overlap_region](auto&& point) { return sample_overlap_region.contains(point); })
-			| std::views::filter([&lines](auto&& point) {
-				return std::find_if(lines.begin(), lines.end(), [&point](auto&& line) {
-					return line.finish == point;
-					}) == lines.end();
-				})).empty();
-
-		if (sample_overlap_region_has_points_not_on_a_line_end) {
-			return true;
+		{
+			const auto line_finish_point = [](const Line_t& l) -> const Point3D<int>&{ return l.finish; };
+			if (_overlap_region_has_points_not_on_a_line_termination_point(_sample, lines, line_finish_point)) {
+				return true;
+			}
 		}
 
 		// Reference must contain only the line start points in the overlap region.
-		const auto reference_overlap_region = _determine_enclosing_volume_of_terminal_points(lines, [](const Line_t& l) -> const Point3D<int>&{ return l.start; });
-		const auto reference_overlap_region_has_points_not_on_a_line_start = !range_to<std::vector<Position_t>>(_reference
-			| std::views::transform([](auto&& beacon) { return beacon.position(); })
-			| std::views::filter([&reference_overlap_region](auto&& point) { return reference_overlap_region.contains(point); })
-			| std::views::filter([&lines](auto&& point) {
-				return std::find_if(lines.begin(), lines.end(), [&point](auto&& line) {
-					return line.start == point;
-					}) == lines.end();
-				})).empty();
-
-		if (reference_overlap_region_has_points_not_on_a_line_start) {
-			return true;
+		{
+			const auto line_start_point = [](const Line_t& l) -> const Point3D<int>&{ return l.start; };
+			if (_overlap_region_has_points_not_on_a_line_termination_point(_reference, lines, line_start_point)) {
+				return true;
+			}
 		}
 
 		return false;
+	}
+
+	template<typename LineEndExtractor_T>
+	static bool _overlap_region_has_points_not_on_a_line_termination_point(const Beacons_t& beacons, const std::vector<Line_t>& lines, LineEndExtractor_T line_end)
+	{
+		const auto overlap_region = _determine_enclosing_volume_of_terminal_points(lines, line_end);
+
+		const auto beacon_to_point = [](auto&& beacon) { return beacon.position(); };
+
+		const auto point_is_in_overlap_region = [&overlap_region](auto&& point) { return overlap_region.contains(point); };
+
+		const auto point_matches_a_line_termination = [&lines, &line_end](auto&& point) {
+			return std::find_if(lines.begin(), lines.end(), [&point, &line_end](auto&& line) {
+				return line_end(line) == point;
+				}) == lines.end();
+		};
+
+		return !range_to<std::vector<Position_t>>(beacons
+			| std::views::transform(beacon_to_point)
+			| std::views::filter(point_is_in_overlap_region)
+			| std::views::filter(point_matches_a_line_termination)).empty();
 	}
 
 	template<typename LineEndExtractor_T>

@@ -48,7 +48,7 @@ struct TerminalCaveType
 
 	template<size_t type_T>
 	static constexpr const char* name() {
-		static_assert(false, "Invalid terminal cave type");
+		static_assert(std::bool_constant<type_T == start | type_T == end>::value, "Invalid terminal cave type");
 	}
 
 	template<>

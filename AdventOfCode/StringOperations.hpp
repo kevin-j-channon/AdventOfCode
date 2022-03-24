@@ -117,7 +117,7 @@ std::basic_string<Char_T> strip(const std::basic_string<Char_T>& str)
 template<typename Value_T>
 inline auto string_to(const std::string& str) -> Value_T
 {
-    static_assert(false, "Unimplemented string conversion");
+    static_assert(std::bool_constant<std::is_same_v<Value_T, int>>::value, "Unimplemented string conversion");
 }
 
 ///////////////////////////////////////////////////////////////////////////////

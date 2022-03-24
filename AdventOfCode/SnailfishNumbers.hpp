@@ -395,7 +395,7 @@ const detail::Child& Value::child() const
 		return _children.second;
 	}
 	else {
-		static_assert(std::false_type::value, "Invalid child position");
+		static_assert(std::bool_constant<POSITION == ChildPosition::left>::value, "Invalid child position");
 	}
 }
 
